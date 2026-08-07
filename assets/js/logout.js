@@ -1,23 +1,29 @@
 import { auth } from "./firebase-config.js";
+import { signOut } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 
-import {
-    signOut
-} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+// Ginagamit ang document level listener para masigurong gagana kahit dynamic o galing sa PHP include ang sidebar
+document.addEventListener("click", async (e) => {
+    const logoutBtn = e.target.closest("#logoutBtn") || e.target.closest(".logout-btn");
 
-const logoutBtn = document.getElementById("logoutBtn");
+    if (logoutBtn) {
+        e.preventDefault(); // Pigilan ang default link action ng '#'
 
-if(logoutBtn){
+        // Magpakita ng confirmation prompt
+        const isConfirmed = confirm("Are you sure you want to logout?");
 
-    logoutBtn.addEventListener("click", async()=>{
+        if (isConfirmed) {
+            try {
+                await signOut(auth);
 
-        await signOut(auth);
+                localStorage.removeItem("isLoggedIn");
+                localStorage.removeItem("userEmail");
+                localStorage.removeItem("userUID");
 
-        localStorage.removeItem("isLoggedIn");
-        localStorage.removeItem("userEmail");
-        localStorage.removeItem("userUID");
-
-        window.location.href="../auth/login-user.php";
-
-    });
-
-}
+                window.location.href = "../auth/login-user.php";
+            } catch (error) {
+                console.error("Error signing out: ", error);
+                alert("May problemang naganap habang nagla-log out. Pakisubukan ulit.");
+            }
+        }
+    }
+});

@@ -1,4 +1,4 @@
-<script src="assets/js/script.js"></script>
-<script src="/SmartVetCare/assets/js/faq.js"></script>
-</body>
-</html>
+<div class="footer-links">
+    <a href="pages/privacy.php">Privacy Policy</a>
+    <a href="pages/terms.php">Terms and Conditions</a>
+</div>

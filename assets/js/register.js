@@ -18,15 +18,23 @@ if (registerForm) {
 
         e.preventDefault();
 
-        const fullName = document.getElementById("fullName").value.trim();
+        const firstName = document.getElementById("firstName").value.trim();
+        const lastName = document.getElementById("lastName").value.trim();
         const email = document.getElementById("email").value.trim();
         const phone = document.getElementById("phone").value.trim();
+        const address = document.getElementById("address").value.trim();
+
         const password = document.getElementById("password").value;
         const confirmPassword = document.getElementById("confirmPassword").value;
 
         if (password !== confirmPassword) {
 
-            alert("Passwords do not match.");
+            showToast(
+                "Password Error",
+                "Passwords do not match.",
+                "error"
+            );
+
             return;
 
         }
@@ -41,25 +49,46 @@ if (registerForm) {
 
             const user = userCredential.user;
 
-            await setDoc(doc(db, "users", user.uid), {
+           const names = fullName.trim().split(" ");
 
-                fullName: fullName,
-                email: email,
-                phone: phone,
-                role: "user",
-                status: "active",
-                createdAt: serverTimestamp()
+const firstName = names.shift() || "";
+const lastName = names.join(" ");
 
-            });
+await setDoc(doc(db, "users", user.uid), {
+
+    firstName: firstName,
+    lastName: lastName,
+    email: email,
+    phone: phone,
+    address: "",
+    profileImage: "",
+    createdAt: serverTimestamp()
+
+});
 
             showToast(
-    "Account Created",
-    "You can now login to your account.",
-    "success"
-);
-        } catch (error) {
+                "Account Created",
+                "You can now login to your account.",
+                "success"
+            );
 
-            alert(error.message);
+            registerForm.reset();
+
+            setTimeout(() => {
+
+                window.location.href = "../index.php";
+
+            }, 1500);
+
+        }
+
+        catch (error) {
+
+            showToast(
+                "Registration Failed",
+                error.message,
+                "error"
+            );
 
         }
 

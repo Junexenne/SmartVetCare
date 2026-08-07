@@ -1,31 +1,16 @@
 function showToast(title, message, type = "success") {
 
-    const icons = {
-        success: "✅",
-        error: "❌",
-        warning: "⚠️",
-        info: "ℹ️"
-    };
+    const oldToast = document.querySelector(".svc-toast");
+
+    if (oldToast) oldToast.remove();
 
     const toast = document.createElement("div");
 
-    toast.className = `toast ${type}`;
+    toast.className = `svc-toast ${type}`;
 
     toast.innerHTML = `
-        <div class="toast-header">
-            <span class="toast-icon">${icons[type]}</span>
-
-            <div class="toast-text">
-
-                <h4>${title}</h4>
-
-                <p>${message}</p>
-
-            </div>
-
-        </div>
-
-        <div class="toast-progress"></div>
+        <div class="svc-toast-title">${title}</div>
+        <div class="svc-toast-message">${message}</div>
     `;
 
     document.body.appendChild(toast);
@@ -34,19 +19,19 @@ function showToast(title, message, type = "success") {
 
         toast.classList.add("show");
 
-    },100);
+    }, 100);
 
     setTimeout(() => {
 
         toast.classList.remove("show");
 
-        setTimeout(()=>{
+        setTimeout(() => {
 
             toast.remove();
 
-        },400);
+        }, 300);
 
-    },3500);
+    }, 2500);
 
 }
 

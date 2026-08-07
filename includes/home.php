@@ -18,13 +18,7 @@
 
 </p>
 
-<a href="/SmartVetCare/auth/choose-account.php" class="hero-btn">
-    Get Started <i class="fas fa-arrow-right"></i>
-</a>
-
-            </div>
-
-        </div>
+</div>
 
     </div>
 
@@ -219,125 +213,72 @@
 ===================================== -->
 
 <section class="testimonial" id="testimonial">
-
     <div class="container">
-
         <div class="testimonial-header">
-
             <span class="testimonial-badge">
                 Client Testimonials
             </span>
-
             <h2>
                 What Our Clients Say
             </h2>
-
         </div>
 
         <div class="testimonial-slider">
-
             <button class="prev">&#10094;</button>
 
             <div class="testimonial-track">
-
                 <!-- Testimonial 1 -->
-
                 <div class="testimonial-card">
-
                     <img src="/SmartVetCare/assets/images/testimonial-1.jpg" alt="Client 1">
-
                     <div class="stars">★★★★★</div>
-
-                    <p>
-                        "The veterinarians are very kind and professional. They treated my dog with great care."
-                    </p>
-
+                    <p>"The veterinarians are very kind and professional. They treated my dog with great care."</p>
                     <h4>Crachzel Kyle Asistio</h4>
-
                 </div>
 
                 <!-- Testimonial 2 -->
-
                 <div class="testimonial-card">
-
                     <img src="/SmartVetCare/assets/images/testimonial-2.jpg" alt="Client 2">
-
                     <div class="stars">★★★★★</div>
-
-                    <p>
-                        "Excellent service! Scheduling an appointment was very easy and convenient."
-                    </p>
-
+                    <p>"Excellent service! Scheduling an appointment was very easy and convenient."</p>
                     <h4>Joshua Reyes</h4>
-
                 </div>
 
                 <!-- Testimonial 3 -->
-
                 <div class="testimonial-card">
-
                     <img src="/SmartVetCare/assets/images/testimonial-3.jpg" alt="Client 3">
-
                     <div class="stars">★★★★★</div>
-
-                    <p>
-                        "Our cat recovered quickly because of their excellent medical care."
-                    </p>
-
+                    <p>"Our cat recovered quickly because of their excellent medical care."</p>
                     <h4>Robee De Jesus</h4>
-
                 </div>
 
                 <!-- Testimonial 4 -->
-
                 <div class="testimonial-card">
-
                     <img src="/SmartVetCare/assets/images/testimonial-4.jpg" alt="Client 4">
-
                     <div class="stars">★★★★★</div>
-
-                    <p>
-                        "Friendly staff and excellent service. They truly care for every pet that visits the clinic."
-                    </p>
-
+                    <p>"Friendly staff and excellent service. They truly care for every pet that visits the clinic."</p>
                     <h4>Meyriel Tio</h4>
-
                 </div>
 
                 <!-- Testimonial 5 -->
-
                 <div class="testimonial-card">
-
                     <img src="/SmartVetCare/assets/images/testimonial-5.jpg" alt="Client 5">
-
                     <div class="stars">★★★★★</div>
-
-                    <p>
-                        "Highly recommended! Booking an appointment was simple and the doctors were amazing."
-                    </p>
-
+                    <p>"Highly recommended! Booking an appointment was simple and the doctors were amazing."</p>
                     <h4>Nicole Garcia</h4>
-
                 </div>
-
             </div>
 
             <button class="next">&#10095;</button>
-
         </div>
 
         <div class="testimonial-dots">
-
             <span class="active"></span>
             <span></span>
             <span></span>
             <span></span>
             <span></span>
-
         </div>
-
     </div>
-
 </section>
 <!-- =====================================
      CONTACT US
@@ -347,10 +288,12 @@
 
     <div class="container">
 
+        <!-- HEADER -->
+
         <div class="contact-header">
 
             <span class="contact-badge">
-                Contact Us
+                CONTACT US
             </span>
 
             <h2>
@@ -377,7 +320,6 @@
                         Furry Friends Animal Clinic<br>
                         78 Malolos Ave, Bagong Barrio West,
                         Caloocan, 1407 Metro Manila
-                
                     </p>
 
                 </div>
@@ -419,18 +361,32 @@
 
             <div class="contact-form">
 
-                <form>
+                <form id="contactForm">
 
-                    <input type="text" placeholder="Full Name">
+                    <input
+                        type="text"
+                        placeholder="Full Name"
+                        required>
 
-                    <input type="email" placeholder="Email Address">
+                    <input
+                        type="email"
+                        placeholder="Email Address"
+                        required>
 
-                    <input type="text" placeholder="Subject">
+                    <input
+                        type="text"
+                        placeholder="Subject"
+                        required>
 
-                    <textarea placeholder="Write your message here..."></textarea>
+                    <textarea
+                        placeholder="Write your message..."
+                        rows="6"
+                        required></textarea>
 
                     <button type="submit">
-                        Send Message
+
+                        📨 Send Message
+
                     </button>
 
                 </form>
@@ -443,193 +399,101 @@
 
 </section>
 <!-- =====================================
-     FREQUENTLY ASKED QUESTIONS
+      FREQUENTLY ASKED QUESTIONS
 ===================================== -->
-
 <section class="faq" id="faq">
-
     <div class="container">
-
         <div class="faq-header">
-
             <span class="faq-badge">
                 Frequently Asked Questions
             </span>
-
             <h2>
                 Have Questions? We Have Answers
             </h2>
-
         </div>
 
         <div class="faq-container">
-
-            <div class="faq-item active">
-
+            <div class="faq-item">
                 <div class="faq-question">
-
                     <h3>How can I book an appointment?</h3>
-
                     <span>+</span>
-
                 </div>
-
                 <div class="faq-answer">
-
                     <p>
                         You can book an appointment by creating an account,
                         logging in, and selecting your preferred date and time
                         through the Smart Vet Care system.
                     </p>
-
                 </div>
-
             </div>
 
             <div class="faq-item">
-
                 <div class="faq-question">
-
                     <h3>What animals do you accept?</h3>
-
                     <span>+</span>
-
                 </div>
-
                 <div class="faq-answer">
-
                     <p>
                         Our clinic currently provides veterinary services
                         for dogs and cats.
                     </p>
-
                 </div>
-
             </div>
 
             <div class="faq-item">
-
                 <div class="faq-question">
-
                     <h3>Can I access my pet's medical records online?</h3>
-
                     <span>+</span>
-
                 </div>
-
                 <div class="faq-answer">
-
                     <p>
                         Yes. Registered pet owners can securely access their
                         pet's vaccination history, medical records, and appointments.
                     </p>
-
                 </div>
-
             </div>
 
             <div class="faq-item">
-
                 <div class="faq-question">
-
                     <h3>Do you accept emergency cases?</h3>
-
                     <span>+</span>
-
                 </div>
-
                 <div class="faq-answer">
-
                     <p>
                         Yes. Emergency cases are accommodated during our
                         regular clinic hours, depending on availability.
                     </p>
-
                 </div>
-
             </div>
-
         </div>
-
     </div>
-
 </section>
 <!-- =====================================
-     FOOTER
-===================================== -->
-
-<footer class="footer">
-
-    <div class="container footer-container">
-
-        <!-- LEFT -->
-
-        <div class="footer-col">
-
-            <div class="footer-logo">
-
-                <img src="/SmartVetCare/assets/images/logo.png" alt="Smart Vet Care">
-
-                <h3>Smart Vet Care</h3>
-
+          FOOTER SECTION
+    ===================================== -->
+    <footer class="footer">
+        <div class="footer-container">
+            <!-- Kaliwang Bahagi: Copyright at Links -->
+            <div class="footer-left">
+                <p>&copy; 2026, Smart Vet Care</p>
+                <div class="footer-links">
+    <a href="includes/privacy.php">Privacy Policy</a>
+    <a href="includes/terms.php">Terms and Conditions</a>
+</div>
             </div>
 
-            <p>
-                Providing quality veterinary care with compassion and innovation.
-                We are committed to keeping your beloved pets healthy and happy.
-            </p>
-
-        </div>
-
-        <!-- CENTER -->
-
-        <div class="footer-col">
-
-            <h3>Quick Links</h3>
-
-            <ul>
-
-                <li><a href="#home">Home</a></li>
-
-                <li><a href="#about">About Us</a></li>
-
-                <li><a href="#testimonial">Testimonials</a></li>
-
-                <li><a href="#faq">FAQ</a></li>
-
-                <li><a href="#contact">Contact</a></li>
-
-            </ul>
-
-        </div>
-
-        <!-- RIGHT -->
-
-        <div class="footer-col">
-
-            <h3>Contact Information</h3>
-
-            <p>📍 78 Malolos Ave, Bagong Barrio West,
-                Caloocan,1407 Metro Manila</p>
-
-            <p>📞 09258897811</p>
-
-            <p>✉ furryfriendsclinic@gmail.com</p>
-
-            <p>🕒 Monday - Sunday</p>
-
-            <p>8:00 AM - 5:00 PM</p>
-
-        </div>
-
+            <!-- Kanang Bahagi: Email at Social Icons -->
+            <div class="footer-right">
+    <a href="mailto:furryfriendsclinic@yahoo.com" class="footer-email">furryfriendsclinic@yahoo.com</a>
+    <div class="footer-socials">
+        <a href="https://www.facebook.com/furryfriendsanimalclinic" target="_blank"><i class="fab fa-facebook-f"></i></a>
     </div>
+</div>
+        </div>
+    </footer>
 
-    <div class="footer-bottom">
+    <script src="assets/js/script.js"></script>
+    <script src="/SmartVetCare/assets/js/faq.js"></script>
+</body>
+</html>
 
-        <p>
-            © 2026 Smart Vet Care | Healthy Pets, Happy Families.
-        </p>
-
-    </div>
-
-</footer>
