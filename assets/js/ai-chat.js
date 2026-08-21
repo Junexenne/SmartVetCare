@@ -9,7 +9,7 @@ import {
     serverTimestamp 
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
-// Palitan ng iyong tamang Google GenAI API Key
+// Initialize Google GenAI with API Key
 const ai = new GoogleGenAI({ apiKey: "AQ.Ab8RN6IYIzqHXzYNS2gDXwNaltmz6zHIB6Ix9COk1iA4SR88jQ" });
 
 const currentOwnerId = localStorage.getItem("ownerId") || "OWN-00005"; 
@@ -39,6 +39,7 @@ async function loadChatHistory() {
     }
 }
 
+// 2. Append Message to UI
 function appendMessageUI(sender, text, scroll = true) {
     const chatMessages = document.getElementById("chatMessages");
     if (!chatMessages) return;
@@ -53,7 +54,7 @@ function appendMessageUI(sender, text, scroll = true) {
     }
 }
 
-// 2. I-save o I-update ang Array sa iisang Document lang sa Firestore
+// 3. I-save o I-update ang Array sa iisang Document lang sa Firestore
 async function saveMessageToFirestore(sender, text) {
     try {
         const docRef = doc(db, "ai_chats", currentOwnerId);
@@ -62,30 +63,27 @@ async function saveMessageToFirestore(sender, text) {
         const newMessage = {
             sender: sender,
             text: text,
-            timestamp: new Date().toISOString() // Pwede rin gamitin ang serverTimestamp sa loob ng array kung kailangan
+            timestamp: new Date().toISOString()
         };
 
         if (!docSnap.exists()) {
-            // Kung wala pang document ang user na ito, gumawa bago
             await setDoc(docRef, {
                 userId: currentOwnerId,
                 messages: [newMessage],
                 updatedAt: serverTimestamp()
             });
         } else {
-            // Kung meron na, i-update lang at idagdag sa array gamit ang arrayUnion
             await updateDoc(docRef, {
                 messages: arrayUnion(newMessage),
                 updatedAt: serverTimestamp()
             });
         }
-        console.log("Chat saved successfully to user document.");
     } catch (error) {
         console.error("Error saving message to Firestore:", error);
     }
 }
 
-// 3. Primary Send Function
+// 4. Primary Send Function
 async function handleSendMessage() {
     const userInput = document.getElementById("userInput");
     const chatMessages = document.getElementById("chatMessages");
@@ -99,12 +97,12 @@ async function handleSendMessage() {
     await saveMessageToFirestore("user", promptText);
     userInput.value = "";
 
-    // B. Loading state para kay AI
+    // B. Loading state para kay AI na may animated dots
     const loadingId = "loading-" + Date.now();
     const loadingDiv = document.createElement("div");
     loadingDiv.classList.add("message", "ai");
     loadingDiv.id = loadingId;
-    loadingDiv.textContent = "Nag-aabang ng sagot...";
+    loadingDiv.innerHTML = `<span style="display: inline-flex; gap: 4px; align-items: center;">Nag-iisip<span style="animation: blink 1.4s infinite both;">.</span><span style="animation: blink 1.4s infinite both .2s;">.</span><span style="animation: blink 1.4s infinite both .4s;">.</span></span>`;
     chatMessages.appendChild(loadingDiv);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 
@@ -144,7 +142,7 @@ async function handleSendMessage() {
     }
 }
 
-// 4. I-attach ang listeners pagka-load ng DOM
+// 5. I-attach ang listeners pagka-load ng DOM
 document.addEventListener("DOMContentLoaded", () => {
     loadChatHistory();
 

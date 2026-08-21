@@ -1,3 +1,8 @@
+<?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -49,6 +54,6 @@
     <!-- Scripts -->
     <script src="../assets/js/toast.js"></script>
     <script type="module" src="../assets/js/health-monitoring.js"></script>
-    <?php include('sidebar.php'); ?>
+    
 </body>
 </html>

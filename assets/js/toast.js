@@ -1,38 +1,32 @@
-function showToast(title, message, type = "success") {
+// Global Toast Function
+window.showToast = function(title, message, type = "success") {
+    let toast = document.getElementById("toast");
+    let toastIcon = document.getElementById("toastIcon");
+    let toastTitle = document.getElementById("toastTitle");
+    let toastMessage = document.getElementById("toastMessage");
 
-    const oldToast = document.querySelector(".svc-toast");
+    if (!toast) return;
 
-    if (oldToast) oldToast.remove();
+    // I-set ang text at uri
+    toastTitle.innerText = title;
+    toastMessage.innerText = message;
 
-    const toast = document.createElement("div");
+    // Alisin ang dating klase at idagdag ang bago
+    toast.className = "toast " + type;
 
-    toast.className = `svc-toast ${type}`;
+    if (type === "success") {
+        toastIcon.className = "fa-solid fa-circle-check";
+    } else {
+        toastIcon.className = "fa-solid fa-circle-exclamation";
+    }
 
-    toast.innerHTML = `
-        <div class="svc-toast-title">${title}</div>
-        <div class="svc-toast-message">${message}</div>
-    `;
-
-    document.body.appendChild(toast);
-
+    // Ipakita ang toast
     setTimeout(() => {
-
         toast.classList.add("show");
-
     }, 100);
 
+    // Itago pagkalipas ng 3 segundo
     setTimeout(() => {
-
         toast.classList.remove("show");
-
-        setTimeout(() => {
-
-            toast.remove();
-
-        }, 300);
-
-    }, 2500);
-
-}
-
-window.showToast = showToast;
+    }, 3000);
+};

@@ -1,5 +1,5 @@
 import { db, storage } from './firebase-config.js';
-import { collection, query, where, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -22,20 +22,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const updateForm = document.getElementById('updateProfileForm');
     const saveBtn = document.getElementById('saveBtn');
 
-    let activeDocId = null;
     let selectedFile = null; // Dito ise-save ang napiling file bago i-upload
 
-    // 1. Load User Profile
+    // 1. Load User Profile direkta gamit ang userId bilang Document ID
     async function loadUserProfile() {
         try {
-            const usersRef = collection(db, "users");
-            const q = query(usersRef, where("ownerId", "==", userId));
-            const querySnapshot = await getDocs(q);
+            const userDocRef = doc(db, "users", userId);
+            const userSnap = await getDoc(userDocRef);
 
-            if (!querySnapshot.empty) {
-                const userDoc = querySnapshot.docs[0];
-                activeDocId = userDoc.id;
-                const data = userDoc.data();
+            if (userSnap.exists()) {
+                const data = userSnap.data();
                 
                 if (fullNameInput) fullNameInput.value = data.fullName || '';
                 if (emailInput) emailInput.value = data.email || '';
@@ -44,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 updateBanner(data.fullName || 'User', data.email || 'No email', data.profileImage || '');
             } else {
-                activeDocId = userId; 
+                // Default values kung wala pang record
                 if (bannerName) bannerName.textContent = "Rome";
                 if (bannerEmail) bannerEmail.textContent = "rome@example.com";
                 if (fullNameInput) fullNameInput.value = "Rome";
@@ -62,14 +58,12 @@ document.addEventListener("DOMContentLoaded", () => {
         if (bannerEmail) bannerEmail.textContent = email;
 
         if (imageUrl && imageUrl.trim() !== "") {
-            // Kung may naka-save na profile picture URL galing Firebase Storage
             if (profileImagePreview) {
                 profileImagePreview.src = imageUrl;
                 profileImagePreview.style.display = 'block';
             }
             if (avatarInitial) avatarInitial.style.display = 'none';
         } else {
-            // Kung wala, ipakita ang initial letter ng pangalan
             if (profileImagePreview) profileImagePreview.style.display = 'none';
             if (avatarInitial) {
                 avatarInitial.textContent = name.charAt(0).toUpperCase();
@@ -86,7 +80,6 @@ document.addEventListener("DOMContentLoaded", () => {
             const file = e.target.files[0];
             if (file) {
                 selectedFile = file;
-                // I-preview agad sa UI nang hindi pa ini-upload
                 const reader = new FileReader();
                 reader.onload = (uploadEvent) => {
                     updateBanner(fullNameInput.value || 'User', emailInput.value || '', uploadEvent.target.result);
@@ -96,7 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // 3. I-save ang pagbabago at i-upload ang larawan sa Firebase Storage pag-submit
+    // 3. I-save ang pagbabago direkta sa dokumento na may ID na `userId`
     if (updateForm) {
         updateForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -106,8 +99,8 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             try {
-                const targetId = activeDocId ? activeDocId : userId;
-                const userDocRef = doc(db, "users", targetId);
+                // Direktang ginagamit ang `userId` bilang pangalan ng document sa "users" collection
+                const userDocRef = doc(db, "users", userId);
 
                 let profileImageUrl = profileImagePreview && profileImagePreview.src && profileImagePreview.style.display === 'block' ? profileImagePreview.src : '';
 
@@ -118,7 +111,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     profileImageUrl = await getDownloadURL(snapshot.ref);
                 }
 
-                // I-save ang buong data kasama ang profileImage URL sa Firestore
+                // I-save gamit ang setDoc at { merge: true } para i-update lang nang hindi gumagawa ng iba
                 await setDoc(userDocRef, {
                     ownerId: userId,
                     fullName: fullNameInput.value,
@@ -131,7 +124,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 updateBanner(fullNameInput.value, emailInput.value, profileImageUrl);
                 showAlert("Profile and picture successfully updated!", "success");
-                selectedFile = null; // I-reset ang file selection
+                selectedFile = null; 
             } catch (error) {
                 console.error("Error updating profile: ", error);
                 showAlert("Failed to update profile. Please try again.", "error");

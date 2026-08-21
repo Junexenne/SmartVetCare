@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let selectedTimeSlot = null;
     let currentOwnerId = null;
 
-    // 1. Authentication at pag-load ng mga pet ng user
+    // 1. Authentication at pag-load ng mga pet at appointments ng user
     onAuthStateChanged(auth, async (user) => {
         if (!user) {
             showAlert("Please log in to book an appointment.", "error");
@@ -32,7 +32,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         try {
-            // Kunin ang ownerId gamit ang email ng naka-login na user
             const userQuery = query(
                 collection(db, "users"),
                 where("email", "==", user.email)
@@ -42,6 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!userSnap.empty) {
                 currentOwnerId = userSnap.docs[0].data().ownerId;
                 loadUserPets(currentOwnerId);
+                loadUserAppointments(currentOwnerId);
             } else {
                 showAlert("User profile not found in database.", "error");
             }
@@ -96,7 +96,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 slotBtn.style.cssText = "padding: 8px 14px; margin: 5px; border: 1px solid #ddd; background: #fff; border-radius: 6px; cursor: pointer; transition: all 0.2s;";
                 
                 slotBtn.addEventListener("click", () => {
-                    // Alisin ang active state sa lahat at ilipat sa pinili
                     document.querySelectorAll(".time-slot-btn").forEach(b => {
                         b.style.background = "#fff";
                         b.style.color = "#333";
@@ -113,7 +112,122 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // 4. Proseso ng pag-book ng appointment papuntang Firestore
+    // Helper function para gawing standard Date object kahit iba-iba ang format sa DB
+    function parseDateString(dateStr) {
+        if (!dateStr) return new Date(0);
+        // Kung format ay DD/MM/YYYY (hal. 30/07/2026)
+        if (dateStr.includes('/')) {
+            const parts = dateStr.split('/');
+            if (parts.length === 3) {
+                return new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+            }
+        }
+        // Kung format ay YYYY-MM-DD (hal. 2026-08-21)
+        return new Date(dateStr);
+    }
+
+    // 4. Kunin at I-display ang Booked Appointments na may Grouping per Month at Tamang Sorting
+    async function loadUserAppointments(ownerId) {
+        const container = document.getElementById("userAppointmentsContainer");
+        if (!container) return;
+
+        try {
+            const q = query(
+                collection(db, "appointments"),
+                where("ownerId", "==", ownerId)
+            );
+            const snapshot = await getDocs(q);
+
+            container.innerHTML = "";
+
+            if (snapshot.empty) {
+                container.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 20px; color: #64748b;">
+                        <p>You have no booked appointments yet.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let appointmentsList = [];
+            snapshot.forEach((docSnap) => {
+                appointmentsList.push({ id: docSnap.id, ...docSnap.data() });
+            });
+
+            // Sorting: Pinakabagong petsa ang mauuna (Descending)
+            appointmentsList.sort((a, b) => {
+                const dateA = parseDateString(a.date);
+                const dateB = parseDateString(b.date);
+                return dateB - dateA; 
+            });
+
+            // I-group natin per Month & Year para hindi nakakalito
+            let groupedAppointments = {};
+            appointmentsList.forEach(appt => {
+                const d = parseDateString(appt.date);
+                const monthYear = d.toLocaleString('en-US', { month: 'long', year: 'numeric' }); // Halimbawa: "August 2026"
+                
+                if (!groupedAppointments[monthYear]) {
+                    groupedAppointments[monthYear] = [];
+                }
+                groupedAppointments[monthYear].push(appt);
+            });
+
+            // I-render sa HTML base sa grupo ng buwan
+            for (const [monthYear, appts] of Object.entries(groupedAppointments)) {
+                // Maglagay ng Header para sa Buwan
+                container.insertAdjacentHTML("beforeend", `
+                    <div style="grid-column: 1 / -1; margin-top: 15px; margin-bottom: 5px; border-bottom: 2px solid #e2e8f0; padding-bottom: 5px;">
+                        <h3 style="color: #4f46e5; font-size: 18px; font-weight: 700;"><i class="fa-regular fa-calendar-days"></i> For the Month of ${monthYear}</h3>
+                    </div>
+                `);
+
+                appts.forEach((appt) => {
+                    let statusBg = "#fef3c7";
+                    let statusColor = "#d97706";
+
+                    if (appt.status === "Completed") {
+                        statusBg = "#E1FDF4";
+                        statusColor = "#065F46";
+                    } else if (appt.status === "Confirmed") {
+                        statusBg = "#dcfce7";
+                        statusColor = "#16a34a";
+                    } else if (appt.status === "Cancelled") {
+                        statusBg = "#fee2e2";
+                        statusColor = "#dc2626";
+                    }
+
+                    const isUrgent = appt.service === "Surgery" || (appt.notes && (appt.notes.toLowerCase().includes("emergency") || appt.notes.toLowerCase().includes("parvo")));
+
+                    container.insertAdjacentHTML("beforeend", `
+                        <div style="background: #f8fafc; border: 1px solid ${isUrgent ? '#f87171' : '#e2e8f0'}; border-radius: 14px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); display: flex; flex-direction: column; justify-content: space-between; position: relative;">
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                    <span style="background: ${statusBg}; color: ${statusColor}; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600;">
+                                        ${appt.status || "Pending"}
+                                    </span>
+                                    <small style="color: #64748b; font-size: 12px;"><i class="fa-solid fa-paw"></i> ${appt.petName || "Unnamed Pet"}</small>
+                                </div>
+                                
+                                ${isUrgent ? '<div style="margin-bottom: 8px;"><span style="background: #fee2e2; color: #b91c1c; padding: 3px 8px; font-size: 10px; font-weight: 700; border-radius: 6px; text-transform: uppercase; display: inline-block;"><i class="fa-solid fa-triangle-exclamation"></i> Urgent / Emergency</span></div>' : ''}
+
+                                <h4 style="color: #1e1b4b; font-size: 16px; margin-bottom: 8px;">${appt.service}</h4>
+                                <p style="color: #475569; font-size: 13px; margin: 4px 0;"><i class="fa-solid fa-user-doctor" style="width: 18px; color: #5142f5;"></i> ${appt.doctor || "Doctor not specified"}</p>
+                                <p style="color: #475569; font-size: 13px; margin: 4px 0;"><i class="fa-solid fa-calendar-days" style="width: 18px; color: #5142f5;"></i> ${appt.date} (${appt.timeSlot || "Time not set"})</p>
+                                ${appt.notes ? `<p style="color: #64748b; font-size: 12px; margin-top: 8px; font-style: italic;">Note: "${appt.notes}"</p>` : ""}
+                            </div>
+                        </div>
+                    `);
+                });
+            }
+
+        } catch (error) {
+            console.error("Error loading appointments:", error);
+            container.innerHTML = `<p style="color: #dc2626; font-size: 14px;">Failed to load your appointments.</p>`;
+        }
+    }
+
+    // 5. Proseso ng pag-book ng appointment papuntang Firestore
     if (bookBtn) {
         bookBtn.addEventListener("click", async () => {
             if (!currentOwnerId) {
@@ -127,33 +241,16 @@ document.addEventListener("DOMContentLoaded", () => {
             const dateVal = appointmentDateInput.value;
             const notes = notesInput.value.trim();
 
-            // Validation
-            if (!petName) {
-                showAlert("Please select a pet.", "error");
-                return;
-            }
-            if (!service) {
-                showAlert("Please select a service.", "error");
-                return;
-            }
-            if (!doctor) {
-                showAlert("Please select a doctor.", "error");
-                return;
-            }
-            if (!dateVal) {
-                showAlert("Please select an appointment date.", "error");
-                return;
-            }
-            if (!selectedTimeSlot) {
-                showAlert("Please select an available time slot.", "error");
-                return;
-            }
+            if (!petName) { showAlert("Please select a pet.", "error"); return; }
+            if (!service) { showAlert("Please select a service.", "error"); return; }
+            if (!doctor) { showAlert("Please select a doctor.", "error"); return; }
+            if (!dateVal) { showAlert("Please select an appointment date.", "error"); return; }
+            if (!selectedTimeSlot) { showAlert("Please select an available time slot.", "error"); return; }
 
             bookBtn.disabled = true;
-            bookBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin">Submitting...</i>`;
+            bookBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Submitting...`;
 
             try {
-                // I-save sa appointments collection
                 await addDoc(collection(db, "appointments"), {
                     ownerId: currentOwnerId,
                     petName: petName,
@@ -166,7 +263,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     createdAt: Timestamp.now()
                 });
 
-                // Mag-log din sa recent activities kung gusto mong mag-sync sa dashboard
                 await addDoc(collection(db, "activities"), {
                     ownerId: currentOwnerId,
                     description: `Booked ${service} for ${petName}`,
@@ -175,7 +271,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 showAlert("Appointment successfully booked!", "success");
 
-                // I-reset ang form
                 petSelect.selectedIndex = 0;
                 serviceSelect.selectedIndex = 0;
                 doctorSelect.selectedIndex = 0;
@@ -183,6 +278,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 timeSlotsContainer.innerHTML = `<p style="color: #888; font-size: 13px;">Please select a date first.</p>`;
                 notesInput.value = "";
                 selectedTimeSlot = null;
+
+                loadUserAppointments(currentOwnerId);
 
             } catch (error) {
                 console.error("Error booking appointment:", error);
@@ -194,14 +291,12 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Helper function para sa Toast Alert
     function showAlert(message, type) {
         if (!alertBox) return;
         alertBox.textContent = message;
         alertBox.className = type === 'success' ? 'alert-success' : 'alert-error';
         alertBox.style.display = 'block';
 
-        // Kusang mawawala pagkalipas ng 4 segundo
         setTimeout(() => {
             alertBox.style.display = 'none';
         }, 4000);

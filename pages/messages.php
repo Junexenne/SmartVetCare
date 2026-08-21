@@ -47,8 +47,8 @@ session_start();
                 </form>
             </div>
 
-        </div> <!-- Closing para sa main-content -->
-    </div> <!-- Closing para sa dashboard -->
+        </div> 
+    </div> 
 
     <!-- Firebase v8 SDK Scripts -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
@@ -56,7 +56,7 @@ session_start();
 
     <!-- Firestore Real-time Chat Logic -->
     <script>
-        // 1. Ilagay dito ang tamang Firebase config mo mula sa Firebase Console
+        // 1. Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyBwHmTjg_rT-bU0NL1c71f5qkonf7H7eNM",
             authDomain: "furryfriendsanimalclinic-13da3.firebaseapp.com",
@@ -72,8 +72,8 @@ session_start();
         }
         const db = firebase.firestore();
 
-        // Kunin ang user ID mula sa session o gamitin ang OWN-00004
-        const currentUserId = "<?php echo $_SESSION['user_id'] ?? 'OWN-00004'; ?>"; 
+        // Safe global assignment para hindi mag-error ng redeclaration
+        window.currentUserId = "<?php echo $_SESSION['user_id'] ?? 'OWN-00004'; ?>"; 
 
         // 2. Real-time Messages Listener
         function loadMessages() {
@@ -81,7 +81,7 @@ session_start();
             if (!chatMessagesContainer) return;
             
             db.collection("conversations")
-              .doc(currentUserId)
+              .doc(window.currentUserId)
               .collection("messages")
               .orderBy("timestamp", "asc")
               .onSnapshot((snapshot) => {
@@ -94,7 +94,7 @@ session_start();
 
                   snapshot.forEach((docSnap) => {
                       const data = docSnap.data();
-                      const isUser = data.senderId === currentUserId;
+                      const isUser = data.senderId === window.currentUserId;
                       
                       const messageDiv = document.createElement('div');
                       messageDiv.classList.add('message', isUser ? 'user' : 'admin');
@@ -120,14 +120,14 @@ session_start();
                 if (!messageText) return;
 
                 try {
-                    await db.collection("conversations").doc(currentUserId).collection("messages").add({
-                        senderId: currentUserId,
+                    await db.collection("conversations").doc(window.currentUserId).collection("messages").add({
+                        senderId: window.currentUserId,
                         text: messageText,
                         timestamp: firebase.firestore.FieldValue.serverTimestamp()
                     });
 
-                    await db.collection("conversations").doc(currentUserId).set({
-                        participants: [currentUserId, "admin"],
+                    await db.collection("conversations").doc(window.currentUserId).set({
+                        participants: [window.currentUserId, "admin"],
                         lastMessage: messageText,
                         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                     }, { merge: true });
@@ -143,8 +143,6 @@ session_start();
         // Run on load
         loadMessages();
     </script>
-    <script type="module" src="../assets/js/messages.js"></script>
-
 
 </body>
 </html>

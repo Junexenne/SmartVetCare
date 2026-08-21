@@ -1,11 +1,13 @@
 <?php
 $currentPage = basename($_SERVER['PHP_SELF']);
 ?>
-<div class="sidebar">
+<div class="sidebar" id="appSidebar">
     <div class="logo">
         <img src="/SmartVetCare/assets/images/logo.png" alt="Smart Vet Care Logo">
-        <h2>Smart Vet Care</h2>
-        <p>Pet Owner Portal</p>
+        <div class="logo-text">
+            <h2>Smart Vet Care</h2>
+            <p>Pet Owner Portal</p>
+        </div>
     </div>
 
     <ul class="menu">
@@ -84,6 +86,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
+    // Logout Modal Logic
     const logoutBtn = document.getElementById("logoutBtn");
     const logoutModal = document.getElementById("logoutModal");
     const cancelLogoutBtn = document.getElementById("cancelLogoutBtn");
@@ -107,5 +110,31 @@ document.addEventListener("DOMContentLoaded", function() {
             window.location.href = "/SmartVetCare/auth/logout.php";
         });
     }
+
+    // Sidebar 10-Second Auto-Collapse Logic
+    const sidebar = document.getElementById("appSidebar");
+    let collapseTimer;
+
+    function triggerCollapseTimer() {
+        clearTimeout(collapseTimer);
+        // Maghihintay ng 10 segundo (10000 ms) bago i-collapse kapag walang hover
+        collapseTimer = setTimeout(() => {
+            sidebar.classList.add("auto-collapsed");
+        }, 10000);
+    }
+
+    // Kapag tinutukan ng mouse ang sidebar, alisin ang collapse at i-reset ang timer
+    sidebar.addEventListener("mouseenter", function() {
+        sidebar.classList.remove("auto-collapsed");
+        clearTimeout(collapseTimer);
+    });
+
+    // Kapag inalis ang mouse sa sidebar, simulan na ang 10-second countdown
+    sidebar.addEventListener("mouseleave", function() {
+        triggerCollapseTimer();
+    });
+
+    // Simulan agad ang timer sa pag-load ng pahina
+    triggerCollapseTimer();
 });
 </script>

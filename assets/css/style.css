@@ -25,129 +25,150 @@ body{
 }
 
 /* ===================================================
-   NAVBAR (FINAL FIXED LAYOUT & VISIBILITY)
+   NAVBAR (FINAL RESPONSIVE FIX)
 =================================================== */
 
-.navbar{
+.navbar {
     width: 100% !important;
     background: #fff !important;
     box-shadow: 0 2px 10px rgba(0,0,0,.08) !important;
     position: sticky !important;
     top: 0 !important;
     z-index: 999 !important;
+    display: block !important;
 }
 
-.nav-container{
-    width: 95% !important;
-    max-width: 1500px !important;
-    margin: auto !important;
+.nav-container {
+    width: 98% !important;
+    max-width: 1600px !important;
+    margin: 0 auto !important;
     height: 90px !important;
     display: flex !important;
+    flex-direction: row !important;
     align-items: center !important;
     justify-content: space-between !important;
-    gap: 20px !important;
+    flex-wrap: nowrap !important; /* Pinipilit na huwag bumaba ang mga elemento */
+    gap: 15px !important;
+    box-sizing: border-box !important;
+    padding: 0 10px !important;
 }
 
 /* Logo & Text Styling */
-.logo{
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    text-decoration: none;
-    flex-shrink: 0;
-    margin-top: 6px; /* Ibinaba nang kaunti para hindi masyadong mataas */
+.logo {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 10px !important;
+    text-decoration: none !important;
+    flex-shrink: 0 !important;
 }
 
-.logo img{
-    width: 70px;
-    height: 70px;
-    object-fit: contain;
-    border-radius: 0;
-    display: block;
+.logo img {
+    width: 60px !important;
+    height: 60px !important;
+    object-fit: contain !important;
+    display: block !important;
 }
 
 .logo-text {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-}
-
-.logo-text h2{
-    font-size: 18px;
-    color: #163B7A;
-    font-weight: 700;
-    line-height: 1.1;
-    white-space: nowrap;
-    margin: 0;
-}
-
-.logo-text p{
-    font-size: 12px;
-    color: #163b7a; /* Pinatingkad ang kulay para siguradong mabasa */
-    font-weight: 500; /* Ginawang mas litaw */
-    margin: 0;
-    margin-top: 3px;
-    white-space: nowrap;
-}
-
-/* Navigation Links - Pinasikip ang gap para hindi bumaba patayo */
-.nav-links{
     display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+}
+
+.logo-text h2 {
+    font-size: 16px !important;
+    color: #163B7A !important;
+    font-weight: 700 !important;
+    line-height: 1.1 !important;
+    white-space: nowrap !important;
+    margin: 0 !important;
+}
+
+.logo-text p {
+    font-size: 11px !important;
+    color: #163b7a !important;
+    font-weight: 500 !important;
+    margin: 2px 0 0 0 !important;
+    white-space: nowrap !important;
+}
+
+/* Navigation Links - Pinasiksik nang kaunti ang gap para magkasya */
+.nav-links {
+    display: flex !important;
+    flex-direction: row !important;
     align-items: center !important;
     list-style: none !important;
-    gap: 22px !important;
+    gap: 18px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    flex-shrink: 1 !important;
+}
+
+.nav-links li {
+    display: inline-block !important;
+    list-style: none !important;
+    white-space: nowrap !important;
     margin: 0 !important;
     padding: 0 !important;
 }
 
-.nav-links li{
-    list-style: none !important;
-    white-space: nowrap !important;
-}
-
-.nav-links a{
+.nav-links a {
     text-decoration: none !important;
     color: #163B7A !important;
     font-weight: 500 !important;
-    font-size: 14px !important;
-    transition: .3s !important;
+    font-size: 13.5px !important;
+    transition: color 0.3s ease !important;
 }
 
-.nav-links a:hover{
+.nav-links a:hover {
     color: #3b63d1 !important;
 }
 
-/* Login Button */
-.nav-buttons{
+/* Login Button Container */
+.nav-buttons {
     display: flex !important;
+    flex-direction: row !important;
     align-items: center !important;
     flex-shrink: 0 !important;
 }
 
-.login-btn{
-    background: #20186c !important;
-    color: #fff !important;
+.login-btn {
+    width: auto !important;
+    border: none !important;
+    cursor: pointer !important;
     padding: 10px 22px !important;
-    border-radius: 12px !important;
-    text-decoration: none !important;
-    font-weight: 600 !important;
+    background: linear-gradient(135deg, #173F81 0%, #2F248F 100%) !important;
+    color: #ffffff !important;
     font-size: 14px !important;
-    white-space: nowrap !important;
-    display: flex !important;
+    border-radius: 10px !important; /* Mas pabilog at modernong itsura */
+    font-weight: 600 !important;
+    display: inline-flex !important;
     align-items: center !important;
-    gap: 8px !important;
-    transition: .3s !important;
+    justify-content: center !important;
+    gap: 8px !important; /* Sakto kung lalagyan mo ng icon tulad ng arrow o user icon */
+    text-align: center !important;
+    text-decoration: none !important;
+    margin: 0 !important;
+    white-space: nowrap !important;
+    box-shadow: 0 4px 12px rgba(23, 63, 129, 0.25) !important; /* May malambot na anino para umangat */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+.login-btn:hover {
+    background: linear-gradient(135deg, #102d61 0%, #221875 100%) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 16px rgba(23, 63, 129, 0.35) !important;
 }
 
-.login-btn:hover{
-    background: #2f248f !important;
-    transform: translateY(-2px) !important;
+.login-btn:active {
+    transform: translateY(0) !important;
+    box-shadow: 0 2px 8px rgba(23, 63, 129, 0.2) !important;
 }
 /* ===================================================
    HERO SECTION (COMPACT, BALANCED & FULLY RESPONSIVE)
 =================================================== */
 
-.hero{
+.hero {
     width: 100%;
     height: 520px; 
     background-image: url("/SmartVetCare/assets/images/home-banner.jpg");
@@ -157,7 +178,7 @@ body{
     position: relative;
 }
 
-.hero-overlay{
+.hero-overlay {
     width: 100%;
     height: 100%;
     background: rgba(0, 0, 0, 0.30);
@@ -166,25 +187,25 @@ body{
     padding: 0 5%; 
 }
 
-.hero-card{
+.hero-card {
     width: 100%;
     max-width: 580px; 
     background: rgba(255, 255, 255, 0.45); 
     backdrop-filter: blur(8px); 
-    -webkit-backdrop-filter: blur(8px); /* Para sa compatibility sa Safari */
+    -webkit-backdrop-filter: blur(8px);
     border-radius: 30px; 
     padding: clamp(20px, 3.5vw, 35px) clamp(20px, 4vw, 45px);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
 
-.hero-card h5{
+.hero-card h5 {
     color: #163B7A;
     font-size: clamp(13px, 1.3vw, 16px); 
     margin-bottom: 6px;
     font-weight: 600;
 }
 
-.hero-card h1{
+.hero-card h1 {
     color: #163B7A;
     font-size: clamp(20px, 2.8vw, 34px); 
     line-height: 1.2;
@@ -199,7 +220,7 @@ body{
     margin-bottom: 20px;
 }
 
-.hero-btn{
+.hero-btn {
     display: inline-block;
     padding: clamp(8px, 1.2vw, 12px) clamp(20px, 2.5vw, 28px); 
     background: #173F81;
@@ -213,12 +234,11 @@ body{
     white-space: nowrap;
 }
 
-.hero-btn:hover{
+.hero-btn:hover {
     background: #102d61;
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(23, 63, 129, .35);
 }
-
 
 @media screen and (max-width: 992px) {
     .hero {
@@ -474,7 +494,7 @@ SERVICES OFFER (COMPACT & BALANCED - PINASIKSIK)
     }
 }
 /*=====================================
-CLIENT TESTIMONIAL (COMPACT & SLIDER)
+CLIENT TESTIMONIAL (FIXED UI & SLIDER)
 ======================================*/
 .testimonial {
     padding: 60px 0;
@@ -504,22 +524,25 @@ CLIENT TESTIMONIAL (COMPACT & SLIDER)
 }
 
 .testimonial-slider {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 20px;
     max-width: 1100px;
     margin: 0 auto;
-    padding: 0 15px;
+    padding: 0 50px; /* Sapat na espasyo para sa arrows sa gilid */
 }
 
 .testimonial-track {
     display: flex;
     gap: 20px;
     overflow-x: auto;
-    scroll-behavior: smooth;
+    /* Ito ang nagbibigay ng smooth scrolling effect */
+    scroll-behavior: smooth; 
     width: 100%;
     scrollbar-width: none;
+    padding: 10px 0;
+    /* Iwasan ang 'transition' dito dahil baka mag-conflict sa scroll */
 }
 
 .testimonial-track::-webkit-scrollbar {
@@ -527,8 +550,9 @@ CLIENT TESTIMONIAL (COMPACT & SLIDER)
 }
 
 .testimonial-card {
-    flex: 0 0 31%;
-    max-width: 330px;
+    flex: 0 0 calc(33.333% - 14px); /* Eksaktong 3 cards ang lilitaw nang sabay */
+    min-width: 300px;
+    max-width: 350px;
     background: #fff;
     border-radius: 18px;
     padding: 25px;
@@ -536,6 +560,7 @@ CLIENT TESTIMONIAL (COMPACT & SLIDER)
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
     transition: .35s;
     border: 1px solid #f0f0f0;
+    box-sizing: border-box;
 }
 
 .testimonial-card:hover {
@@ -543,11 +568,15 @@ CLIENT TESTIMONIAL (COMPACT & SLIDER)
 }
 
 .testimonial-card img {
-    width: 70px;
-    height: 70px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin-bottom: 12px;
+    width: 70px !important;
+    height: 70px !important;
+    min-width: 70px !important;
+    min-height: 70px !important;
+    max-width: 70px !important;
+    max-height: 70px !important;
+    border-radius: 50% !important;
+    object-fit: cover !important;
+    margin-bottom: 12px !important;
 }
 
 .stars {
@@ -571,9 +600,12 @@ CLIENT TESTIMONIAL (COMPACT & SLIDER)
 
 .prev,
 .next {
-    flex-shrink: 0;
-    width: 40px;
-    height: 40px;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    width: 45px;
+    height: 45px;
     border: none;
     border-radius: 50%;
     background: #173F81;
@@ -587,10 +619,18 @@ CLIENT TESTIMONIAL (COMPACT & SLIDER)
     box-shadow: 0 4px 10px rgba(23, 63, 129, 0.2);
 }
 
+.prev {
+    left: 0;
+}
+
+.next {
+    right: 0;
+}
+
 .prev:hover,
 .next:hover {
     background: #2F248F;
-    transform: scale(1.08);
+    transform: translateY(-50%) scale(1.08);
 }
 
 .testimonial-dots {
@@ -615,37 +655,38 @@ CLIENT TESTIMONIAL (COMPACT & SLIDER)
     border-radius: 6px;
 }
 
+/* Responsive adjustments */
 @media screen and (max-width: 992px) {
     .testimonial-card {
-        flex: 0 0 45%;
+        flex: 0 0 calc(50% - 10px);
     }
 }
 
 @media screen and (max-width: 768px) {
-    .testimonial-card {
-        flex: 0 0 75%;
+    .testimonial-slider {
+        padding: 0 10px; /* Liitan ang padding sa gilid para sa mobile */
     }
-}
-
-@media screen and (max-width: 480px) {
+    .prev, .next {
+        display: none; /* Itago muna ang arrows sa mobile para malinis, dots/swipe na lang gagamitin */
+    }
     .testimonial-card {
         flex: 0 0 85%;
-        padding: 20px;
     }
 }
 /*=====================================
-CONTACT US (ULTRA-COMPACT & RESPONSIVE)
+    MODERN CONTACT SECTION (REFINED)
 ======================================*/
 
 .contact {
     width: 100%;
-    padding: clamp(30px, 4vw, 50px) 0;
-    background: #F8FBFF;
+    padding: clamp(50px, 6vw, 80px) 0;
+    background: linear-gradient(135deg, #f8fbff 0%, #f0f4ff 100%);
 }
 
 .contact-header {
     text-align: center;
-    margin-bottom: clamp(20px, 3vw, 35px);
+    max-width: 650px;
+    margin: 0 auto clamp(30px, 4vw, 50px) auto;
     padding: 0 15px;
 }
 
@@ -653,118 +694,150 @@ CONTACT US (ULTRA-COMPACT & RESPONSIVE)
     display: inline-block;
     background: #EAF0FF;
     color: #173F81;
-    padding: 4px 14px;
-    border-radius: 20px;
+    padding: 6px 18px;
+    border-radius: 30px;
     font-weight: 600;
-    font-size: 12px;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    margin-bottom: 12px;
 }
 
 .contact-header h2 {
-    font-size: clamp(20px, 2.5vw, 28px);
+    font-size: clamp(24px, 3vw, 34px);
     color: #173F81;
-    margin: 8px 0;
+    margin-bottom: 10px;
     font-weight: 700;
 }
 
 .contact-header p {
-    color: #666;
+    color: #555;
     max-width: 550px;
-    margin: auto;
-    line-height: 1.5;
-    font-size: 12.5px;
-    padding: 0 10px;
+    margin: 0 auto;
+    line-height: 1.6;
+    font-size: 14px;
 }
 
 .contact-container {
     display: flex;
     justify-content: space-between;
-    gap: clamp(15px, 3vw, 25px);
-    max-width: 1000px;
+    align-items: stretch;
+    gap: 30px;
+    max-width: 1100px;
     margin: 0 auto;
-    padding: 0 15px;
+    padding: 0 20px;
 }
 
 .contact-info {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
 }
 
+/* Modern Info Boxes with Hover Effects */
 .info-box {
-    background: #fff;
-    padding: 15px;
-    border-radius: 12px;
-    margin-bottom: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,.05);
+    background: #ffffff;
+    padding: 20px 22px;
+    border-radius: 16px;
+    box-shadow: 0 6px 20px rgba(23, 63, 129, 0.04);
+    border: 1px solid rgba(23, 63, 129, 0.06);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.info-box:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(23, 63, 129, 0.09);
+    border-color: #173F81;
 }
 
 .info-box h3 {
     color: #173F81;
-    margin-bottom: 5px;
-    font-size: 14px;
-    font-weight: 600;
+    margin-bottom: 6px;
+    font-size: 15px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .info-box p {
-    color: #666;
+    color: #555;
     line-height: 1.5;
-    font-size: 12px;
+    font-size: 13.5px;
 }
 
+/* Contact Form Styling */
 .contact-form {
     flex: 1;
-    background: #fff;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,.05);
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(23, 63, 129, 0.05);
+    border: 1px solid rgba(23, 63, 129, 0.06);
 }
 
 .contact-form form {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 15px;
 }
 
 .contact-form input,
 .contact-form textarea {
     width: 100%;
-    padding: 10px 12px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
+    padding: 12px 16px;
+    border: 1.5px solid #e1e8f0;
+    border-radius: 10px;
     font-family: 'Poppins', sans-serif;
-    font-size: 12.5px;
+    font-size: 13.5px;
     outline: none;
-    transition: border-color 0.3s;
+    background: #fafcfe;
+    transition: all 0.3s ease;
 }
 
 .contact-form input:focus,
 .contact-form textarea:focus {
     border-color: #173F81;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(23, 63, 129, 0.1);
 }
 
 .contact-form textarea {
     resize: none;
-    height: 90px;
+    height: 120px;
 }
 
 .contact-form button {
     background: #173F81;
     color: #fff;
     border: none;
-    padding: 10px;
-    border-radius: 20px;
+    padding: 13px;
+    border-radius: 12px;
     cursor: pointer;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
-    transition: .3s;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(23, 63, 129, 0.2);
 }
 
 .contact-form button:hover {
-    background: #2c5eb8;
+    background: #204f9e;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(23, 63, 129, 0.3);
 }
 
-/* Media Query para sa pag-angkop sa mobile screen */
+/* Responsive adjustments para sa mobile at tablets */
 @media screen and (max-width: 768px) {
     .contact-container {
         flex-direction: column;
+        padding: 0 15px;
+    }
+    
+    .contact-form {
+        padding: 20px;
     }
 }
 /*=====================================
@@ -1067,49 +1140,82 @@ VIDEO AWARENESS (COMPACT, BALANCED & FULLY RESPONSIVE)
 }
 
 
-/* Toast Notification Styles */
-.svc-toast {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: #fff;
-    padding: 15px 20px;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
-    z-index: 99999;
-    opacity: 0;
-    transform: translateY(-20px);
-    transition: opacity 0.3s ease, transform 0.3s ease;
-    min-width: 250px;
-    border-left: 5px solid #173F81;
-}
+/* Toast Notification UI Styles (Fixed & Forced Compact) */
+        .toast {
+            visibility: hidden;
+            position: fixed !important;
+            top: 20px !important;
+            right: 20px !important;
+            left: auto !important;
+            bottom: auto !important;
+            z-index: 9999 !important;
+            background: #ffffff !important;
+            width: auto !important;
+            min-width: 280px !important;
+            max-width: 340px !important;
+            padding: 14px 18px !important;
+            border-radius: 12px !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+            border-left: 5px solid #173F81 !important;
+            opacity: 0;
+            transition: all 0.3s ease-in-out !important;
+            transform: translateY(-20px) !important;
+            box-sizing: border-box !important;
+        }
 
-.svc-toast.show {
-    opacity: 1;
-    transform: translateY(0);
-}
+        .toast.show {
+            visibility: visible !important;
+            opacity: 1 !important;
+            transform: translateY(0) !important;
+        }
 
-.svc-toast.success {
-    border-left-color: #28a745;
-    background: #f1f9f2;
-}
+        .toast-content {
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+            width: 100% !important;
+        }
 
-.svc-toast.error {
-    border-left-color: #dc3545;
-    background: #fdf2f2;
-}
+        #toastIcon {
+            font-size: 20px !important;
+            flex-shrink: 0 !important;
+        }
 
-.svc-toast-title {
-    font-weight: 700;
-    font-size: 14px;
-    margin-bottom: 4px;
-    color: #333;
-}
+        .toast-text {
+            text-align: left !important;
+        }
 
-.svc-toast-message {
-    font-size: 13px;
-    color: #555;
-}
+        .toast.success #toastIcon {
+            color: #10B981 !important;
+        }
+
+        .toast.error #toastIcon {
+            color: #EF4444 !important;
+        }
+
+        .toast.success {
+            border-left-color: #10B981 !important;
+        }
+
+        .toast.error {
+            border-left-color: #EF4444 !important;
+        }
+
+        .toast-text h4 {
+            margin: 0 0 2px 0 !important;
+            font-size: 13.5px !important;
+            color: #173F81 !important;
+            font-weight: 700 !important;
+        }
+
+        .toast-text p {
+            margin: 0 !important;
+            font-size: 12px !important;
+            color: #666 !important;
+            text-align: left !important;
+        }
+
+
 /* ===================================================
    RESPONSIVE
 =================================================== */

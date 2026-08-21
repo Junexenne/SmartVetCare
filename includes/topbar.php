@@ -1,20 +1,8 @@
-<?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-$currentUserId = $_SESSION['user_id'] ?? 'OWN-00004';
-?>
-
 <div class="topbar" style="display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 15px 30px; background: #ffffff; box-sizing: border-box;">
     
     <!-- Left: Sidebar Toggle Button & Search Bar with Icon -->
     <div style="display: flex; align-items: center; gap: 15px; flex: 1; max-width: 450px;">
-        <!-- Sidebar Toggle Button -->
-        <button id="sidebarToggleBtn" style="background: none; border: none; font-size: 18px; cursor: pointer; color: #4a5568; padding: 5px; display: flex; align-items: center; justify-content: center;">
-            <i class="fa-solid fa-bars"></i>
-        </button>
-
-        <!-- Search Bar -->
+     <!-- Search Bar -->
         <div class="top-search" style="flex: 1; position: relative;">
             <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #a0aec0; font-size: 14px;"></i>
             <input type="text" id="topSearchInput" placeholder="Search (Press Enter)..." style="width: 100%; padding: 8px 15px 8px 40px; border-radius: 20px; border: 1px solid #ddd; outline: none; font-size: 14px; font-family: 'Poppins', sans-serif; transition: all 0.3s ease;">
