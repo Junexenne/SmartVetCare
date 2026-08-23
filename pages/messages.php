@@ -1,5 +1,5 @@
 <?php
-session_start();
+// PHP session ay pwede nang iwan o tanggalin, pero hinayaan na natin dito
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -72,8 +72,13 @@ session_start();
         }
         const db = firebase.firestore();
 
-        // Safe global assignment para hindi mag-error ng redeclaration
-        window.currentUserId = "<?php echo $_SESSION['user_id'] ?? 'OWN-00004'; ?>"; 
+        // Kunin ang ID mula sa localStorage (ownerId o userUID) para dynamic kung sino ang naka-login
+        window.currentUserId = localStorage.getItem("ownerId") || localStorage.getItem("userUID");
+
+        // Kung walang naka-login, i-redirect pabalik sa login page
+        if (!window.currentUserId || localStorage.getItem("isLoggedIn") !== "true") {
+            window.location.href = 'login-user.php';
+        }
 
         // 2. Real-time Messages Listener
         function loadMessages() {

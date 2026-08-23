@@ -28,6 +28,17 @@ if (session_status() === PHP_SESSION_NONE) {
                 <p>Welcome back to Smart Vet Care. Manage your pets, appointments, health records, and stay connected with your veterinarian.</p>
             </div>
 
+            <!-- Seasonal Health Reminder Widget -->
+            <div class="vet-reminder-card" id="seasonalReminderCard">
+                <div class="vet-reminder-icon">
+                    <i class="fa-solid fa-triangle-exclamation" id="reminderIcon"></i>
+                </div>
+                <div class="vet-reminder-content">
+                    <h4 id="reminderTitle">Seasonal Pet Health Alert</h4>
+                    <p id="reminderText">Loading health tips for your pet...</p>
+                </div>
+            </div>
+
             <!-- Statistics Grid -->
             <div class="dashboard-cards">
                 <div class="stat-card">

@@ -544,6 +544,54 @@ SECTIONS / PANELS (Upcoming & Activities)
 .icon-msgs { background: #fffaf0; color: #dd6b20; }
 .icon-ai { background: #f7fafc; color: #805ad5; }
 
+.vet-reminder-card {
+    background: linear-gradient(135deg, #fdf8f6 0%, #f7f9ff 100%);
+    border: 1px solid rgba(81, 66, 245, 0.12);
+    border-left: 6px solid #5142f5;
+    padding: 18px 24px; /* Binawasan nang kaunti ang padding sa taas at baba */
+    border-radius: 14px;
+    margin-bottom: 16px; /* Ginawa nating mas maikli mula 24px para mabawasan ang espasyo */
+    box-shadow: 0 6px 16px rgba(81, 66, 245, 0.05);
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.vet-reminder-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(81, 66, 245, 0.1);
+}
+
+.vet-reminder-icon {
+    width: 52px;
+    height: 52px;
+    background: #5142f5;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    font-size: 22px;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(81, 66, 245, 0.25);
+}
+
+.vet-reminder-content h4 {
+    margin: 0 0 6px 0;
+    color: #173f81;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+}
+
+.vet-reminder-content p {
+    margin: 0;
+    color: #4a5568;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
 /* ==========================================================
    MY PETS SECTION (Eksklusibong CSS para sa My Pets Page)
    ========================================================== */

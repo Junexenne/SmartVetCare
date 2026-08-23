@@ -112,21 +112,19 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // Helper function para gawing standard Date object kahit iba-iba ang format sa DB
+    // Helper function para sa date formatting
     function parseDateString(dateStr) {
         if (!dateStr) return new Date(0);
-        // Kung format ay DD/MM/YYYY (hal. 30/07/2026)
         if (dateStr.includes('/')) {
             const parts = dateStr.split('/');
             if (parts.length === 3) {
                 return new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
             }
         }
-        // Kung format ay YYYY-MM-DD (hal. 2026-08-21)
         return new Date(dateStr);
     }
 
-    // 4. Kunin at I-display ang Booked Appointments na may Grouping per Month at Tamang Sorting
+    // 4. Kunin at I-display ang Booked Appointments na may Grouping per Month at Tamang Status Color
     async function loadUserAppointments(ownerId) {
         const container = document.getElementById("userAppointmentsContainer");
         if (!container) return;
@@ -154,18 +152,18 @@ document.addEventListener("DOMContentLoaded", () => {
                 appointmentsList.push({ id: docSnap.id, ...docSnap.data() });
             });
 
-            // Sorting: Pinakabagong petsa ang mauuna (Descending)
+            // Sorting: Pinakabagong petsa ang mauuna
             appointmentsList.sort((a, b) => {
                 const dateA = parseDateString(a.date);
                 const dateB = parseDateString(b.date);
                 return dateB - dateA; 
             });
 
-            // I-group natin per Month & Year para hindi nakakalito
+            // Grouping per Month & Year
             let groupedAppointments = {};
             appointmentsList.forEach(appt => {
                 const d = parseDateString(appt.date);
-                const monthYear = d.toLocaleString('en-US', { month: 'long', year: 'numeric' }); // Halimbawa: "August 2026"
+                const monthYear = d.toLocaleString('en-US', { month: 'long', year: 'numeric' });
                 
                 if (!groupedAppointments[monthYear]) {
                     groupedAppointments[monthYear] = [];
@@ -173,9 +171,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 groupedAppointments[monthYear].push(appt);
             });
 
-            // I-render sa HTML base sa grupo ng buwan
+            // Render sa HTML
             for (const [monthYear, appts] of Object.entries(groupedAppointments)) {
-                // Maglagay ng Header para sa Buwan
                 container.insertAdjacentHTML("beforeend", `
                     <div style="grid-column: 1 / -1; margin-top: 15px; margin-bottom: 5px; border-bottom: 2px solid #e2e8f0; padding-bottom: 5px;">
                         <h3 style="color: #4f46e5; font-size: 18px; font-weight: 700;"><i class="fa-regular fa-calendar-days"></i> For the Month of ${monthYear}</h3>
@@ -183,16 +180,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 `);
 
                 appts.forEach((appt) => {
+                    // Dito nakalagay ang tamang kulay para sa bawat Status
                     let statusBg = "#fef3c7";
-                    let statusColor = "#d97706";
+                    let statusColor = "#d97706"; // Default: Pending
 
-                    if (appt.status === "Completed") {
+                    const currentStatus = (appt.status || "Pending").trim();
+
+                    if (currentStatus === "Completed") {
                         statusBg = "#E1FDF4";
                         statusColor = "#065F46";
-                    } else if (appt.status === "Confirmed") {
+                    } else if (currentStatus === "Confirmed" || currentStatus === "Approved") {
                         statusBg = "#dcfce7";
                         statusColor = "#16a34a";
-                    } else if (appt.status === "Cancelled") {
+                    } else if (currentStatus === "Cancelled") {
                         statusBg = "#fee2e2";
                         statusColor = "#dc2626";
                     }
@@ -204,7 +204,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             <div>
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                                     <span style="background: ${statusBg}; color: ${statusColor}; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600;">
-                                        ${appt.status || "Pending"}
+                                        ${currentStatus}
                                     </span>
                                     <small style="color: #64748b; font-size: 12px;"><i class="fa-solid fa-paw"></i> ${appt.petName || "Unnamed Pet"}</small>
                                 </div>
@@ -227,7 +227,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // 5. Proseso ng pag-book ng appointment papuntang Firestore
+    // 5. Proseso ng pag-book ng appointment
     if (bookBtn) {
         bookBtn.addEventListener("click", async () => {
             if (!currentOwnerId) {
@@ -261,12 +261,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     notes: notes,
                     status: "Pending",
                     createdAt: Timestamp.now()
-                });
-
-                await addDoc(collection(db, "activities"), {
-                    ownerId: currentOwnerId,
-                    description: `Booked ${service} for ${petName}`,
-                    timestamp: Timestamp.now()
                 });
 
                 showAlert("Appointment successfully booked!", "success");
