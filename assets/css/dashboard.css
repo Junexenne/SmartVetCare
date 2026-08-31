@@ -353,7 +353,7 @@ DASHBOARD CONTENT & LAYOUT
 .dashboard-content {
     display: flex;
     flex-direction: column;
-    gap: 25px;
+    gap: 12px; /* Binabaan mula 25px para maging dikit-dikit at pantay ang espasyo */
 }
 
 /*=====================================
@@ -524,7 +524,7 @@ SECTIONS / PANELS (Upcoming & Activities)
 }
 
 .empty-state i {
-    font-size: 32px; /* Inayos mula sa 1px para lumitaw ang icon */
+    font-size: 32px;
     color: #cbd5e1;
     margin-bottom: 12px;
     display: block;
@@ -548,9 +548,9 @@ SECTIONS / PANELS (Upcoming & Activities)
     background: linear-gradient(135deg, #fdf8f6 0%, #f7f9ff 100%);
     border: 1px solid rgba(81, 66, 245, 0.12);
     border-left: 6px solid #5142f5;
-    padding: 18px 24px; /* Binawasan nang kaunti ang padding sa taas at baba */
+    padding: 18px 24px;
     border-radius: 14px;
-    margin-bottom: 16px; /* Ginawa nating mas maikli mula 24px para mabawasan ang espasyo */
+    margin-bottom: 0px; /* Ginawang 0 para hindi na magdagdag ng puwang sa ilalim */
     box-shadow: 0 6px 16px rgba(81, 66, 245, 0.05);
     display: flex;
     align-items: center;
@@ -591,7 +591,6 @@ SECTIONS / PANELS (Upcoming & Activities)
     font-size: 14px;
     line-height: 1.6;
 }
-
 /* ==========================================================
    MY PETS SECTION (Eksklusibong CSS para sa My Pets Page)
    ========================================================== */
@@ -839,7 +838,7 @@ SECTIONS / PANELS (Upcoming & Activities)
     color: #2F248F;
 }
 
-/* Image Upload Container sa Edit Modal (Inayos ang patong-patong issue) */
+/* Image Upload Container sa Edit Modal */
 #petModal .pet-image-upload {
     display: flex;
     flex-direction: column;
@@ -1073,12 +1072,14 @@ SECTIONS / PANELS (Upcoming & Activities)
     box-shadow: 0 2px 5px rgba(47, 36, 143, 0.08);
 }
 
-/* Right Grid Details Section */
+/* Right Grid Details Section - FIXED PARA PANTAY-PANTAH */
 .view-grid {
     flex: 1;
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 14px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .view-item {
@@ -1087,11 +1088,13 @@ SECTIONS / PANELS (Upcoming & Activities)
     gap: 14px;
     padding: 14px 16px;
     min-height: 72px;
+    width: 100%;
     border-radius: 16px;
     background: #fdfcff;
     border: 1px solid rgba(226, 232, 240, 0.8);
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     box-sizing: border-box;
+    overflow: hidden;
 }
 
 .view-item:hover {
@@ -1118,6 +1121,8 @@ SECTIONS / PANELS (Upcoming & Activities)
 .view-item div {
     display: flex;
     flex-direction: column;
+    min-width: 0;
+    flex: 1;
 }
 
 .view-item small {
@@ -1136,6 +1141,68 @@ SECTIONS / PANELS (Upcoming & Activities)
     font-size: 15px;
     font-weight: 700;
     letter-spacing: -0.2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Full-width items inside grid kung kinakailangan (like allergies/vaccination) */
+.view-item.full-width {
+    grid-column: 1 / -1;
+}
+
+/* ==========================================================
+   MOBILE RESPONSIVE OVERRIDE (View Pet Modal & Table Fix)
+   ========================================================== */
+@media (max-width: 768px) {
+    .view-modal {
+        flex-direction: column !important;
+        width: 95vw !important;
+        max-width: 95vw !important;
+        max-height: 85vh !important;
+        overflow-y: auto !important;
+        padding: 40px 16px 20px 16px !important;
+        gap: 20px !important;
+    }
+
+    .view-top {
+        width: 100% !important;
+        border-right: none !important;
+        border-bottom: 1px solid #edf2f7 !important;
+        padding-right: 0 !important;
+        padding-bottom: 15px !important;
+    }
+
+    .view-grid {
+        width: 100% !important;
+        grid-template-columns: 1fr !important;
+    }
+
+    .close-view-modal {
+        top: 12px !important;
+        right: 12px !important;
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 16px !important;
+    }
+
+    /* Vaccination Table Mobile Fix */
+    .view-item {
+        align-items: stretch !important;
+    }
+
+    #vaccinationListContainer {
+        width: 100% !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    #vaccinationListContainer table, 
+    #vaccinationListContainer .table-responsive,
+    #vaccinationListContainer div {
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
 }
 
 /* ==========================================================
@@ -1237,6 +1304,8 @@ CARD LAYOUT (GRID)
     grid-template-columns: 340px 1fr;
     gap: 24px;
     align-items: start;
+    position: relative;
+    overflow: visible !important;
 }
 
 @media (max-width: 950px) {
@@ -1255,6 +1324,8 @@ LEFT CARD (DATE PICKER AREA)
     padding: 24px;
     box-shadow: 0 10px 25px rgba(23, 63, 129, 0.04);
     border: 1px solid #e2e8f0;
+    position: relative;
+    overflow: visible !important;
 }
 
 .appointment-left h3 {
@@ -1359,6 +1430,8 @@ TIME SLOTS
     padding: 14px;
     border-radius: 12px;
     border: 2px dashed #cbd5e1;
+    position: relative;
+    z-index: 10;
 }
 
 .time-slot-btn {
@@ -1484,8 +1557,17 @@ div.completed,
     color: #065F46 !important;             /* Madilim na berde para sa text */
     border-color: #A7F3D0 !important;      }
 
+/*=========================
+FIX PARA SA OVERLAPPING CALENDAR & TIME SLOTS
+==========================*/
+.flatpickr-calendar, 
+.calendar-dropdown, 
+#calendarContainer {
+    z-index: 9999 !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+    border-radius: 14px !important;
+}
 
-    
 /*=====================================
 Professional Medical Dashboard Styles (HEALT MONITORING SIDE) 
 ======================================*/
@@ -2512,6 +2594,7 @@ MY PROFILE PAGE DESIGN (ISOLATED)
     overflow-x: hidden;
     transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
 
 /* 4. Responsive adjustments para sa mga cards */
 @media (max-width: 1200px) {

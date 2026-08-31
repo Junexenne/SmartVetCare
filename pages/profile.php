@@ -11,8 +11,88 @@ if (session_status() === PHP_SESSION_NONE) {
     <title>My Profile - Smart Vet Care</title>
     <link rel="stylesheet" href="../assets/css/dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Mobile spacing at alignment fix nang hindi binabago ang orihinal na disenyo */
+        .main-content {
+            box-sizing: border-box;
+            overflow-x: hidden;
+            width: 100%;
+        }
+        
+        .profile-main-container {
+            width: 100%;
+            box-sizing: border-box;
+            max-width: 100%;
+        }
+
+        .profile-banner, .profile-card {
+            box-sizing: border-box;
+            max-width: 100%;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .form-grid {
+            box-sizing: border-box;
+        }
+
+        .form-group input {
+            box-sizing: border-box;
+            max-width: 100%;
+        }
+
+        /* Sidebar Overlay para sa Mobile */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 10px !important;
+            }
+            .profile-main-container {
+                margin: 0 !important;
+                padding: 5px !important;
+            }
+            .profile-banner {
+                flex-direction: column;
+                text-align: center;
+                padding: 20px 15px !important;
+            }
+            .profile-card {
+                padding: 15px !important;
+            }
+
+            /* Responsive Sidebar Styles para sa Mobile */
+            .sidebar {
+                position: fixed !important;
+                top: 0;
+                left: -270px;
+                height: 100% !important;
+                transition: left 0.3s ease;
+                z-index: 1001;
+                box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+            }
+            .sidebar.active {
+                left: 0 !important;
+            }
+            .sidebar-overlay.active {
+                display: block !important;
+            }
+        }
+    </style>
 </head>
 <body>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
 <div class="dashboard">
 
     <?php include("../includes/sidebar.php"); ?>
@@ -83,6 +163,28 @@ if (session_status() === PHP_SESSION_NONE) {
         </div>
     </div>
 </div>
+
+<script>
+    // Script para sa Mobile Sidebar Toggle gamit ang hamburger button at overlay
+    document.addEventListener("DOMContentLoaded", () => {
+        const mobileBtn = document.getElementById('mobileMenuBtn');
+        const sidebar = document.querySelector('.sidebar'); 
+        const overlay = document.getElementById('sidebarOverlay');
+
+        if (mobileBtn && sidebar && overlay) {
+            mobileBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                sidebar.classList.toggle('active');
+                overlay.classList.toggle('active');
+            });
+
+            overlay.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            });
+        }
+    });
+</script>
 
 <script type="module">
     import { db, storage } from '../assets/js/firebase-config.js';

@@ -116,12 +116,10 @@ async function handleSendMessage() {
 
         const response = await ai.models.generateContent({
             model: 'gemini-2.0-flash',
-            contents: [
-                {
-                    role: 'user',
-                    parts: [{ text: `${systemInstruction}\n\nUser Question: ${promptText}` }]
-                }
-            ]
+            contents: promptText,
+            config: {
+                systemInstruction: systemInstruction
+            }
         });
 
         const aiResponseText = response.text;

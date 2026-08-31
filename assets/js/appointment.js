@@ -5,6 +5,8 @@ import {
     where,
     getDocs,
     addDoc,
+    doc,
+    updateDoc,
     Timestamp
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 import {
@@ -21,10 +23,44 @@ document.addEventListener("DOMContentLoaded", () => {
     const bookBtn = document.getElementById("bookAppointmentBtn");
     const alertBox = document.getElementById("alertBox");
 
+    // Modal elements (Reschedule)
+    const rescheduleModal = document.getElementById("rescheduleModal");
+    const rescheduleApptIdInput = document.getElementById("rescheduleApptId");
+    const rescheduleDateInput = document.getElementById("rescheduleDate");
+    const rescheduleTimeSlotsContainer = document.getElementById("rescheduleTimeSlots");
+    const closeModalBtn = document.getElementById("closeModalBtn");
+    const confirmRescheduleBtn = document.getElementById("confirmRescheduleBtn");
+
+    // Dynamic Custom Cancel Modal Creation
+    let cancelModal = document.getElementById("cancelModal");
+    if (!cancelModal) {
+        cancelModal = document.createElement("div");
+        cancelModal.id = "cancelModal";
+        cancelModal.style.cssText = "display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;";
+        cancelModal.innerHTML = `
+            <div style="background: #fff; padding: 25px; border-radius: 14px; width: 360px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; font-family: inherit;">
+                <div style="font-size: 36px; color: #dc2626; margin-bottom: 10px;"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                <h3 style="color: #1e1b4b; margin-bottom: 8px; font-size: 18px; font-weight: 700;">Cancel Appointment</h3>
+                <p style="color: #64748b; font-size: 13px; margin-bottom: 20px; line-height: 1.5;">Are you sure you want to cancel this appointment? This action cannot be undone.</p>
+                <input type="hidden" id="cancelApptIdTarget">
+                <div style="display: flex; gap: 10px; justify-content: center;">
+                    <button id="closeCancelModalBtn" style="flex: 1; padding: 10px; border: 1px solid #cbd5e1; background: #fff; color: #334155; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px;">No, Keep It</button>
+                    <button id="confirmCancelBtn" style="flex: 1; padding: 10px; border: none; background: #dc2626; color: #fff; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px;">Yes, Cancel</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(cancelModal);
+    }
+
+    const cancelApptIdTarget = document.getElementById("cancelApptIdTarget");
+    const closeCancelModalBtn = document.getElementById("closeCancelModalBtn");
+    const confirmCancelBtn = document.getElementById("confirmCancelBtn");
+
     let selectedTimeSlot = null;
+    let selectedRescheduleTimeSlot = null;
     let currentOwnerId = null;
 
-    // 1. Authentication at pag-load ng mga pet at appointments ng user
+    // 1. Authentication and loading user pets/appointments
     onAuthStateChanged(auth, async (user) => {
         if (!user) {
             showAlert("Please log in to book an appointment.", "error");
@@ -51,7 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // 2. Kunin ang mga rehistradong alaga para sa dropdown
+    // 2. Fetch registered pets for dropdown
     async function loadUserPets(ownerId) {
         try {
             const petsQuery = query(
@@ -80,39 +116,75 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // 3. Mag-generate ng Available Time Slots kapag namili ng petsa
+    // 3. Generate Time Slots (Booking Form)
     const availableTimes = ["09:00 AM", "10:30 AM", "01:00 PM", "02:30 PM", "04:00 PM"];
     
     if (appointmentDateInput) {
-        appointmentDateInput.addEventListener("change", () => {
+        appointmentDateInput.addEventListener("change", async () => {
+            const selectedDate = appointmentDateInput.value;
             timeSlotsContainer.innerHTML = "";
             selectedTimeSlot = null;
+
+            if (!selectedDate) {
+                timeSlotsContainer.innerHTML = `<p style="color: #888; font-size: 13px;">Please select a date first.</p>`;
+                return;
+            }
+
+            let bookedTimes = [];
+            try {
+                const apptQuery = query(
+                    collection(db, "appointments"),
+                    where("date", "==", selectedDate)
+                );
+                const apptSnap = await getDocs(apptQuery);
+                
+                apptSnap.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const st = (data.status || "").toLowerCase().trim();
+                    if (st !== "cancelled" && st !== "archived" && st !== "trash") {
+                        if (data.timeSlot) {
+                            bookedTimes.push(data.timeSlot.trim());
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error("Error checking date availability:", error);
+            }
 
             availableTimes.forEach((time) => {
                 const slotBtn = document.createElement("button");
                 slotBtn.type = "button";
                 slotBtn.textContent = time;
                 slotBtn.className = "time-slot-btn";
-                slotBtn.style.cssText = "padding: 8px 14px; margin: 5px; border: 1px solid #ddd; background: #fff; border-radius: 6px; cursor: pointer; transition: all 0.2s;";
-                
-                slotBtn.addEventListener("click", () => {
-                    document.querySelectorAll(".time-slot-btn").forEach(b => {
-                        b.style.background = "#fff";
-                        b.style.color = "#333";
-                        b.style.borderColor = "#ddd";
+
+                const isBooked = bookedTimes.includes(time);
+
+                if (isBooked) {
+                    slotBtn.disabled = true;
+                    slotBtn.style.cssText = "padding: 8px 14px; margin: 5px; border: 1px solid #fecaca; background: #fee2e2; color: #b91c1c; border-radius: 6px; cursor: not-allowed; opacity: 0.8;";
+                    slotBtn.textContent = `${time} (Booked)`;
+                } else {
+                    slotBtn.style.cssText = "padding: 8px 14px; margin: 5px; border: 1px solid #ddd; background: #fff; color: #333; border-radius: 6px; cursor: pointer; transition: all 0.2s;";
+                    
+                    slotBtn.addEventListener("click", () => {
+                        document.querySelectorAll("#timeSlots .time-slot-btn:not([disabled])").forEach(b => {
+                            b.style.background = "#fff";
+                            b.style.color = "#333";
+                            b.style.borderColor = "#ddd";
+                        });
+                        slotBtn.style.background = "#5142f5";
+                        slotBtn.style.color = "#fff";
+                        slotBtn.style.borderColor = "#5142f5";
+                        selectedTimeSlot = time;
                     });
-                    slotBtn.style.background = "#5142f5";
-                    slotBtn.style.color = "#fff";
-                    slotBtn.style.borderColor = "#5142f5";
-                    selectedTimeSlot = time;
-                });
+                }
 
                 timeSlotsContainer.appendChild(slotBtn);
             });
         });
     }
 
-    // Helper function para sa date formatting
+    // Date formatting helper
     function parseDateString(dateStr) {
         if (!dateStr) return new Date(0);
         if (dateStr.includes('/')) {
@@ -124,7 +196,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return new Date(dateStr);
     }
 
-    // 4. Kunin at I-display ang Booked Appointments na may Grouping per Month at Tamang Status Color
+    // 4. Fetch and Display User's Booked Appointments
     async function loadUserAppointments(ownerId) {
         const container = document.getElementById("userAppointmentsContainer");
         if (!container) return;
@@ -149,17 +221,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
             let appointmentsList = [];
             snapshot.forEach((docSnap) => {
-                appointmentsList.push({ id: docSnap.id, ...docSnap.data() });
+                const apptData = docSnap.data();
+                const status = (apptData.status || "").toLowerCase().trim();
+                
+                // Tinanggal na rin ang "cancelled", pati na "archived" at "trash" para hindi magpakita sa user view
+                if (status !== "archived" && status !== "trash" && status !== "cancelled") {
+                    appointmentsList.push({ id: docSnap.id, ...apptData });
+                }
             });
 
-            // Sorting: Pinakabagong petsa ang mauuna
+            if (appointmentsList.length === 0) {
+                container.innerHTML = `
+                    <div style="grid-column: 1 / -1; text-align: center; padding: 20px; color: #64748b;">
+                        <p>You have no active or completed appointments.</p>
+                    </div>
+                `;
+                return;
+            }
+
             appointmentsList.sort((a, b) => {
                 const dateA = parseDateString(a.date);
                 const dateB = parseDateString(b.date);
                 return dateB - dateA; 
             });
 
-            // Grouping per Month & Year
             let groupedAppointments = {};
             appointmentsList.forEach(appt => {
                 const d = parseDateString(appt.date);
@@ -171,7 +256,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 groupedAppointments[monthYear].push(appt);
             });
 
-            // Render sa HTML
             for (const [monthYear, appts] of Object.entries(groupedAppointments)) {
                 container.insertAdjacentHTML("beforeend", `
                     <div style="grid-column: 1 / -1; margin-top: 15px; margin-bottom: 5px; border-bottom: 2px solid #e2e8f0; padding-bottom: 5px;">
@@ -180,24 +264,23 @@ document.addEventListener("DOMContentLoaded", () => {
                 `);
 
                 appts.forEach((appt) => {
-                    // Dito nakalagay ang tamang kulay para sa bawat Status
                     let statusBg = "#fef3c7";
-                    let statusColor = "#d97706"; // Default: Pending
+                    let statusColor = "#d97706";
 
                     const currentStatus = (appt.status || "Pending").trim();
+                    const statusLower = currentStatus.toLowerCase();
 
-                    if (currentStatus === "Completed") {
+                    if (statusLower === "completed") {
                         statusBg = "#E1FDF4";
                         statusColor = "#065F46";
-                    } else if (currentStatus === "Confirmed" || currentStatus === "Approved") {
+                    } else if (statusLower === "confirmed" || statusLower === "approved") {
                         statusBg = "#dcfce7";
                         statusColor = "#16a34a";
-                    } else if (currentStatus === "Cancelled") {
-                        statusBg = "#fee2e2";
-                        statusColor = "#dc2626";
                     }
 
                     const isUrgent = appt.service === "Surgery" || (appt.notes && (appt.notes.toLowerCase().includes("emergency") || appt.notes.toLowerCase().includes("parvo")));
+                    const canModify = statusLower === "pending" || statusLower === "confirmed" || statusLower === "approved";
+                    const isCompleted = statusLower === "completed";
 
                     container.insertAdjacentHTML("beforeend", `
                         <div style="background: #f8fafc; border: 1px solid ${isUrgent ? '#f87171' : '#e2e8f0'}; border-radius: 14px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); display: flex; flex-direction: column; justify-content: space-between; position: relative;">
@@ -216,10 +299,68 @@ document.addEventListener("DOMContentLoaded", () => {
                                 <p style="color: #475569; font-size: 13px; margin: 4px 0;"><i class="fa-solid fa-calendar-days" style="width: 18px; color: #5142f5;"></i> ${appt.date} (${appt.timeSlot || "Time not set"})</p>
                                 ${appt.notes ? `<p style="color: #64748b; font-size: 12px; margin-top: 8px; font-style: italic;">Note: "${appt.notes}"</p>` : ""}
                             </div>
+
+                            ${canModify ? `
+                                <div style="margin-top: 15px; border-top: 1px solid #e2e8f0; padding-top: 10px; display: flex; justify-content: flex-end; gap: 8px;">
+                                    <button class="cancel-appt-btn" data-id="${appt.id}" style="background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                                        <i class="fa-solid fa-ban"></i> Cancel
+                                    </button>
+                                    <button class="reschedule-trigger-btn" data-id="${appt.id}" style="background: #eef2ff; color: #4f46e5; border: 1px solid #c7d2fe; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                                        <i class="fa-solid fa-calendar-pen"></i> Reschedule
+                                    </button>
+                                </div>
+                            ` : ''}
+
+                            ${isCompleted ? `
+                                <div style="margin-top: 15px; border-top: 1px solid #e2e8f0; padding-top: 10px; display: flex; justify-content: flex-end; gap: 8px;">
+                                    <button class="archive-appt-btn" data-id="${appt.id}" style="background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                                        <i class="fa-solid fa-box-archive"></i> Archive
+                                    </button>
+                                </div>
+                            ` : ''}
                         </div>
                     `);
                 });
             }
+
+            document.querySelectorAll(".reschedule-trigger-btn").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    const apptId = btn.getAttribute("data-id");
+                    openRescheduleModal(apptId);
+                });
+            });
+
+            document.querySelectorAll(".cancel-appt-btn").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    const apptId = btn.getAttribute("data-id");
+                    cancelApptIdTarget.value = apptId;
+                    cancelModal.style.display = "flex";
+                });
+            });
+
+            document.querySelectorAll(".archive-appt-btn").forEach(btn => {
+                btn.addEventListener("click", async () => {
+                    const apptId = btn.getAttribute("data-id");
+                    if (!apptId) return;
+
+                    btn.disabled = true;
+                    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Archiving...`;
+
+                    try {
+                        const apptRef = doc(db, "appointments", apptId);
+                        await updateDoc(apptRef, {
+                            status: "Archived"
+                        });
+                        showAlert("Appointment moved to archive successfully.", "success");
+                        loadUserAppointments(currentOwnerId);
+                    } catch (error) {
+                        console.error("Error archiving appointment:", error);
+                        showAlert("Failed to archive appointment.", "error");
+                        btn.disabled = false;
+                        btn.innerHTML = `<i class="fa-solid fa-box-archive"></i> Archive`;
+                    }
+                });
+            });
 
         } catch (error) {
             console.error("Error loading appointments:", error);
@@ -227,7 +368,180 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // 5. Proseso ng pag-book ng appointment
+    if (closeCancelModalBtn) {
+        closeCancelModalBtn.addEventListener("click", () => {
+            cancelModal.style.display = "none";
+        });
+    }
+
+    if (confirmCancelBtn) {
+        confirmCancelBtn.addEventListener("click", async () => {
+            const apptId = cancelApptIdTarget.value;
+            if (!apptId) return;
+
+            confirmCancelBtn.disabled = true;
+            confirmCancelBtn.textContent = "Cancelling...";
+
+            try {
+                const apptRef = doc(db, "appointments", apptId);
+                await updateDoc(apptRef, {
+                    status: "Cancelled"
+                });
+                cancelModal.style.display = "none";
+                showAlert("Appointment cancelled successfully.", "success");
+                loadUserAppointments(currentOwnerId);
+            } catch (error) {
+                console.error("Error cancelling appointment:", error);
+                showAlert("Failed to cancel appointment.", "error");
+            } finally {
+                confirmCancelBtn.disabled = false;
+                confirmCancelBtn.textContent = "Yes, Cancel";
+            }
+        });
+    }
+
+    // 5. Open Reschedule Modal Logic
+    function openRescheduleModal(apptId) {
+        rescheduleApptIdInput.value = apptId;
+        rescheduleDateInput.value = "";
+        selectedRescheduleTimeSlot = null;
+        rescheduleTimeSlotsContainer.innerHTML = `<p style="color: #888; font-size: 13px;">Please select a new date first.</p>`;
+        rescheduleModal.style.display = "flex";
+    }
+
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener("click", () => {
+            rescheduleModal.style.display = "none";
+        });
+    }
+
+    if (rescheduleDateInput) {
+        rescheduleDateInput.addEventListener("change", async () => {
+            const newDate = rescheduleDateInput.value;
+            rescheduleTimeSlotsContainer.innerHTML = "";
+            selectedRescheduleTimeSlot = null;
+
+            if (!newDate) {
+                rescheduleTimeSlotsContainer.innerHTML = `<p style="color: #888; font-size: 13px;">Please select a new date first.</p>`;
+                return;
+            }
+
+            let bookedTimes = [];
+            try {
+                const apptQuery = query(
+                    collection(db, "appointments"),
+                    where("date", "==", newDate)
+                );
+                const apptSnap = await getDocs(apptQuery);
+                
+                apptSnap.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const st = (data.status || "").toLowerCase().trim();
+                    if (st !== "cancelled" && st !== "archived" && st !== "trash") {
+                        if (data.timeSlot) {
+                            bookedTimes.push(data.timeSlot.trim());
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error("Error checking date availability for reschedule:", error);
+            }
+
+            availableTimes.forEach((time) => {
+                const slotBtn = document.createElement("button");
+                slotBtn.type = "button";
+                slotBtn.textContent = time;
+                slotBtn.className = "res-time-slot-btn";
+
+                const isBooked = bookedTimes.includes(time);
+
+                if (isBooked) {
+                    slotBtn.disabled = true;
+                    slotBtn.style.cssText = "padding: 6px 10px; margin: 3px; border: 1px solid #fecaca; background: #fee2e2; color: #b91c1c; border-radius: 6px; cursor: not-allowed; opacity: 0.8; font-size: 11px;";
+                    slotBtn.textContent = `${time} (Booked)`;
+                } else {
+                    slotBtn.style.cssText = "padding: 6px 10px; margin: 3px; border: 1px solid #cbd5e1; background: #fff; color: #333; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-size: 11px;";
+                    
+                    slotBtn.addEventListener("click", () => {
+                        document.querySelectorAll(".res-time-slot-btn:not([disabled])").forEach(b => {
+                            b.style.background = "#fff";
+                            b.style.color = "#333";
+                            b.style.borderColor = "#cbd5e1";
+                        });
+                        slotBtn.style.background = "#5142f5";
+                        slotBtn.style.color = "#fff";
+                        slotBtn.style.borderColor = "#5142f5";
+                        selectedRescheduleTimeSlot = time;
+                    });
+                }
+
+                rescheduleTimeSlotsContainer.appendChild(slotBtn);
+            });
+        });
+    }
+
+    if (confirmRescheduleBtn) {
+        confirmRescheduleBtn.addEventListener("click", async () => {
+            const apptId = rescheduleApptIdInput.value;
+            const newDate = rescheduleDateInput.value;
+
+            if (!newDate) {
+                alert("Please select a new date.");
+                return;
+            }
+            if (!selectedRescheduleTimeSlot) {
+                alert("Please select an available time slot.");
+                return;
+            }
+
+            confirmRescheduleBtn.disabled = true;
+            confirmRescheduleBtn.textContent = "Saving...";
+
+            try {
+                const doubleCheckQuery = query(
+                    collection(db, "appointments"),
+                    where("date", "==", newDate),
+                    where("timeSlot", "==", selectedRescheduleTimeSlot)
+                );
+                const dcSnap = await getDocs(doubleCheckQuery);
+                let isTaken = false;
+                dcSnap.forEach(d => {
+                    const st = (d.data().status || "").toLowerCase().trim();
+                    if (st !== "cancelled" && st !== "archived" && st !== "trash") {
+                        isTaken = true;
+                    }
+                });
+
+                if (isTaken) {
+                    alert("Sorry, this time slot has just been taken. Please choose another.");
+                    confirmRescheduleBtn.disabled = false;
+                    confirmRescheduleBtn.textContent = "Save New Schedule";
+                    rescheduleDateInput.dispatchEvent(new Event('change'));
+                    return;
+                }
+
+                const apptRef = doc(db, "appointments", apptId);
+                await updateDoc(apptRef, {
+                    date: newDate,
+                    timeSlot: selectedRescheduleTimeSlot,
+                    status: "Pending"
+                });
+
+                rescheduleModal.style.display = "none";
+                showAlert("Appointment successfully rescheduled!", "success");
+                loadUserAppointments(currentOwnerId);
+
+            } catch (error) {
+                console.error("Error updating appointment schedule:", error);
+                showAlert("Failed to reschedule appointment.", "error");
+            } finally {
+                confirmRescheduleBtn.disabled = false;
+                confirmRescheduleBtn.textContent = "Save New Schedule";
+            }
+        });
+    }
+
+    // 6. Booking Process
     if (bookBtn) {
         bookBtn.addEventListener("click", async () => {
             if (!currentOwnerId) {
@@ -251,6 +565,28 @@ document.addEventListener("DOMContentLoaded", () => {
             bookBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Submitting...`;
 
             try {
+                const doubleCheckQuery = query(
+                    collection(db, "appointments"),
+                    where("date", "==", dateVal),
+                    where("timeSlot", "==", selectedTimeSlot)
+                );
+                const dcSnap = await getDocs(doubleCheckQuery);
+                let isTaken = false;
+                dcSnap.forEach(d => {
+                    const st = (d.data().status || "").toLowerCase().trim();
+                    if (st !== "cancelled" && st !== "archived" && st !== "trash") {
+                        isTaken = true;
+                    }
+                });
+
+                if (isTaken) {
+                    showAlert("Sorry, this time slot has just been booked by another patient. Please choose another slot.", "error");
+                    bookBtn.disabled = false;
+                    bookBtn.innerHTML = `<i class="fa-solid fa-calendar-plus"></i> Book Appointment`;
+                    appointmentDateInput.dispatchEvent(new Event('change'));
+                    return;
+                }
+
                 await addDoc(collection(db, "appointments"), {
                     ownerId: currentOwnerId,
                     petName: petName,

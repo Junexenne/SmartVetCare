@@ -19,6 +19,7 @@
             font-family: 'Poppins', sans-serif;
             margin: 0;
             padding: 0;
+            position: relative;
         }
 
         .login-container {
@@ -196,33 +197,36 @@
             .toast {
                 left: 15px;
                 right: 15px;
-                bottom: 20px;
+                top: 20px;
+                bottom: auto;
                 min-width: auto;
             }
         }
 
-        /* Toast Notification UI Styles */
+        /* Toast Notification UI Styles - Inilipat sa kanang itaas (Top-Right) */
         .toast {
             visibility: hidden;
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            z-index: 9999;
+            position: fixed !important;
+            top: 30px !important;
+            right: 30px !important;
+            bottom: auto !important;
+            left: auto !important;
+            z-index: 99999 !important;
             background: #ffffff;
             min-width: 280px;
             padding: 15px 20px;
             border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
             border-left: 5px solid #173F81;
             opacity: 0;
             transition: all 0.3s ease-in-out;
-            transform: translateY(20px);
+            transform: translateY(-20px);
         }
 
         .toast.show {
-            visibility: visible;
-            opacity: 1;
-            transform: translateY(0);
+            visibility: visible !important;
+            opacity: 1 !important;
+            transform: translateY(0) !important;
         }
 
         .toast-content {
