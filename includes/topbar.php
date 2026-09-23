@@ -761,6 +761,28 @@
         setInterval(updateClock, 1000);
         updateClock();
 
+        // Mobile Burger Button / Sidebar Toggle Handler
+        const menuBtn = document.getElementById("menuBtn") || document.querySelector(".burger-btn") || document.querySelector(".menu-toggle");
+        const sidebar = document.querySelector(".sidebar") || document.querySelector("aside");
+        const sidebarOverlay = document.getElementById("sidebarOverlay") || document.querySelector(".sidebar-overlay");
+
+        if (menuBtn && sidebar) {
+            menuBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                sidebar.classList.toggle("active");
+                if (sidebarOverlay) {
+                    sidebarOverlay.style.display = sidebar.classList.contains("active") ? "block" : "none";
+                }
+            });
+        }
+
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener("click", () => {
+                if (sidebar) sidebar.classList.remove("active");
+                sidebarOverlay.style.display = "none";
+            });
+        }
+
         // Dropdown Toggles (Calendar, Notification, Profile Menu)
         const calendarBtn = document.getElementById("calendarBtn");
         const calendarDropdown = document.getElementById("calendarDropdown");
@@ -819,7 +841,6 @@
             let debounceTimer;
 
             searchInput.addEventListener("input", function() {
-                // Ginawang .toLowerCase() para kahit anong uppercase/lowercase ang i-type, gagana
                 const query = this.value.trim().toLowerCase();
                 clearTimeout(debounceTimer);
 
@@ -873,7 +894,7 @@
                             });
                         } catch (e) { console.log("Appointments collection error or empty"); }
 
-                        // 3. Query 'health_records' collection (Sinama ang Chief Complaint, diagnosis, at symptoms)
+                        // 3. Query 'health_records' collection
                         try {
                             const healthSnapshot = await getDocs(collection(db, "health_records"));
                             healthSnapshot.forEach((doc) => {

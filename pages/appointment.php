@@ -44,7 +44,7 @@
 
         .appointment-left {
             position: relative;
-            z-index: 50; /* Dinagdagan natin para mauna siya sa rendering kaysa sa right side */
+            z-index: 50;
         }
 
         /* Custom Interactive DateTime Picker Styles */
@@ -279,7 +279,7 @@
             }
         }
 
-@media (max-width: 768px) {
+        @media (max-width: 768px) {
             .sidebar {
                 position: fixed !important;
                 top: 0;
@@ -300,13 +300,11 @@
                 padding-bottom: 120px !important;
             }
 
-            /* Ibaba natin ang z-index dito para hindi sumapaw sa sidebar */
             .appointment-left {
                 position: relative;
                 z-index: 5 !important;
             }
 
-            /* Ang calendar popup lang ang may mataas na z-index para lumitaw sa form fields */
             .datetime-popup.active {
                 position: fixed !important;
                 top: 50% !important;
@@ -356,6 +354,35 @@
                 padding-top: 12px;
                 margin-top: 10px;
             }
+
+            /* Compact 2-column grid adjustment para sa booked appointments sa mobile */
+            #userAppointmentsContainer {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 8px !important;
+            }
+            #userAppointmentsContainer > div {
+                padding: 8px !important;
+                border-radius: 12px !important;
+                box-sizing: border-box !important;
+                overflow: hidden !important;
+            }
+            #userAppointmentsContainer h4 {
+                font-size: 11px !important;
+                margin-bottom: 3px !important;
+                word-break: break-word !important;
+            }
+            #userAppointmentsContainer p, 
+            #userAppointmentsContainer span {
+                font-size: 10px !important;
+                line-height: 1.2 !important;
+                margin: 2px 0 !important;
+                word-break: break-word !important;
+            }
+            #userAppointmentsContainer button {
+                padding: 4px 6px !important;
+                font-size: 9px !important;
+                border-radius: 6px !important;
+            }
         }
     </style>
 </head>
@@ -375,7 +402,7 @@
         <div class="appointment-container">
 
             <div class="appointment-header" style="margin-bottom: 25px;">
-                <h1>
+                <h1 style="display: flex; align-items: center; gap: 10px; color: #1e1b4b !important; font-size: 24px; margin-bottom: 6px;">
                     <i class="fa-solid fa-calendar-check" style="background: #eef4ff; padding: 10px; border-radius: 12px; color: #5142f5;"></i>
                     Appointment
                 </h1>
@@ -471,7 +498,8 @@
                         <label>Doctor</label>
                         <select id="doctor">
                             <option value="">Select Doctor</option>
-                            <option value="Dr. Alfie Tamasis">Dr. Alfie Tamasis</option>
+                            <option value="Dr. Alfie Tamesis">Dr. Alfie Tamesis</option>
+                            <option value="Dr. Crachzel Kyle Asistio">Dr. Crachzel Kyle Asistio</option>
                             <option value="Dr. James Nico Martinez">Dr. James Nico Martinez</option>
                         </select>
                     </div>
@@ -549,6 +577,24 @@
                 sidebar.classList.remove('active');
                 overlay.classList.remove('active');
             });
+        }
+
+        // Auto-select doctor from URL parameter (e.g., appointment.php?doctor=Dr.%20Alfie%20Tamesis)
+        const urlParams = new URLSearchParams(window.location.search);
+        const doctorParam = urlParams.get('doctor');
+        if (doctorParam) {
+            const doctorSelect = document.getElementById('doctor');
+            if (doctorSelect) {
+                doctorSelect.value = doctorParam;
+                if (!doctorSelect.value) {
+                    for (let option of doctorSelect.options) {
+                        if (option.textContent.toLowerCase().includes(doctorParam.toLowerCase())) {
+                            doctorSelect.value = option.value;
+                            break;
+                        }
+                    }
+                }
+            }
         }
 
         // Custom Interactive DateTime Picker Logic

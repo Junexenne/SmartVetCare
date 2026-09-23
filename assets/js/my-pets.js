@@ -182,34 +182,61 @@ async function loadPets() {
 }
 
 // =========================
+// POPULATE ALL VIEW / SCAN FIELDS HELPER
+// =========================
+function fillPetDetailsToDOM(pet) {
+    const fields = [
+        { ids: ["viewPetImage"], val: pet.petImage || "../assets/images/default-pet.png", isImg: true },
+        { ids: ["viewPetName", "scannedPetName"], val: pet.petName || "" },
+        { ids: ["viewPetId", "scannedPetId"], val: pet.petId || "" },
+        { ids: ["viewSpecies", "scannedSpecies"], val: pet.species || "" },
+        { ids: ["viewBreed", "scannedBreed"], val: pet.breed || "" },
+        { ids: ["viewGender", "scannedGender"], val: pet.gender || "N/A" },
+        { ids: ["viewBirthday", "scannedBirthday"], val: pet.birthDate || "-" },
+        { ids: ["viewWeight", "scannedWeight"], val: pet.weight ? pet.weight + " kg" : "N/A" },
+        { ids: ["viewColor", "scannedColor"], val: pet.petColorAndMarkings || "-" },
+        { ids: ["viewAllergies", "scannedAllergies"], val: pet.allergies || "None recorded" }
+    ];
+
+    fields.forEach(f => {
+        f.ids.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                if (f.isImg) {
+                    el.src = f.val;
+                } else {
+                    el.innerText = f.val;
+                }
+            }
+        });
+    });
+}
+
+// =========================
 // VIEW PET & GENERATE QR CODE
 // =========================
 async function openViewModal(id){
-    const snap = await getDoc(doc(db,"pets",id));
-    if(!snap.exists()) return;
+    let snap = await getDoc(doc(db,"pets",id));
+    
+    // Fallback kung petId ang naipasa sa halip na document ID
+    if(!snap.exists()) {
+        const qCheck = query(collection(db, "pets"), where("petId", "==", id), limit(1));
+        const qSnap = await getDocs(qCheck);
+        if(!qSnap.empty) {
+            snap = qSnap.docs[0];
+        }
+    }
+
+    if(!snap || !snap.exists()) return;
 
     const pet = snap.data();
-
-    document.getElementById("viewPetImage").src =
-        pet.petImage || "../assets/images/default-pet.png";
-
-    document.getElementById("viewPetName").innerText = pet.petName;
-    document.getElementById("viewPetId").innerText = pet.petId;
-    document.getElementById("viewSpecies").innerText = pet.species;
-    document.getElementById("viewBreed").innerText = pet.breed;
-    document.getElementById("viewGender").innerText = pet.gender || "N/A";
-    
-    document.getElementById("viewBirthday").innerText = pet.birthDate || "-";
-
-    document.getElementById("viewWeight").innerText = pet.weight ? pet.weight + " kg" : "N/A";
-    document.getElementById("viewColor").innerText = pet.petColorAndMarkings || "-";
-    document.getElementById("viewAllergies").innerText = pet.allergies || "None recorded";
+    fillPetDetailsToDOM(pet);
 
     // =========================
     // GENERATE QR CODE
     // =========================
-    const qrContainer = document.getElementById("petQRCode");
-    if (qrContainer) {
+    const qrContainer = document.getElementById("petQRCodeInner") || document.getElementById("petQRCode");
+    if (qrContainer && typeof QRCode !== "undefined") {
         qrContainer.innerHTML = ""; 
 
         if (pet.petId) {
@@ -224,53 +251,80 @@ async function openViewModal(id){
         }
     }
 
-    const vaccineContainer = document.getElementById("vaccinationListContainer");
-    if (vaccineContainer) {
-        vaccineContainer.innerHTML = `<p style="font-size: 13px; color: #7f8c8d; margin: 0;">Loading vaccination records...</p>`;
+    const vaccineContainers = [document.getElementById("vaccinationListContainer"), document.getElementById("scannedVaccinationListContainer")];
+    
+    // Load vaccines para sa lahat ng posibleng container
+    let vaccineHTML = `<p style="font-size: 13px; color: #7f8c8d; margin: 0;">Loading vaccination records...</p>`;
+    
+    vaccineContainers.forEach(container => {
+        if (container) container.innerHTML = vaccineHTML;
+    });
 
-        try {
-            const vaccineQuery = query(
-                collection(db, "vaccination_records"),
-                where("petId", "==", pet.petId)
-            );
-            const vaccineSnapshot = await getDocs(vaccineQuery);
+    try {
+        const vaccineQuery = query(
+            collection(db, "vaccination_records"),
+            where("petId", "==", pet.petId)
+        );
+        const vaccineSnapshot = await getDocs(vaccineQuery);
 
-            if (!vaccineSnapshot.empty) {
-                let vaccineHTML = `<table style="width:100%; font-size:13px; border-collapse: collapse; margin-top: 5px;">
-                    <thead>
-                        <tr style="border-bottom: 1px solid #ddd; text-align: left; color: #555;">
-                            <th style="padding: 6px;">Vaccine</th>
-                            <th style="padding: 6px;">Date Given</th>
-                            <th style="padding: 6px;">Next Due</th>
-                            <th style="padding: 6px;">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>`;
+        if (!vaccineSnapshot.empty) {
+            vaccineHTML = `<table style="width:100%; font-size:13px; border-collapse: collapse; margin-top: 5px;">
+                <thead>
+                    <tr style="border-bottom: 1px solid #ddd; text-align: left; color: #555;">
+                        <th style="padding: 6px;">Vaccine</th>
+                        <th style="padding: 6px;">Date Given</th>
+                        <th style="padding: 6px;">Next Due</th>
+                        <th style="padding: 6px;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>`;
 
-                vaccineSnapshot.forEach(docSnap => {
-                    const v = docSnap.data();
-                    vaccineHTML += `
-                        <tr style="border-bottom: 1px solid #eee;">
-                            <td style="padding: 6px; font-weight: 500;">${v.vaccineName || 'N/A'} <br><small style="color:#888;">Man: ${v.manufacturer || '-'}</small></td>
-                            <td style="padding: 6px;">${v.dateAdministered || '-'}</td>
-                            <td style="padding: 6px; font-weight: 500; color: #e67e22;">${v.nextDueDate || '-'}</td>
-                            <td style="padding: 6px;"><span style="background: #e8f8f5; color: #16a085; padding: 2px 6px; border-radius: 4px; font-size: 11px;">${v.status || 'Completed'}</span></td>
-                        </tr>`;
-                });
+            vaccineSnapshot.forEach(docSnap => {
+                const v = docSnap.data();
+                vaccineHTML += `
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 6px; font-weight: 500;">${v.vaccineName || 'N/A'} <br><small style="color:#888;">Man: ${v.manufacturer || '-'}</small></td>
+                        <td style="padding: 6px;">${v.dateAdministered || '-'}</td>
+                        <td style="padding: 6px; font-weight: 500; color: #e67e22;">${v.nextDueDate || '-'}</td>
+                        <td style="padding: 6px;"><span style="background: #e8f8f5; color: #16a085; padding: 2px 6px; border-radius: 4px; font-size: 11px;">${v.status || 'Completed'}</span></td>
+                    </tr>`;
+            });
 
-                vaccineHTML += `</tbody></table>`;
-                vaccineContainer.innerHTML = vaccineHTML;
-            } else {
-                vaccineContainer.innerHTML = `<p style="font-size: 13px; color: #7f8c8d; margin: 0; font-style: italic;">No vaccination records found yet.</p>`;
-            }
-        } catch (error) {
-            console.error("Error loading vaccinations:", error);
-            vaccineContainer.innerHTML = `<p style="font-size: 13px; color: #e74c3c; margin: 0;">Failed to load vaccination records.</p>`;
+            vaccineHTML += `</tbody></table>`;
+        } else {
+            vaccineHTML = `<p style="font-size: 13px; color: #7f8c8d; margin: 0; font-style: italic;">No vaccination records found yet.</p>`;
         }
+    } catch (error) {
+        console.error("Error loading vaccinations:", error);
+        vaccineHTML = `<p style="font-size: 13px; color: #e74c3c; margin: 0;">Failed to load vaccination records.</p>`;
     }
+
+    vaccineContainers.forEach(container => {
+        if (container) container.innerHTML = vaccineHTML;
+    });
 
     if (viewModal) viewModal.style.display = "flex";
 }
+
+// =========================
+// QR CODE SCANNER HANDLER (GAMITIN ITO SA QR SCANNER CALLBACK MO)
+// =========================
+async function handleQRCodeScanned(scannedPetId) {
+    if (!scannedPetId) return;
+    const q = query(
+        collection(db, "pets"),
+        where("petId", "==", scannedPetId.trim()),
+        limit(1)
+    );
+    const snap = await getDocs(q);
+    if (!snap.empty) {
+        const docId = snap.docs[0].id;
+        openViewModal(docId);
+    } else {
+        console.error("Pet record not found for scanned ID:", scannedPetId);
+    }
+}
+window.handleQRCodeScanned = handleQRCodeScanned;
 
 // =========================
 // EDIT 
@@ -422,6 +476,14 @@ function closePetViewModal() {
 
 if (closeViewModal) {
     closeViewModal.addEventListener("click", closePetViewModal);
+}
+
+if (viewModal) {
+    viewModal.addEventListener("click", (e) => {
+        if (e.target.classList.contains("close-view-modal") || e.target.closest(".close-view-modal")) {
+            closePetViewModal();
+        }
+    });
 }
 
 // =========================

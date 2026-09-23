@@ -10,7 +10,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
@@ -21,6 +21,8 @@
             overflow-y: auto !important;
             padding: 15px !important;
             box-sizing: border-box !important;
+            background: rgba(15, 23, 42, 0.65) !important;
+            backdrop-filter: blur(4px);
         }
 
         .modal-content {
@@ -32,40 +34,169 @@
             max-width: 520px !important;
         }
 
-        /* Desktop Layout Container (Flex) */
+        /* ==========================================================
+            DESKTOP VIEW (Clean Balanced Side-by-Side Original)
+        ========================================================== */
+        #viewPetModal .view-modal {
+            max-width: 840px !important;
+            width: 95vw !important;
+            padding: 28px !important;
+            box-sizing: border-box !important;
+            position: relative !important;
+            background: #ffffff !important;
+            border-radius: 16px !important;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.18) !important;
+        }
+
+        #viewPetModal .close-view-modal {
+            position: absolute !important;
+            top: 18px !important;
+            right: 20px !important;
+            z-index: 99999 !important;
+            font-size: 18px !important;
+            cursor: pointer !important;
+            background: #f1f5f9 !important;
+            width: 36px !important;
+            height: 36px !important;
+            border-radius: 50% !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            color: #4a5568 !important;
+            transition: all 0.2s;
+        }
+        #viewPetModal .close-view-modal:hover {
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+
         #viewPetModal .view-modal-body {
             display: flex !important;
             flex-direction: row !important;
-            gap: 20px !important;
+            gap: 22px !important;
             align-items: stretch !important;
-            margin-top: 10px !important;
+            margin-top: 5px !important;
         }
 
-        /* Left Column (Image & Name) */
         #viewPetModal .view-top {
-            flex: 1 1 260px !important;
+            flex: 0 0 260px !important;
             display: flex !important;
             flex-direction: column !important;
             align-items: center !important;
-            justify-content: center !important;
             text-align: center !important;
-            border-right: 1px solid #edf2f7 !important;
-            padding-right: 20px !important;
-            box-sizing: border-box !important;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 24px 16px 20px 16px;
+            box-sizing: border-box;
+            justify-content: space-between;
+        }
+
+        #viewPetModal .view-top > div:first-of-type {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        #viewPetModal .view-pet-image {
+            width: 88px;
+            height: 88px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 3px solid #ffffff;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        #viewPetModal .view-top h2 {
+            margin: 10px 0 2px 0;
+            font-size: 20px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        #viewPetModal .pet-id-text {
+            font-size: 11px;
+            color: #64748b;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        #viewPetModal #petQRCode {
+            margin: 0 !important;
+            background: #fff !important;
+            padding: 8px !important;
+            border-radius: 8px !important;
+            display: inline-block !important;
+            border: 1px solid #cbd5e1 !important;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04) !important;
+            text-align: center !important;
+            width: auto;
+            box-sizing: border-box;
+        }
+
+        #viewPetModal .pet-badge {
+            background: #eef2ff;
+            color: #4f46e5;
+            font-size: 10.5px;
+            font-weight: 600;
+            padding: 5px 12px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-top: 14px;
         }
 
         #viewPetModal .view-grid {
-            flex: 2 1 420px !important;
+            flex: 1 !important;
             display: grid !important;
             grid-template-columns: repeat(2, 1fr) !important;
             gap: 12px !important;
             box-sizing: border-box !important;
-            align-content: center !important;
+            align-content: start !important;
         }
 
-        /* Ibalik sa White ang Icon */
+        #viewPetModal .view-item {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            padding: 12px 14px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+
         #viewPetModal .view-item i {
-            color: #ffffff !important;
+            color: #4f46e5 !important;
+            background: #eef2ff !important;
+            width: 34px !important;
+            height: 34px !important;
+            border-radius: 8px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 14px !important;
+            flex-shrink: 0;
+            margin-top: 0 !important;
+        }
+
+        #viewPetModal .view-item small {
+            display: block;
+            font-size: 10px;
+            color: #64748b;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        #viewPetModal .view-item h4 {
+            margin: 2px 0 0 0;
+            font-size: 13.5px;
+            color: #0f172a;
+            font-weight: 600;
+            word-break: break-word;
         }
 
         /* Sidebar Overlay para sa Mobile */
@@ -80,26 +211,143 @@
             z-index: 1000;
         }
 
+        /* ==========================================================
+            MOBILE VIEW ONLY: COMPACT EMR DOCUMENT STYLE
+        ========================================================== */
         @media (max-width: 768px) {
             #viewPetModal .modal-content.view-modal {
-                max-width: 95% !important;
-                padding: 45px 15px 20px 15px !important;
-            }
-            #viewPetModal .view-modal-body {
-                flex-direction: column !important;
-            }
-            #viewPetModal .view-top {
-                border-right: none !important;
-                border-bottom: 1px solid #edf2f7 !important;
-                padding-right: 0 !important;
-                padding-bottom: 20px !important;
-                margin-bottom: 10px !important;
-            }
-            #viewPetModal .view-grid {
-                grid-template-columns: 1fr !important;
+                max-width: 96vw !important;
+                width: 96vw !important;
+                padding: 14px 10px !important;
+                background: #ffffff !important;
+                color: #0f172a !important;
+                font-family: 'IBM Plex Sans', -apple-system, sans-serif !important;
+                border-radius: 8px !important;
+                box-shadow: 0 20px 40px rgba(0,0,0,0.25) !important;
             }
 
-            /* Responsive Sidebar Styles para sa Mobile */
+            #viewPetModal .view-modal-body::before {
+                content: "OFFICIAL PET MEDICAL RECORD / EMR";
+                display: block;
+                font-size: 9px;
+                font-weight: 700;
+                letter-spacing: 0.8px;
+                color: #475569;
+                text-align: center;
+                border-bottom: 2px solid #0f172a;
+                padding-bottom: 5px;
+                margin-bottom: 8px;
+            }
+
+            #viewPetModal .view-modal-body {
+                flex-direction: column !important;
+                gap: 10px !important;
+                background: #ffffff !important;
+                border: 1px solid #cbd5e1 !important;
+                padding: 10px !important;
+                border-radius: 6px !important;
+            }
+
+            #viewPetModal .view-top {
+                flex: none !important;
+                width: 100% !important;
+                border-right: none !important;
+                border-bottom: 1px dashed #cbd5e1 !important;
+                padding: 8px 0 10px 0 !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                text-align: center !important;
+                gap: 8px !important;
+                background: transparent !important;
+                border-top: none;
+                border-left: none;
+                border-right: none;
+            }
+
+            #viewPetModal .view-top > div:first-of-type {
+                align-items: center;
+                text-align: center;
+            }
+
+            #viewPetModal .view-pet-image {
+                width: 58px !important;
+                height: 58px !important;
+                border: 2px solid #cbd5e1 !important;
+            }
+
+            #viewPetModal .view-top h2 {
+                font-size: 15px !important;
+                margin: 4px 0 1px 0 !important;
+                color: #0f172a !important;
+            }
+
+            #viewPetModal .pet-id-text {
+                font-size: 9.5px !important;
+                justify-content: center !important;
+                color: #475569 !important;
+            }
+
+            #viewPetModal .pet-badge {
+                display: none !important;
+            }
+
+            #viewPetModal #petQRCode {
+                margin: 8px auto 2px auto !important;
+                padding: 5px !important;
+                background: #fff !important;
+                border: 1px solid #cbd5e1 !important;
+                box-shadow: none !important;
+                width: auto !important;
+            }
+
+            /* Compact 2-column grid sa mobile para magkasya at hindi masyadong pahaba */
+            #viewPetModal .view-grid {
+                flex: none !important;
+                width: 100% !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 6px !important;
+            }
+
+            #viewPetModal .view-item {
+                background: #f8fafc !important;
+                border: 1px solid #e2e8f0 !important;
+                padding: 7px 8px !important;
+                border-radius: 5px !important;
+                box-shadow: none !important;
+                gap: 8px !important;
+                align-items: center !important;
+            }
+
+            #viewPetModal .view-item i {
+                background: #eef2ff !important;
+                color: #4f46e5 !important;
+                width: 26px !important;
+                height: 26px !important;
+                font-size: 11px !important;
+                border-radius: 5px !important;
+            }
+
+            #viewPetModal .view-item small {
+                font-size: 7.5px !important;
+                color: #64748b !important;
+                text-transform: uppercase !important;
+                line-height: 1;
+            }
+
+            #viewPetModal .view-item h4 {
+                font-size: 11px !important;
+                color: #0f172a !important;
+                font-weight: 600 !important;
+                margin-top: 1px !important;
+                line-height: 1.2;
+            }
+
+            /* Full width para sa allergies at vaccination record */
+            #viewPetModal .view-item[style*="span 2"],
+            #viewPetModal .view-grid > .view-item:nth-last-child(-n+2) {
+                grid-column: span 2 !important;
+            }
+
             .sidebar {
                 position: fixed !important;
                 top: 0;
@@ -135,11 +383,12 @@
         <section class="dashboard-content">
 
             <!-- Page Header -->
-            <div class="page-header" style="margin-bottom: 25px;">
-                <h1 style="font-size: 32px; font-weight: 700;">
-                    <i class="fa-solid fa-paw" style="font-size: 28px; margin-right: 8px;"></i>
+            <div class="page-header">
+                <h1>
+                    <i class="fa-solid fa-paw" style="background: #eef4ff; padding: 10px; border-radius: 12px; color: #5142f5;"></i>
                     My Pets
                 </h1>
+                <h2>View, add, and manage your registered pet profiles.</h2>
             </div>
 
             <!-- Pets Container -->
@@ -270,29 +519,32 @@
 </div>
 
 <!-- ===========================
-    VIEW PET MODAL (Pet Card)
+    VIEW PET MODAL
 =========================== -->
 <div class="modal" id="viewPetModal">
-    <div class="modal-content view-modal" style="position: relative !important; max-width: 860px !important; width: 100% !important; padding: 30px !important; box-sizing: border-box !important;">
+    <div class="modal-content view-modal">
         
-        <span class="close-view-modal" style="position: absolute !important; top: 15px !important; right: 18px !important; z-index: 99999 !important; font-size: 20px !important; cursor: pointer !important; background: #f1f5f9 !important; width: 34px !important; height: 34px !important; border-radius: 50% !important; display: flex !important; align-items: center !important; justify-content: center !important; color: #4a5568 !important; box-shadow: 0 2px 5px rgba(0,0,0,0.08);">&times;</span>
+        <span class="close-view-modal">&times;</span>
 
         <div class="view-modal-body">
             <div class="view-top">
-                <img id="viewPetImage" class="view-pet-image" alt="Pet Image">
-                <h2 id="viewPetName"></h2>
+                <div>
+                    <img id="viewPetImage" class="view-pet-image" alt="Pet Image">
+                    <h2 id="viewPetName"></h2>
+                    <div class="pet-id-text">
+                        <i class="fa-solid fa-id-card"></i>
+                        <span id="viewPetId"></span>
+                    </div>
 
-                <div class="pet-id-text">
-                    <i class="fa-solid fa-id-card"></i>
-                    <span id="viewPetId"></span>
-                </div>
-
-                <!-- QR CODE CONTAINER -->
-                <div style="margin: 15px 0; background: #fff; padding: 12px; border-radius: 12px; display: inline-block; box-shadow: 0 2px 8px rgba(0,0,0,0.05); text-align: center; width: 100%; max-width: 220px; box-sizing: border-box;">
-                    <div id="petQRCode" style="display: flex; justify-content: center; align-content: center;"></div>
-                    <small style="display: block; margin-top: 8px; font-size: 11px; color: #4a5568; font-weight: 600; line-height: 1.3; text-align: center;">
-                        <i class="fa-solid fa-camera-retro" style="color: #173F81; margin-right: 3px;"></i> Take a screenshot for past transaction & clinic visits
-                    </small>
+                    <!-- QR CODE CONTAINER WITH WRAPPER -->
+                    <div style="display: flex; flex-direction: column; align-items: center; width: 100%; margin-top: 10px;">
+                        <div id="petQRCode">
+                            <div id="petQRCodeInner" style="display: flex; justify-content: center; align-content: center;"></div>
+                        </div>
+                        <small style="display: block; margin-top: 6px; font-size: 8.5px; color: #4a5568; font-weight: 600; line-height: 1.2; text-align: center;">
+                            Screenshot for clinic visits & past transactions
+                        </small>
+                    </div>
                 </div>
 
                 <span class="pet-badge">
@@ -360,11 +612,11 @@
 
                 <!-- DIGITAL VACCINATION CARD SECTION -->
                 <div class="view-item" style="grid-column: span 2; align-items: flex-start;">
-                    <i class="fa-solid fa-syringe" style="margin-top: 4px;"></i>
+                    <i class="fa-solid fa-syringe" style="margin-top: 2px;"></i>
                     <div style="width: 100%;">
                         <small>Vaccination & Immunization Record</small>
-                        <div id="vaccinationListContainer" style="margin-top: 8px;">
-                            <h4 style="color: #7f8c8d; font-weight: normal; font-size: 13px;">No vaccination records found yet.</h4>
+                        <div id="vaccinationListContainer" style="margin-top: 6px;">
+                            <h4 style="color: #7f8c8d; font-weight: normal; font-size: 11.5px;">No vaccination records found yet.</h4>
                         </div>
                     </div>
                 </div>

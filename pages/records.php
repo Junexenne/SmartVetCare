@@ -1,5 +1,5 @@
 <?php
-// /SmartVetCare/pages/settings.php
+// /SmartVetCare/pages/records.php
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -180,18 +180,12 @@ if (session_status() === PHP_SESSION_NONE) {
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
 <div class="dashboard">
-    <?php 
-    if (file_exists("../includes/sidebar.php")) {
-        include "../includes/sidebar.php"; 
-    }
-    ?>
 
-    <div class="main-content">
-        <?php 
-        if (file_exists("../includes/topbar.php")) {
-            include "../includes/topbar.php"; 
-        }
-        ?>
+    <?php include("../includes/sidebar.php"); ?>
+
+    <div class="main-content" style="background: #f4f7fe; min-height: 100vh; padding: 20px;">
+
+        <?php include("../includes/topbar.php"); ?>
 
         <section class="dashboard-content">
             <div class="settings-wrapper">
@@ -199,7 +193,7 @@ if (session_status() === PHP_SESSION_NONE) {
                 <!-- Page Header -->
                 <div class="page-header-custom">
                     <h1>
-                        <i class="fa-solid fa-folder-open" style="color: #4f46e5;"></i>
+                        <i class="fa-solid fa-folder-open" style="background: #eef4ff; padding: 10px; border-radius: 12px; color: #5142f5;"></i>
                         Records & History
                     </h1>
                     <p>Manage archived appointments, archived pet profiles, cancelled bookings, completed transaction histories, and trash items.</p>
@@ -293,6 +287,32 @@ if (session_status() === PHP_SESSION_NONE) {
     <i id="toastIcon" class="fa-solid"></i>
     <span id="toastMessage"></span>
 </div>
+
+<!-- Mobile Sidebar Toggle Handler (Global DOM) -->
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const sidebar = document.querySelector(".dashboard aside") || document.querySelector(".sidebar") || document.querySelector(".main-sidebar");
+        const overlay = document.getElementById("sidebarOverlay");
+
+        // Hinahanap ang burger/menu button sa topbar o header
+        document.body.addEventListener("click", (e) => {
+            const menuTrigger = e.target.closest("#menuBtn, .burger-btn, .menu-toggle, .main-content header .fa-bars")?.closest("button") || 
+                                (e.target.classList.contains("fa-bars") && e.target.closest("button"));
+            
+            if (menuTrigger) {
+                if (sidebar) sidebar.classList.toggle("active");
+                if (overlay) overlay.style.display = sidebar && sidebar.classList.contains("active") ? "block" : "none";
+            }
+        });
+
+        if (overlay) {
+            overlay.addEventListener("click", () => {
+                if (sidebar) sidebar.classList.remove("active");
+                overlay.style.display = "none";
+            });
+        }
+    });
+</script>
 
 <!-- Script para sa Tab Switching, Firestore Actions, at Toast -->
 <script type="module">

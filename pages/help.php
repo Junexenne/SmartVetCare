@@ -1,5 +1,7 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -8,10 +10,7 @@ session_start();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Help & Feedback - Smart Vet Care</title>
     
-    <!-- Dashboard & Sidebar/Topbar Stylesheet -->
     <link rel="stylesheet" href="../assets/css/dashboard.css">
-    
-    <!-- Google Fonts & FontAwesome Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 
@@ -20,13 +19,6 @@ session_start();
             box-sizing: border-box;
         }
 
-        body {
-            font-family: 'Poppins', sans-serif;
-            margin: 0;
-            background-color: #f8fafc;
-        }
-
-        /* Sidebar Overlay para sa Mobile Responsive Design */
         .sidebar-overlay {
             display: none;
             position: fixed;
@@ -38,21 +30,13 @@ session_start();
             z-index: 1000;
         }
 
-        .page-container {
-            max-width: 950px;
+        .help-container {
+            max-width: 1200px;
             margin: 0 auto;
             width: 100%;
         }
 
-        /* Ayusin ang Page Header para laging nakababa ang sub-heading */
-        .page-header {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            margin-bottom: 30px;
-        }
-
-        /* Modern Floating Toast Notification Style (Nakalagay na sa Taas / Top-Right) */
+        /* Modern Floating Toast Notification Style */
         .toast-notification {
             position: fixed;
             top: 30px;
@@ -124,15 +108,15 @@ session_start();
         .help-card {
             background: #ffffff;
             border-radius: 14px;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+            border: 1px solid #edf2f7;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
             overflow: hidden;
             transition: all 0.25s ease;
         }
 
         .help-card:hover {
             border-color: #cbd5e1;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.04);
+            box-shadow: 0 10px 25px rgba(81, 66, 245, 0.08);
         }
 
         .help-item {
@@ -155,7 +139,7 @@ session_start();
         .help-item i.fa-solid:not(.fa-chevron-down) {
             font-size: 16px;
             color: #5142f5;
-            background: #eef2ff;
+            background: #eef4ff;
             width: 40px;
             height: 40px;
             display: flex;
@@ -195,7 +179,6 @@ session_start();
             line-height: 1.7;
         }
 
-        /* Active State when expanded */
         .help-card.active .help-answer {
             max-height: 250px;
             padding: 18px 22px;
@@ -218,8 +201,9 @@ session_start();
             padding: 30px;
             border-radius: 18px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-            border: 1px solid #e2e8f0;
+            border: 1px solid #edf2f7;
             margin-bottom: 40px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
         .feedback-header {
@@ -230,7 +214,7 @@ session_start();
         }
 
         .feedback-icon-box {
-            background: #eef2ff;
+            background: #eef4ff;
             color: #5142f5;
             width: 45px;
             height: 45px;
@@ -245,7 +229,7 @@ session_start();
         .feedback-card h3 {
             font-size: 18px;
             margin: 0 0 4px 0;
-            color: #1e293b;
+            color: #1e1b4b;
             font-weight: 600;
         }
 
@@ -308,12 +292,11 @@ session_start();
         }
 
         .btn-submit:hover {
-            background-color: #4032d9;
+            background-color: #4333e6;
             transform: translateY(-1px);
             box-shadow: 0 6px 15px rgba(81, 66, 245, 0.3);
         }
 
-        /* Responsive Breakpoints */
         @media (max-width: 768px) {
             .sidebar {
                 position: fixed !important;
@@ -330,24 +313,9 @@ session_start();
             .sidebar-overlay.active {
                 display: block !important;
             }
-            
-            .main-content {
-                width: 100% !important;
-                margin-left: 0 !important;
-            }
-
-            .content-wrapper {
-                padding: 15px !important;
-            }
-
-            .page-header h1 {
-                font-size: 20px !important;
-            }
-            
             .feedback-card {
                 padding: 20px;
             }
-
             .toast-notification {
                 left: 20px;
                 right: 20px;
@@ -358,10 +326,8 @@ session_start();
 </head>
 <body>
 
-<!-- Mobile Sidebar Overlay -->
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-<!-- Custom Toast Notification Element (Nakalagay sa Taas) -->
 <div id="toastNotification" class="toast-notification">
     <div class="toast-icon">
         <i class="fa-solid fa-check"></i>
@@ -374,121 +340,119 @@ session_start();
 
 <div class="dashboard">
 
-    <!-- Include Sidebar -->
     <?php include("../includes/sidebar.php"); ?>
 
-    <div class="main-content" style="background: #f8fafc; min-height: 100vh; display: flex; flex-direction: column;">
+    <div class="main-content" style="background: #f4f7fe; min-height: 100vh; padding: 20px;">
 
-        <!-- Include Topbar -->
         <?php include("../includes/topbar.php"); ?>
 
-        <div class="content-wrapper" style="padding: 30px; flex-grow: 1;">
-            <div class="page-container">
+        <div class="help-container">
+            
+            <div class="doctors-header" style="margin-bottom: 25px;">
+                <h1 style="display: flex; align-items: center; gap: 10px; color: #1e1b4b; font-size: 24px; margin-bottom: 6px; font-weight: 700;">
+                    <i class="fa-solid fa-circle-question" style="background: #eef4ff; padding: 10px; border-radius: 12px; color: #5142f5;"></i>
+                    Help & Support
+                </h1>
+                <p style="color: #64748b; font-size: 13px; margin: 0;">
+                    Learn how to use the system or send us your feedback and suggestions.
+                </p>
+            </div>
+
+            <!-- Popular Help Resources with Accordion Answers -->
+            <div class="section-title">Popular Help Resources</div>
+            <div class="help-list">
                 
-                <div class="page-header">
-                    <h1 style="font-size: 24px; color: #0f172a; display: flex; align-items: center; gap: 14px; font-weight: 700; margin: 0 0 6px 0;">
-                        <i class="fa-solid fa-circle-question" style="background: #eef2ff; padding: 10px; border-radius: 12px; color: #5142f5; font-size: 20px;"></i>
-                        Help & Support
-                    </h1>
-                    <p style="color: #64748b; font-size: 14px; margin: 0;">Learn how to use the system or send us your feedback and suggestions.</p>
+                <!-- Question 1 -->
+                <div class="help-card">
+                    <div class="help-item">
+                        <div class="help-item-left">
+                            <i class="fa-solid fa-key"></i>
+                            <span>How to change or reset your account password?</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-down chevron-icon"></i>
+                    </div>
+                    <div class="help-answer">
+                        Go to your Account Settings or Profile page, look for the "Change Password" section, enter your current password followed by your new password, and click Save Changes. If you forgot your password, use the "Forgot Password" link on the login page.
+                    </div>
                 </div>
 
-                <!-- Popular Help Resources with Accordion Answers -->
-                <div class="section-title">Popular Help Resources</div>
-                <div class="help-list">
-                    
-                    <!-- Question 1 -->
-                    <div class="help-card">
-                        <div class="help-item">
-                            <div class="help-item-left">
-                                <i class="fa-solid fa-key"></i>
-                                <span>How to change or reset your account password?</span>
-                            </div>
-                            <i class="fa-solid fa-chevron-down chevron-icon"></i>
+                <!-- Question 2 -->
+                <div class="help-card">
+                    <div class="help-item">
+                        <div class="help-item-left">
+                            <i class="fa-solid fa-calendar-check"></i>
+                            <span>Guide on booking and cancelling clinic appointments</span>
                         </div>
-                        <div class="help-answer">
-                            Go to your Account Settings or Profile page, look for the "Change Password" section, enter your current password followed by your new password, and click Save Changes. If you forgot your password, use the "Forgot Password" link on the login page.
-                        </div>
+                        <i class="fa-solid fa-chevron-down chevron-icon"></i>
                     </div>
-
-                    <!-- Question 2 -->
-                    <div class="help-card">
-                        <div class="help-item">
-                            <div class="help-item-left">
-                                <i class="fa-solid fa-calendar-check"></i>
-                                <span>Guide on booking and cancelling clinic appointments</span>
-                            </div>
-                            <i class="fa-solid fa-chevron-down chevron-icon"></i>
-                        </div>
-                        <div class="help-answer">
-                            To book an appointment, navigate to the Appointments page, select your preferred date, time, and veterinarian, then confirm. To cancel, go to your upcoming appointments list and click the "Cancel Appointment" button before the scheduled time.
-                        </div>
+                    <div class="help-answer">
+                        To book an appointment, navigate to the Appointments page, select your preferred date, time, and veterinarian, then confirm. To cancel, go to your upcoming appointments list and click the "Cancel Appointment" button before the scheduled time.
                     </div>
-
-                    <!-- Question 3 -->
-                    <div class="help-card">
-                        <div class="help-item">
-                            <div class="help-item-left">
-                                <i class="fa-solid fa-shield-dog"></i>
-                                <span>How to update health records and your pet's information?</span>
-                            </div>
-                            <i class="fa-solid fa-chevron-down chevron-icon"></i>
-                        </div>
-                        <div class="help-answer">
-                            Access the "My Pets" or "Pet Profiles" section from the sidebar. Choose the specific pet whose details you want to update, click the edit button, modify the information or health logs, and click save to update your database records.
-                        </div>
-                    </div>
-
-                    <!-- Question 4 -->
-                    <div class="help-card">
-                        <div class="help-item">
-                            <div class="help-item-left">
-                                <i class="fa-solid fa-robot"></i>
-                                <span>How to use the AI Assistant for veterinary consultations</span>
-                            </div>
-                            <i class="fa-solid fa-chevron-down chevron-icon"></i>
-                        </div>
-                        <div class="help-answer">
-                            Click on the AI Assistant icon in the sidebar menu. Type your pet's symptoms or general health questions into the chat box, and the system's smart assistant will provide preliminary guidance and care recommendations instantly.
-                        </div>
-                    </div>
-
                 </div>
 
-                <!-- Send Feedback Section -->
-                <div class="feedback-card" id="send-feedback-section">
-                    <div class="feedback-header">
-                        <div class="feedback-icon-box">
-                            <i class="fa-solid fa-comment-dots"></i>
+                <!-- Question 3 -->
+                <div class="help-card">
+                    <div class="help-item">
+                        <div class="help-item-left">
+                            <i class="fa-solid fa-shield-dog"></i>
+                            <span>How to update health records and your pet's information?</span>
                         </div>
-                        <div>
-                            <h3>Send Feedback</h3>
-                            <p>Did you notice any issues or do you have suggestions to improve the Smart Vet Care System? Share your thoughts with us.</p>
-                        </div>
+                        <i class="fa-solid fa-chevron-down chevron-icon"></i>
                     </div>
-                    
-                    <form id="feedbackForm">
-                        <div class="form-group">
-                            <label for="feedback_type">Feedback Type</label>
-                            <select name="feedback_type" id="feedback_type" class="form-control">
-                                <option value="Suggestion">Suggestion / Improvement</option>
-                                <option value="Bug">Bug / Technical Error</option>
-                                <option value="General">General Feedback</option>
-                            </select>
-                        </div>
+                    <div class="help-answer">
+                        Access the "My Pets" or "Pet Profiles" section from the sidebar. Choose the specific pet whose details you want to update, click the edit button, modify the information or health logs, and click save to update your database records.
+                    </div>
+                </div>
 
-                        <div class="form-group">
-                            <label for="message">Your Message</label>
-                            <textarea name="message" id="message" class="form-control" placeholder="Type your comments, suggestions, or issues here..." required></textarea>
+                <!-- Question 4 -->
+                <div class="help-card">
+                    <div class="help-item">
+                        <div class="help-item-left">
+                            <i class="fa-solid fa-robot"></i>
+                            <span>How to use the AI Assistant for veterinary consultations</span>
                         </div>
-
-                        <button type="submit" id="submitBtn" class="btn-submit">
-                            <i class="fa-solid fa-paper-plane"></i> Send Feedback
-                        </button>
-                    </form>
+                        <i class="fa-solid fa-chevron-down chevron-icon"></i>
+                    </div>
+                    <div class="help-answer">
+                        Click on the AI Assistant icon in the sidebar menu. Type your pet's symptoms or general health questions into the chat box, and the system's smart assistant will provide preliminary guidance and care recommendations instantly.
+                    </div>
                 </div>
 
             </div>
+
+            <!-- Send Feedback Section -->
+            <div class="feedback-card" id="send-feedback-section">
+                <div class="feedback-header">
+                    <div class="feedback-icon-box">
+                        <i class="fa-solid fa-comment-dots"></i>
+                    </div>
+                    <div>
+                        <h3>Send Feedback</h3>
+                        <p>Did you notice any issues or do you have suggestions to improve the Smart Vet Care System? Share your thoughts with us.</p>
+                    </div>
+                </div>
+                
+                <form id="feedbackForm">
+                    <div class="form-group">
+                        <label for="feedback_type">Feedback Type</label>
+                        <select name="feedback_type" id="feedback_type" class="form-control">
+                            <option value="Suggestion">Suggestion / Improvement</option>
+                            <option value="Bug">Bug / Technical Error</option>
+                            <option value="General">General Feedback</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="message">Your Message</label>
+                        <textarea name="message" id="message" class="form-control" placeholder="Type your comments, suggestions, or issues here..." required></textarea>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="btn-submit">
+                        <i class="fa-solid fa-paper-plane"></i> Send Feedback
+                    </button>
+                </form>
+            </div>
+
         </div>
     </div>
 </div>
@@ -498,7 +462,6 @@ session_start();
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
     import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-    // Firebase Configuration gamit ang projectId ng project niyo
     const firebaseConfig = {
         projectId: "furryfriendsanimalclinic-13da3"
     };
@@ -506,17 +469,15 @@ session_start();
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Function para lumitaw ang Toast Notification sa Taas
     function showToast() {
         const toast = document.getElementById('toastNotification');
         toast.classList.add('show');
         
         setTimeout(() => {
             toast.classList.remove('show');
-        }, 4000); // Mawawala pagkalipas ng 4 seconds
+        }, 4000);
     }
 
-    // Script for Mobile Sidebar Toggle & Overlay
     document.addEventListener("DOMContentLoaded", () => {
         const mobileBtn = document.getElementById('mobileMenuBtn');
         const sidebar = document.querySelector('.sidebar'); 
@@ -535,7 +496,6 @@ session_start();
             });
         }
 
-        // Accordion functionality for Help Cards
         const helpItems = document.querySelectorAll('.help-item');
         helpItems.forEach(item => {
             item.addEventListener('click', () => {
@@ -552,7 +512,6 @@ session_start();
         });
     });
 
-    // Feedback Form Event Handler with Firebase Integration & Toast
     document.getElementById('feedbackForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         
@@ -570,10 +529,7 @@ session_start();
                 createdAt: new Date()
             });
 
-            // I-trigger ang Toast Notification sa taas
             showToast();
-            
-            // I-reset ang form pagkatapos masend
             document.getElementById('feedbackForm').reset();
 
         } catch (error) {

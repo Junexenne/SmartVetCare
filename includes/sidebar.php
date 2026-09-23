@@ -41,11 +41,13 @@ $currentPage = basename($_SERVER['PHP_SELF']);
         </li>
 
         <li class="<?= ($currentPage == 'ai-chat.php') ? 'active' : '' ?>">
-            <a href="/SmartVetCare/pages/ai-chat.php">
-                <i class="fa-solid fa-robot"></i>
-                <span>AI Assistant</span>
-            </a>
-        </li>
+    <a href="/SmartVetCare/pages/ai-chat.php">
+        <svg style="width: 15px; height: 15px; margin-right: 12px; fill: currentColor; flex-shrink: 0;" viewBox="0 0 24 24">
+            <path d="M12 2c1.8 5.7 4.3 8.2 10 10-5.7 1.8-8.2 4.3-10 10-1.8-5.7-4.3-8.2-10-10 5.7-1.8 8.2-4.3 10-10z"/>
+        </svg>
+        <span>AI Assistant</span>
+    </a>
+</li>
 
         <li class="<?= ($currentPage == 'messages.php') ? 'active' : '' ?>">
             <a href="/SmartVetCare/pages/messages.php">
@@ -53,7 +55,15 @@ $currentPage = basename($_SERVER['PHP_SELF']);
                 <span>Messages</span>
             </a>
         </li>
-        
+         
+        <!-- Our Doctors Tab -->
+        <li class="<?= ($currentPage == 'doctors.php') ? 'active' : '' ?>">
+            <a href="/SmartVetCare/pages/doctors.php">
+                <i class="fa-solid fa-user-doctor"></i>
+                <span>Our Doctors</span>
+            </a>
+        </li>
+
         <!-- Records & History Link -->
         <li class="<?= in_array($currentPage, ['records.php', 'trash.php', 'archived-appointments.php', 'archived-pets.php']) ? 'active' : '' ?>">
             <a href="/SmartVetCare/pages/records.php">
@@ -81,6 +91,8 @@ $currentPage = basename($_SERVER['PHP_SELF']);
         height: 100vh;
         box-sizing: border-box;
         padding: 10px 8px !important;
+        transition: width 0.3s ease;
+        z-index: 1050;
     }
 
     /* Logo Styling */
@@ -103,12 +115,14 @@ $currentPage = basename($_SERVER['PHP_SELF']);
         margin: 0 !important;
         font-weight: 600;
         white-space: nowrap;
+        transition: opacity 0.2s ease;
     }
     .sidebar .logo-text p {
         font-size: 10.5px !important;
         margin: 0 !important;
         opacity: 0.8;
         white-space: nowrap;
+        transition: opacity 0.2s ease;
     }
 
     /* Menu List na naka-stretch para sakupin ang natitirang espasyo sa baba */
@@ -123,7 +137,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
     }
 
     .sidebar .menu li a {
-        padding: 10px 12px !important; /* Mas malaking padding para mapuno ang space nang maayos */
+        padding: 10px 12px !important;
         font-size: 13px !important;
         display: flex;
         align-items: center;
@@ -134,12 +148,12 @@ $currentPage = basename($_SERVER['PHP_SELF']);
         white-space: nowrap;
     }
 
-    /* Siguraduhing laging kita ang text */
     .sidebar .menu li a span {
         opacity: 1 !important;
         visibility: visible !important;
         display: inline-block !important;
         color: inherit !important;
+        transition: opacity 0.2s ease;
     }
 
     .sidebar .menu li a i {
@@ -170,21 +184,43 @@ $currentPage = basename($_SERVER['PHP_SELF']);
         padding-top: 6px;
     }
 
-    /* Auto-collapse fixes para sa desktop */
+    /* Auto-collapse / Mobile Sidebar fixes */
     .sidebar.auto-collapsed {
         overflow: hidden !important;
     }
     .sidebar.auto-collapsed .logo-text,
     .sidebar.auto-collapsed .menu li a span {
-        opacity: 0;
-        pointer-events: none;
-        visibility: hidden;
+        opacity: 0 !important;
+        pointer-events: none !important;
+        visibility: hidden !important;
+    }
+
+    /* Mobile View Tweaks para magamit nang maayos ang off-canvas toggle */
+    @media (max-width: 768px) {
+        .sidebar {
+            position: fixed;
+            left: -260px;
+            top: 0;
+            width: 260px;
+            height: 100vh;
+            transition: left 0.3s ease;
+            background-color: #4f46e5; /* Siguraduhing may kulay o consistent sa theme mo */
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+        }
+        .sidebar.active {
+            left: 0;
+        }
+        .sidebar.auto-collapsed .logo-text,
+        .sidebar.auto-collapsed .menu li a span {
+            opacity: 1 !important;
+            pointer-events: auto !important;
+            visibility: visible !important;
+        }
     }
 </style>
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-    // 10-Second Auto-Collapse Logic para sa Laptop/Desktop
     const sidebar = document.getElementById("appSidebar");
     let collapseTimer;
 
