@@ -16,7 +16,9 @@ import {
 document.addEventListener("DOMContentLoaded", () => {
     const petSelect = document.getElementById("petSelect");
     const appointmentDateInput = document.getElementById("appointmentDate");
-    const timeSlotsContainer = document.getElementById("timeSlots");
+    const appointmentTimeInput = document.getElementById("appointmentTime");
+    const timeSlotsContainer = document.getElementById("pickerSlotsContainer");
+    
     const serviceSelect = document.getElementById("service");
     const doctorSelect = document.getElementById("doctor");
     const notesInput = document.getElementById("notes");
@@ -30,6 +32,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const rescheduleTimeSlotsContainer = document.getElementById("rescheduleTimeSlots");
     const closeModalBtn = document.getElementById("closeModalBtn");
     const confirmRescheduleBtn = document.getElementById("confirmRescheduleBtn");
+
+    // Calendar Picker UI Elements (Custom Popover)
+    const calendarGrid = document.getElementById("calendarGrid"); // I-adjust kung iba ID ng grid mo
+    const currentMonthYearLabel = document.getElementById("currentMonthYear");
+    const prevMonthBtn = document.getElementById("prevMonthBtn");
+    const nextMonthBtn = document.getElementById("nextMonthBtn");
+    const dateInputDisplay = document.getElementById("selectedDateText"); // o kung saan ipinapakita ang text
+
+    let currentYear = new Date().getFullYear();
+    let currentMonth = new Date().getMonth(); // 0-indexed
 
     // Dynamic Custom Cancel Modal Creation
     let cancelModal = document.getElementById("cancelModal");
@@ -59,6 +71,123 @@ document.addEventListener("DOMContentLoaded", () => {
     let selectedTimeSlot = null;
     let selectedRescheduleTimeSlot = null;
     let currentOwnerId = null;
+
+    // Dynamic Doctor & Date Validation Helper (Real-time `new Date()`)
+    function isDateAllowedForDoctor(year, month, day, doctorName) {
+        const targetDate = new Date(year, month, day);
+        const now = new Date();
+        const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        
+        // 1. I-check kung lumipas na ang date kumpara sa tunay na ngayon
+        if (targetDate < todayMidnight) {
+            return false;
+        }
+
+        // 2. I-check ang availability ni Dr. Alfie Tamesis (Monday to Wednesday)
+        if (doctorName && doctorName.toLowerCase().includes("alfie")) {
+            const dayOfWeek = targetDate.getDay(); // 0 = Sun, 1 = Mon, ..., 6 = Sat
+            if (dayOfWeek < 1 || dayOfWeek > 3) {
+                return false; // Kapag Thu (4), Fri (5), Sat (6), o Sun (0), i-disable
+            }
+        }
+        
+        return true;
+    }
+
+    // Render Custom Calendar Grid (Kung gumagamit ka ng custom grid rendering)
+    function renderCustomCalendar() {
+        if (!calendarGrid) return;
+        calendarGrid.innerHTML = "";
+
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        if (currentMonthYearLabel) {
+            currentMonthYearLabel.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+        }
+
+        const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
+        const totalDaysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+        const selectedDoctor = doctorSelect ? doctorSelect.value : "";
+
+        // Empty cells para sa offset
+        for (let i = 0; i < firstDayIndex; i++) {
+            const emptyCell = document.createElement("div");
+            calendarGrid.appendChild(emptyCell);
+        }
+
+        // Days loop
+        for (let day = 1; day <= totalDaysInMonth; day++) {
+            const dayCell = document.createElement("div");
+            dayCell.textContent = day;
+            dayCell.className = "calendar-day-item"; // I-match sa CSS mo
+
+            const allowed = isDateAllowedForDoctor(currentYear, currentMonth, day, selectedDoctor);
+            const formattedDateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+            if (!allowed) {
+                dayCell.classList.add("disabled", "grayed-out");
+                dayCell.style.cssText = "background: #f1f5f9; color: #94a3b8; cursor: not-allowed; opacity: 0.6; padding: 8px; text-align: center; border-radius: 8px;";
+            } else {
+                dayCell.style.cssText = "cursor: pointer; background: #fff; color: #334155; padding: 8px; text-align: center; border-radius: 8px; transition: 0.2s;";
+                dayCell.addEventListener("click", () => {
+                    document.querySelectorAll(".calendar-day-item.selected").forEach(el => el.classList.remove("selected"));
+                    dayCell.classList.add("selected");
+                    if (appointmentDateInput) {
+                        appointmentDateInput.value = formattedDateStr;
+                        appointmentDateInput.dispatchEvent(new Event('change'));
+                    }
+                    if (dateInputDisplay) {
+                        dateInputDisplay.textContent = formattedDateStr;
+                    }
+                });
+            }
+
+            calendarGrid.appendChild(dayCell);
+        }
+    }
+
+    if (doctorSelect) {
+        doctorSelect.addEventListener("change", () => {
+            renderCustomCalendar();
+            // Kung may existing selected date na, i-check din kung valid pa sa bagong doctor
+            if (appointmentDateInput && appointmentDateInput.value) {
+                const parts = appointmentDateInput.value.split('-');
+                if (parts.length === 3) {
+                    const y = parseInt(parts[0], 10);
+                    const m = parseInt(parts, 10) - 1;
+                    const d = parseInt(parts, 10);
+                    if (!isDateAllowedForDoctor(y, m, d, doctorSelect.value)) {
+                        appointmentDateInput.value = "";
+                        if (timeSlotsContainer) timeSlotsContainer.innerHTML = `<p style="color: #dc2626; font-size: 13px;">Selected date is not available for this doctor. Please pick another date.</p>`;
+                    }
+                }
+            }
+        });
+    }
+
+    if (prevMonthBtn) {
+        prevMonthBtn.addEventListener("click", () => {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            renderCustomCalendar();
+        });
+    }
+
+    if (nextMonthBtn) {
+        nextMonthBtn.addEventListener("click", () => {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            renderCustomCalendar();
+        });
+    }
+
+    // Initial render call kung active ang custom calendar
+    renderCustomCalendar();
 
     // 1. Authentication and loading user pets/appointments
     onAuthStateChanged(auth, async (user) => {
@@ -116,17 +245,17 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // 3. Generate Time Slots (Booking Form)
+    // 3. Generate Time Slots (Booking Form - Sync sa hidden/custom UI input)
     const availableTimes = ["09:00 AM", "10:30 AM", "01:00 PM", "02:30 PM", "04:00 PM"];
     
     if (appointmentDateInput) {
         appointmentDateInput.addEventListener("change", async () => {
             const selectedDate = appointmentDateInput.value;
-            timeSlotsContainer.innerHTML = "";
+            if (timeSlotsContainer) timeSlotsContainer.innerHTML = "";
             selectedTimeSlot = null;
 
             if (!selectedDate) {
-                timeSlotsContainer.innerHTML = `<p style="color: #888; font-size: 13px;">Please select a date first.</p>`;
+                if (timeSlotsContainer) timeSlotsContainer.innerHTML = `<p style="color: #888; font-size: 13px;">Please select a date first.</p>`;
                 return;
             }
 
@@ -151,31 +280,36 @@ document.addEventListener("DOMContentLoaded", () => {
                 console.error("Error checking date availability:", error);
             }
 
+            if (!timeSlotsContainer) return;
+
             availableTimes.forEach((time) => {
-                const slotBtn = document.createElement("button");
-                slotBtn.type = "button";
+                const slotBtn = document.createElement("div");
                 slotBtn.textContent = time;
-                slotBtn.className = "time-slot-btn";
+                slotBtn.className = "picker-time-slot";
 
                 const isBooked = bookedTimes.includes(time);
 
                 if (isBooked) {
-                    slotBtn.disabled = true;
-                    slotBtn.style.cssText = "padding: 8px 14px; margin: 5px; border: 1px solid #fecaca; background: #fee2e2; color: #b91c1c; border-radius: 6px; cursor: not-allowed; opacity: 0.8;";
+                    slotBtn.classList.add("booked", "disabled");
+                    slotBtn.style.cssText = "padding: 8px 12px; background: #fee2e2; border: 1px solid #fecaca; color: #b91c1c; border-radius: 8px; font-size: 13px; font-weight: 500; text-align: center; cursor: not-allowed; opacity: 0.8;";
                     slotBtn.textContent = `${time} (Booked)`;
                 } else {
-                    slotBtn.style.cssText = "padding: 8px 14px; margin: 5px; border: 1px solid #ddd; background: #fff; color: #333; border-radius: 6px; cursor: pointer; transition: all 0.2s;";
-                    
                     slotBtn.addEventListener("click", () => {
-                        document.querySelectorAll("#timeSlots .time-slot-btn:not([disabled])").forEach(b => {
-                            b.style.background = "#fff";
-                            b.style.color = "#333";
-                            b.style.borderColor = "#ddd";
+                        if (slotBtn.classList.contains("disabled") || slotBtn.classList.contains("booked")) return;
+                        
+                        document.querySelectorAll(".picker-time-slot").forEach(b => {
+                            b.classList.remove("selected");
+                            b.style.background = "#f8fafc";
+                            b.style.color = "#334155";
+                            b.style.borderColor = "#e2e8f0";
                         });
+                        slotBtn.classList.add("selected");
                         slotBtn.style.background = "#5142f5";
                         slotBtn.style.color = "#fff";
                         slotBtn.style.borderColor = "#5142f5";
+                        
                         selectedTimeSlot = time;
+                        if (appointmentTimeInput) appointmentTimeInput.value = time;
                     });
                 }
 
@@ -190,7 +324,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (dateStr.includes('/')) {
             const parts = dateStr.split('/');
             if (parts.length === 3) {
-                return new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
+                return new Date(`${parts}-${parts}-${parts[0]}`);
             }
         }
         return new Date(dateStr);
@@ -224,7 +358,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 const apptData = docSnap.data();
                 const status = (apptData.status || "").toLowerCase().trim();
                 
-                // Tinanggal na rin ang "cancelled", pati na "archived" at "trash" para hindi magpakita sa user view
                 if (status !== "archived" && status !== "trash" && status !== "cancelled") {
                     appointmentsList.push({ id: docSnap.id, ...apptData });
                 }
@@ -553,13 +686,14 @@ document.addEventListener("DOMContentLoaded", () => {
             const service = serviceSelect.value;
             const doctor = doctorSelect.value;
             const dateVal = appointmentDateInput.value;
+            const timeVal = appointmentTimeInput ? appointmentTimeInput.value : selectedTimeSlot;
             const notes = notesInput.value.trim();
 
             if (!petName) { showAlert("Please select a pet.", "error"); return; }
             if (!service) { showAlert("Please select a service.", "error"); return; }
             if (!doctor) { showAlert("Please select a doctor.", "error"); return; }
             if (!dateVal) { showAlert("Please select an appointment date.", "error"); return; }
-            if (!selectedTimeSlot) { showAlert("Please select an available time slot.", "error"); return; }
+            if (!timeVal) { showAlert("Please select an available time slot.", "error"); return; }
 
             bookBtn.disabled = true;
             bookBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Submitting...`;
@@ -568,7 +702,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const doubleCheckQuery = query(
                     collection(db, "appointments"),
                     where("date", "==", dateVal),
-                    where("timeSlot", "==", selectedTimeSlot)
+                    where("timeSlot", "==", timeVal)
                 );
                 const dcSnap = await getDocs(doubleCheckQuery);
                 let isTaken = false;
@@ -593,7 +727,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     service: service,
                     doctor: doctor,
                     date: dateVal,
-                    timeSlot: selectedTimeSlot,
+                    timeSlot: timeVal,
                     notes: notes,
                     status: "Pending",
                     createdAt: Timestamp.now()
@@ -605,9 +739,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 serviceSelect.selectedIndex = 0;
                 doctorSelect.selectedIndex = 0;
                 appointmentDateInput.value = "";
-                timeSlotsContainer.innerHTML = `<p style="color: #888; font-size: 13px;">Please select a date first.</p>`;
+                if (appointmentTimeInput) appointmentTimeInput.value = "";
+                if (timeSlotsContainer) timeSlotsContainer.innerHTML = `<p style="color: #888; font-size: 13px;">Please select a date first.</p>`;
                 notesInput.value = "";
                 selectedTimeSlot = null;
+
+                const dateTextEl = document.getElementById("selectedDateText");
+                const timeTextEl = document.getElementById("selectedTimeText");
+                if (dateTextEl) dateTextEl.textContent = "Select Date";
+                if (timeTextEl) timeTextEl.textContent = "--:-- --";
 
                 loadUserAppointments(currentOwnerId);
 

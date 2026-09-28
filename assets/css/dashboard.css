@@ -77,7 +77,7 @@ LAYOUT
 
 .sidebar {
     width: 270px;
-    background: linear-gradient(180deg, #1f4f99 0%, #173F81 100%);
+    background: linear-gradient(135deg, #173F81 30%, #2563EB 80%, #38BDF8 100%);
     color: #fff;
     display: flex;
     flex-direction: column;
@@ -216,6 +216,7 @@ LAYOUT
 .sidebar.auto-collapsed .logo h2,
 .sidebar.auto-collapsed .logo p,
 .sidebar.auto-collapsed .logo-text,
+.sidebar.auto-collapsed .sidebar-brand-text, /* Idinagdag dito para mawala rin ang title at subtitle */
 .sidebar.auto-collapsed .menu li a span,
 .sidebar.auto-collapsed .sidebar-footer span {
     display: none !important;

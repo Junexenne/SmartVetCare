@@ -15,11 +15,15 @@
         }
 
         body {
-            background: #f5f7ff;
-            font-family: 'Poppins', sans-serif;
+            /* Palitan ang '../assets/images/clinic-bg.jpg' ng tamang file path patungo sa background image ninyo */
+            background: linear-gradient(rgba(15, 23, 42, 0.65), rgba(15, 23, 42, 0.65)), url('../assets/images/clinic-bg.jpg') no-repeat center center fixed;
+            background-size: cover;
             margin: 0;
-            padding: 0;
-            position: relative;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Poppins', sans-serif;
         }
 
         .login-container {
@@ -32,9 +36,9 @@
 
         .login-box {
             width: 100%;
-            max-width: 400px;
+            max-width: 500px;
             background: white;
-            padding: 40px 30px;
+            padding: 20px 30px; /* Binabaan ko ang top/bottom padding mula 40px patungong 20px */
             border-radius: 16px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
             text-align: center;
@@ -276,6 +280,10 @@
     <div class="login-container">
         <div class="login-box">
 
+            <!-- Clinic Logo -->
+            <div style="text-align: center; margin-bottom: 15px;">
+                <img src="../assets/images/logo-login.png" alt="Smart Vet Logo" style="width: 80px; height: 80px; object-fit: contain;">
+            </div>
             <h1>Welcome Back</h1>
             <p>Login to your Smart Vet Care account.</p>
 

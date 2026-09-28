@@ -3,11 +3,13 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 ?>
 <div class="sidebar" id="appSidebar">
     <!-- Logo at Text Section -->
-    <div class="logo">
-        <img src="/SmartVetCare/assets/images/logo.png" alt="Smart Vet Care Logo">
-        <div class="logo-text">
-            <h2>Smart Vet Care</h2>
-            <p>Pet Owner Portal</p>
+    <div style="text-align: center; margin-bottom: 20px;">
+        <img src="../assets/images/logo-transparent.png" alt="Clinic Logo" style="width: 60px; height: 60px; object-fit: contain; filter: brightness(0) invert(1);">
+        
+        <!-- Wrapper para sa text na kusang mawawala kapag nag-auto-collapse ang sidebar -->
+        <div class="sidebar-brand-text">
+            <h3 style="color: #ffffff; font-size: 13px; margin-top: 4px; margin-bottom: 2px;">Smart Vet Care</h3>
+            <p style="color: #cbd5e1; font-size: 10px; margin: 0;">Pet Owner Portal</p>
         </div>
     </div>
 

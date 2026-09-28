@@ -171,7 +171,7 @@
             transition: background 0.15s, color 0.15s;
         }
 
-        .calendar-day:hover {
+        .calendar-day:hover:not(.disabled) {
             background: #f1f5f9;
         }
 
@@ -498,9 +498,9 @@
                         <label>Doctor</label>
                         <select id="doctor">
                             <option value="">Select Doctor</option>
-                            <option value="Dr. Alfie Tamesis">Dr. Alfie Tamesis</option>
-                            <option value="Dr. Crachzel Kyle Asistio">Dr. Crachzel Kyle Asistio</option>
-                            <option value="Dr. James Nico Martinez">Dr. James Nico Martinez</option>
+                            <option value="Dr. Alfie Tamesis">Dr. Alfie Tamesis (Mon–Wed)</option>
+                            <option value="Dr. Crachzel Kyle Asistio">Dr. Crachzel Kyle Asistio (Saturday)</option>
+                            <option value="Dr. James Nico Martinez">Dr. James Nico Martinez (Thu–Fri)</option>
                         </select>
                     </div>
 
@@ -579,7 +579,7 @@
             });
         }
 
-        // Auto-select doctor from URL parameter (e.g., appointment.php?doctor=Dr.%20Alfie%20Tamesis)
+        // Auto-select doctor from URL parameter
         const urlParams = new URLSearchParams(window.location.search);
         const doctorParam = urlParams.get('doctor');
         if (doctorParam) {
@@ -595,6 +595,14 @@
                     }
                 }
             }
+        }
+
+        const doctorSelectEl = document.getElementById('doctor');
+        if (doctorSelectEl) {
+            doctorSelectEl.addEventListener('change', () => {
+                renderCalendarDays();
+                loadPickerTimeSlots();
+            });
         }
 
         // Custom Interactive DateTime Picker Logic
@@ -631,11 +639,18 @@
             yearSelect.appendChild(opt);
         }
 
-        function updatePickerUI() {
-            monthSelect.value = selectedMonth;
-            yearSelect.value = selectedYear;
-            renderCalendarDays();
-            loadPickerTimeSlots();
+        function isDateAllowedForDoctor(dateObj, doctorName) {
+            const dayOfWeek = dateObj.getDay(); // 0=Sun, 1=Mon, 2=Tue, 3=Wed, 4=Thu, 5=Fri, 6=Sat
+            const lowerDoc = (doctorName || "").toLowerCase();
+
+            if (lowerDoc.includes("alfie")) {
+                return (dayOfWeek >= 1 && dayOfWeek <= 3); // Mon - Wed
+            } else if (lowerDoc.includes("james")) {
+                return (dayOfWeek === 4 || dayOfWeek === 5); // Thu - Fri
+            } else if (lowerDoc.includes("crachzel")) {
+                return (dayOfWeek === 6); // Saturday only
+            }
+            return true;
         }
 
         function renderCalendarDays() {
@@ -645,6 +660,11 @@
             const firstDayIndex = new Date(selectedYear, selectedMonth, 1).getDay();
             const totalDays = new Date(selectedYear, selectedMonth + 1, 0).getDate();
             const prevTotalDays = new Date(selectedYear, selectedMonth, 0).getDate();
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const doctorVal = doctorSelectEl ? doctorSelectEl.value : "";
 
             for (let i = firstDayIndex; i > 0; i--) {
                 const dayEl = document.createElement('div');
@@ -658,15 +678,33 @@
                 dayEl.className = 'calendar-day';
                 dayEl.textContent = d;
 
-                if (d === selectedDay) {
-                    dayEl.classList.add('selected');
+                const currentCellDate = new Date(selectedYear, selectedMonth, d);
+                currentCellDate.setHours(0, 0, 0, 0);
+
+                let isDisabled = false;
+                if (currentCellDate < today) {
+                    isDisabled = true;
+                } else if (doctorVal && !isDateAllowedForDoctor(currentCellDate, doctorVal)) {
+                    isDisabled = true;
                 }
 
-                dayEl.addEventListener('click', () => {
-                    selectedDay = d;
-                    renderCalendarDays();
-                    loadPickerTimeSlots();
-                });
+                if (isDisabled) {
+                    dayEl.classList.add('disabled', 'muted');
+                    dayEl.style.backgroundColor = '#f1f5f9';
+                    dayEl.style.color = '#cbd5e1';
+                    dayEl.style.cursor = 'not-allowed';
+                    dayEl.style.opacity = '0.7';
+                } else {
+                    if (d === selectedDay) {
+                        dayEl.classList.add('selected');
+                    }
+
+                    dayEl.addEventListener('click', () => {
+                        selectedDay = d;
+                        renderCalendarDays();
+                        loadPickerTimeSlots();
+                    });
+                }
 
                 grid.appendChild(dayEl);
             }
@@ -679,7 +717,11 @@
 
             pickerSlotsContainer.innerHTML = '<p style="color: #888; font-size: 12px; text-align: center;">Loading slots...</p>';
 
-            const standardSlots = ["09:00 AM", "10:30 AM", "01:00 PM", "02:30 PM", "04:00 PM"];
+            const doctorVal = doctorSelectEl ? doctorSelectEl.value.toLowerCase() : "";
+            let standardSlots = ["09:00 AM", "10:30 AM", "01:00 PM", "02:30 PM", "04:00 PM"];
+            if (doctorVal.includes("crachzel")) {
+                standardSlots = ["09:00 AM", "10:30 AM", "01:00 PM", "02:00 PM"];
+            }
             
             setTimeout(() => {
                 pickerSlotsContainer.innerHTML = '';
@@ -755,6 +797,13 @@
                 return;
             }
 
+            const chosenDateObj = new Date(selectedYear, selectedMonth, selectedDay);
+            const currentDocVal = doctorSelectEl ? doctorSelectEl.value : "";
+            if (currentDocVal && !isDateAllowedForDoctor(chosenDateObj, currentDocVal)) {
+                alert("Selected date is not available for the chosen veterinarian.");
+                return;
+            }
+
             const formattedMonth = String(selectedMonth + 1).padStart(2, '0');
             const formattedDay = String(selectedDay).padStart(2, '0');
             const dateStr = `${selectedYear}-${formattedMonth}-${formattedDay}`;
@@ -769,6 +818,13 @@
 
             hiddenDateInput.dispatchEvent(new Event('change'));
         });
+
+        function updatePickerUI() {
+            monthSelect.value = selectedMonth;
+            yearSelect.value = selectedYear;
+            renderCalendarDays();
+            loadPickerTimeSlots();
+        }
 
         updatePickerUI();
     });
