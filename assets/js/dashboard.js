@@ -17,9 +17,7 @@ function loadSeasonalReminder() {
     const textEl = document.getElementById('reminderText');
     const iconEl = document.getElementById('reminderIcon');
     const cardEl = document.getElementById('seasonalReminderCard');
-
     if (!titleEl || !textEl) return;
-
     if (month >= 5 && month <= 10) {
         titleEl.textContent = "Wet Season Safety: No Pet Left Behind, Smart Vet Fam!";
         textEl.textContent = "Hey Smart Vet Fam! Heavy rains and floods mean extra care for our furry friends. Keep them away from stagnant floodwaters to prevent Leptospirosis and Remember: during evacuations, always bring your pets along. No pet left behind!";
@@ -38,18 +36,15 @@ loadSeasonalReminder();
 async function loadTopbarAppointments(ownerId) {
     const container = document.getElementById("topbarAppointmentsList");
     if (!container) return;
-
     try {
         const q = query(collection(db, "appointments"), where("ownerId", "==", ownerId));
         const snapshot = await getDocs(q);
-
         const todayStr = new Date().toISOString().split('T')[0];
         let html = '';
         let validCount = 0;
-
         snapshot.forEach((doc) => {
             const data = doc.data();
-            if (data.status === 'Confirmed' && data.date >= todayStr) {
+            if ((data.status === 'Confirmed' || data.status === 'In Progress' || data.status === 'Pending') && data.date >= todayStr) {
                 validCount++;
                 html += `
                     <div style="background: #f8f9fa; padding: 10px; border-radius: 8px; border-left: 3px solid #5142f5; font-size: 12px; margin-bottom: 5px;">
@@ -58,55 +53,95 @@ async function loadTopbarAppointments(ownerId) {
                     </div>`;
             }
         });
-
         if (validCount === 0) {
             container.innerHTML = `<p style="text-align: center; color: #a0aec0; font-size: 12px; margin: 15px 0;">No upcoming appointments.</p>`;
             return;
         }
-
         container.innerHTML = html;
     } catch (error) {
         console.error("Error loading topbar appointments:", error);
     }
 }
 
-// --- 3. Main Dashboard Data Loader ---
+// --- 3. Main Dashboard Data Loader (Multiple Appointments for Today) ---
 function loadDashboardData(ownerId) {
     const upcomingContainer = document.getElementById("upcomingAppointmentContainer");
     const apptQuery = query(collection(db, "appointments"), where("ownerId", "==", ownerId));
     
     onSnapshot(apptQuery, (snapshot) => {
         if (!upcomingContainer) return;
-
         const todayStr = new Date().toISOString().split('T')[0];
-        let nextAppt = null;
+        let todaysAppointments = [];
 
         snapshot.forEach((doc) => {
             const data = doc.data();
-            if (!nextAppt && data.status === 'Confirmed' && data.date >= todayStr) {
-                nextAppt = data;
+            // Salain lamang ang mga may status na Pending/Confirmed/In Progress at eksaktong ngayong araw ang appointment date
+            if ((data.status === 'Pending' || data.status === 'Confirmed' || data.status === 'In Progress') && data.date === todayStr) {
+                todaysAppointments.push(data);
             }
         });
 
-        if (!nextAppt) {
-            upcomingContainer.innerHTML = `<p class="empty-state">You don't have any upcoming appointments.</p>`;
+        if (todaysAppointments.length === 0) {
+            upcomingContainer.innerHTML = `<p class="empty-state">You don't have any appointments scheduled for today.</p>`;
             return;
         }
 
-        upcomingContainer.innerHTML = `
-            <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; border-left: 4px solid #5142f5; display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <h4 style="margin: 0 0 5px 0; color: #1e1e2d; font-size: 15px;">${nextAppt.service || 'Vet Consultation'} - ${nextAppt.petName || 'Pet'}</h4>
-                    <p style="margin: 0; color: #4a5568; font-size: 13px;"><i class="fa-regular fa-calendar" style="margin-right: 5px; color: #5142f5;"></i> ${nextAppt.date}</p>
+        let containerHtml = '<div style="display: flex; flex-direction: column; gap: 12px;">';
+
+        todaysAppointments.forEach((nextAppt) => {
+            let currentStatus = nextAppt.status || 'Pending';
+            let step1Class = 'step active';
+            let step2Class = 'step';
+            let step3Class = 'step';
+
+            if (currentStatus === 'Confirmed' || currentStatus === 'In Progress') {
+                step1Class = 'step completed';
+                step2Class = 'step active';
+            } else if (currentStatus === 'Completed') {
+                step1Class = 'step completed';
+                step2Class = 'step completed';
+                step3Class = 'step active completed';
+            }
+
+            containerHtml += `
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 12px; border-left: 4px solid #2563EB;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <div>
+                            <h4 style="margin: 0 0 3px 0; color: #1e1e2d; font-size: 15px;">${nextAppt.service || 'Vet Consultation'} - <span style="color: #2563EB;">${nextAppt.petName || 'Pet'}</span></h4>
+                            <p style="margin: 0; color: #4a5568; font-size: 12.5px;"><i class="fa-regular fa-calendar" style="margin-right: 5px; color: #2563EB;"></i> ${nextAppt.date} (Today)</p>
+                        </div>
+                        <span style="background: #ebf4ff; color: #2563EB; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;">${currentStatus}</span>
+                    </div>
+
+                    <!-- Delivery-Style Progress Tracker Stepper -->
+                    <div class="progress-tracker-container">
+                        <div class="stepper">
+                            <div class="${step1Class}" data-step="1">
+                                <div class="step-circle"><i class="fa-solid fa-clipboard-list"></i></div>
+                                <div class="step-text">Pending</div>
+                            </div>
+                            <div class="${step2Class}" data-step="2">
+                                <div class="step-circle"><i class="fa-solid fa-stethoscope"></i></div>
+                                <div class="step-text">In Progress</div>
+                            </div>
+                            <div class="${step3Class}" data-step="3">
+                                <div class="step-circle"><i class="fa-solid fa-check"></i></div>
+                                <div class="step-text">Completed</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <span style="background: #ebf4ff; color: #5142f5; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">${nextAppt.status || 'Confirmed'}</span>
-            </div>
-        `;
+            `;
+        });
+
+        containerHtml += '</div>';
+        upcomingContainer.innerHTML = containerHtml;
+
     }, (error) => {
         console.error("Appointments snapshot error:", error);
     });
 
-    // Recent Activities Loader (Client-side sorting para iwas Firestore index issue)
+    // Recent Activities Loader
     const activitiesContainer = document.getElementById("recentActivitiesContainer");
     const actQuery = query(
         collection(db, "activities"), 
@@ -115,31 +150,23 @@ function loadDashboardData(ownerId) {
     
     onSnapshot(actQuery, (snapshot) => {
         if (!activitiesContainer) return;
-
         if (snapshot.empty) {
             activitiesContainer.innerHTML = `<p class="empty-state">No recent activities yet.</p>`;
             return;
         }
-
         let activitiesList = [];
         snapshot.forEach((doc) => {
             activitiesList.push({ id: doc.id, ...doc.data() });
         });
-
-        // I-sort gamit ang JavaScript mula pinakabagong timestamp pababa
         activitiesList.sort((a, b) => {
             let timeA = a.timestamp?.toDate ? a.timestamp.toDate() : new Date(a.timestamp || 0);
             let timeB = b.timestamp?.toDate ? b.timestamp.toDate() : new Date(b.timestamp || 0);
             return timeB - timeA;
         });
-
-        // Limitahan hanggang 5 na lang ang ipakita
         activitiesList = activitiesList.slice(0, 5);
-
         let html = '<div style="display: flex; flex-direction: column; gap: 10px;">';
         activitiesList.forEach((act) => {
             const desc = act.description || act.title || 'Activity performed';
-            
             let timeStr = 'Recently';
             if (act.timestamp) {
                 if (typeof act.timestamp.toDate === 'function') {
@@ -149,7 +176,6 @@ function loadDashboardData(ownerId) {
                     timeStr = act.timestamp;
                 }
             }
-
             html += '<div style="display: flex; align-items: center; gap: 12px; padding: 10px; background: #f8f9fa; border-radius: 8px;">';
             html += '<div style="background: #ebf4ff; color: #5142f5; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;"><i class="fa-solid fa-history"></i></div>';
             html += '<div style="flex: 1;">';
@@ -167,46 +193,37 @@ function loadDashboardData(ownerId) {
 // --- 4. Main Auth Listener ---
 onAuthStateChanged(auth, async (user) => {
     if (!user) return;
-
     try {
         const userQuery = query(collection(db, "users"), where("email", "==", user.email), limit(1));
         const userSnapshot = await getDocs(userQuery);
         
         if (userSnapshot.empty) return;
-
         const userData = userSnapshot.docs[0].data();
         const ownerId = userData.ownerId;
         if (!ownerId) return;
-
         if (userData.fullName) {
             localStorage.setItem("fullName", userData.fullName);
         }
-
         loadTopbarAppointments(ownerId);
         loadDashboardData(ownerId);
-
-        // Real-time Dashboard Counters para sa Pets
+        
         onSnapshot(query(collection(db, "pets"), where("ownerId", "==", ownerId)), (s) => {
             const el = document.getElementById("totalPets");
             if (el) el.innerText = s.size;
         });
 
-        // Real-time Counter para sa Appointments
         onSnapshot(query(collection(db, "appointments"), where("ownerId", "==", ownerId)), (s) => {
             let count = 0;
             const todayStr = new Date().toISOString().split('T')[0];
-            
             s.forEach(d => {
                 const data = d.data();
-                if (data.status === 'Confirmed' && data.date >= todayStr) {
+                if ((data.status === 'Confirmed' || data.status === 'In Progress' || data.status === 'Pending') && data.date >= todayStr) {
                     count++;
                 }
             });
-            
             const el = document.getElementById("appointmentCount");
             if (el) el.innerText = count;
         });
-
     } catch (err) {
         console.error("Auth state resolution error:", err);
     }

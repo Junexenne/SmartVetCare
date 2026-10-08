@@ -113,7 +113,7 @@
         .book-doctor-btn {
             display: block;
             width: 100%;
-            background: #5142f5;
+            background: #163B7A;
             color: #fff;
             text-align: center;
             padding: 11px;
@@ -196,7 +196,7 @@
                             </div>
                             <div>
                                 <i class="fa-solid fa-stethoscope"></i>
-                                <span>Specialization: Small Animal Internal Medicine & Surgery</span>
+                                <span>Specialization:Internal Medicine & Surgery</span>
                             </div>
                             <div>
                                 <i class="fa-regular fa-clock"></i>
@@ -230,7 +230,7 @@
                             </div>
                             <div>
                                 <i class="fa-solid fa-stethoscope"></i>
-                                <span>Specialization: Dermatology & Exotic Pets</span>
+                                <span>Specialization: Internal Medicine & Surgery </span>
                             </div>
                             <div>
                                 <i class="fa-regular fa-clock"></i>

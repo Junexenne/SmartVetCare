@@ -77,7 +77,7 @@ LAYOUT
 
 .sidebar {
     width: 270px;
-    background: linear-gradient(135deg, #173F81 30%, #2563EB 80%, #38BDF8 100%);
+    background: linear-gradient(135deg, #163B7A 30%, #2563EB 80%, #38BDF8 100%);
     color: #fff;
     display: flex;
     flex-direction: column;
@@ -236,8 +236,12 @@ LAYOUT
     gap: 0 !important;
 }
 /*=====================================
-TOPBAR (Modern UI Upgrade)
+TOPBAR (Original Clean Layout Restored)
 ======================================*/
+.topbar-wrapper-main {
+    width: 100%;
+    box-sizing: border-box;
+}
 
 .topbar {
     display: flex;
@@ -249,20 +253,54 @@ TOPBAR (Modern UI Upgrade)
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
     margin-bottom: 30px;
     border: 1px solid rgba(23, 63, 129, 0.05);
+    width: 100%;
+    box-sizing: border-box;
+    position: relative;
+}
+
+.topbar-left-group {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex: 1;
+}
+
+.mobile-menu-btn {
+    display: none;
+    background: transparent;
+    border: none;
+    font-size: 20px;
+    color: #173F81;
+    cursor: pointer;
+    padding: 5px;
+}
+
+.top-search-wrapper {
+    position: relative;
+    flex: 1;
+    max-width: 380px;
 }
 
 .top-search {
-    flex: 1;
     display: flex;
     align-items: center;
+    position: relative;
+    width: 100%;
+}
+
+.top-search i {
+    position: absolute;
+    left: 16px;
+    color: #a0aec0;
+    font-size: 13.5px;
 }
 
 .top-search input {
-    width: 380px;
+    width: 100%;
     height: 44px;
     border: 1.5px solid #e2e8f0;
     border-radius: 12px;
-    padding: 0 20px;
+    padding: 0 20px 0 42px;
     background: #f8fafc;
     color: #1e293b;
     font-size: 13.5px;
@@ -276,12 +314,77 @@ TOPBAR (Modern UI Upgrade)
     box-shadow: 0 0 0 4px rgba(23, 63, 129, 0.1);
 }
 
+/* Live Search Results Dropdown */
+#liveSearchResults {
+    position: absolute;
+    top: 52px;
+    left: 0;
+    width: 100%;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    border: 1px solid #eaeaea;
+    z-index: 1000;
+    max-height: 350px;
+    overflow-y: auto;
+    padding: 8px 0;
+}
+
+.live-search-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    text-decoration: none;
+    border-bottom: 1px solid #f5f5f5;
+    transition: background 0.2s;
+}
+
+.live-search-item:hover {
+    background: #f8f9fc;
+}
+
+.live-search-item .item-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #173F81;
+    margin: 0;
+}
+
+.live-search-item .item-sub {
+    font-size: 11.5px;
+    color: #64748b;
+    margin: 2px 0 0 0;
+}
+
+.live-search-no-result {
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #64748b;
+    margin: 0;
+    text-align: center;
+}
+
 .top-icons {
     display: flex;
     align-items: center;
     gap: 18px;
 }
 
+.live-clock-badge {
+    font-size: 12.5px;
+    color: #475569;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f8fafc;
+    padding: 8px 14px;
+    border-radius: 10px;
+    border: 1.5px solid #e2e8f0;
+}
+
+.topbar-icon-btn,
 .notification-btn {
     width: 44px;
     height: 44px;
@@ -295,8 +398,10 @@ TOPBAR (Modern UI Upgrade)
     justify-content: center;
     transition: all 0.2s ease;
     box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    position: relative;
 }
 
+.topbar-icon-btn:hover,
 .notification-btn:hover {
     background: #173F81;
     color: #ffffff;
@@ -304,12 +409,70 @@ TOPBAR (Modern UI Upgrade)
     transform: translateY(-1px);
 }
 
+/* Dropdown Containers Position */
+.calendar-dropdown-wrapper,
+.notification-dropdown-wrapper,
+.profile-dropdown-container {
+    position: relative;
+}
+
+.dropdown-box {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 55px;
+    width: 320px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    border: 1px solid #eaeaea;
+    z-index: 1000;
+    overflow: hidden;
+}
+
+.profile-dropdown-box {
+    width: 210px;
+    padding: 8px 0;
+}
+
+.profile-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    color: #334155;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+
+.profile-dropdown-item:hover {
+    background: #f8fafc;
+    color: #173F81;
+}
+
+.profile-dropdown-divider {
+    height: 1px;
+    background: #e2e8f0;
+    margin: 6px 0;
+}
+
+.logout-link-item {
+    color: #e53e3e !important;
+}
+
+.logout-link-item:hover {
+    background: #fff5f5 !important;
+}
+
 .user-profile {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding-left: 10px;
+    padding-left: 12px;
     border-left: 1px solid #e2e8f0;
+    cursor: pointer;
 }
 
 .profile-img {
@@ -321,17 +484,63 @@ TOPBAR (Modern UI Upgrade)
     box-shadow: 0 3px 8px rgba(23, 63, 129, 0.15);
 }
 
-.user-profile h4 {
+.user-profile-info h4 {
     font-size: 13px;
     font-weight: 700;
     color: #173F81;
     margin: 0 0 2px 0;
 }
 
-.user-profile span {
+.user-profile-info span {
     font-size: 11.5px;
     font-weight: 500;
-    color: #2ecc71; /* Kulay berde para sa Online status para matingkad */
+    color: #2ecc71;
+}
+
+.profile-dropdown-arrow {
+    font-size: 12px;
+    color: #64748b;
+    transition: transform 0.2s;
+}
+
+/* Mini Calendar Grid Fixes */
+.mini-calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    margin-bottom: 6px;
+}
+
+.mini-calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    text-align: center;
+    font-size: 12px;
+}
+.dropdown-header {
+    background: linear-gradient(135deg, #5142f5, #173F81) !important;
+    color: white;
+    padding: 12px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+    position: fixed;
+    z-index: 1000;
+  }
+  
+  /* Kapag pinindot ang burger button, idaragdag natin ang class na ito */
+  .sidebar.active {
+    transform: translateX(0);
+  }
 }
 /*=====================================
 DASHBOARD CONTENT & LAYOUT
@@ -2121,151 +2330,6 @@ MESSAGES PAGE UI REDESIGN (MODERN CHAT)
 
 .chat-input-area button i {
     font-size: 16px;
-}
-
-/*=====================================
-TOPBAR/NOTIFICATION
-======================================*/
-.topbar {
-    display: flex;
-    justify-content: space-between; /* Hinahati ang kaliwa (search) at kanan (icons/profile) */
-    align-items: center;
-    padding: 15px 25px;
-    background: #ffffff;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-    width: 100%;
-    box-sizing: border-box;
-}
-
-.top-search input {
-    padding: 8px 15px;
-    border-radius: 20px;
-    border: 1px solid #ddd;
-    width: 250px;
-}
-
-.top-icons {
-    display: flex;
-    align-items: center;
-    gap: 20px; /* Distansya sa pagitan ng bell icon at user profile */
-}
-
-.user-profile {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.profile-img {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-/*=====================================
-Notification Dropdown Container
-======================================*/ 
-#notifDropdown {
-    display: none;
-    position: absolute;
-    top: 60px;
-    right: 70px;
-    width: 320px;
-    background: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-    border: 1px solid #eaeaea;
-    z-index: 1000;
-    overflow: hidden;
-    font-family: 'Inter', sans-serif;
-    animation: fadeIn 0.2s ease-in-out;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-8px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* Header ng Dropdown */
-.notif-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px 16px;
-    border-bottom: 1px solid #f0f0f0;
-    background: #fafafa;
-}
-
-.notif-header h4 {
-    margin: 0;
-    font-size: 14px;
-    font-weight: 600;
-    color: #333;
-}
-
-.notif-header span {
-    font-size: 11px;
-    color: #5142f5;
-    cursor: pointer;
-    font-weight: 500;
-}
-
-.notif-header span:hover {
-    text-decoration: underline;
-}
-
-/* List Container */
-#notifListContainer {
-    max-height: 300px;
-    overflow-y: auto;
-}
-
-/* Individual Notification Item */
-.notif-item {
-    padding: 12px 16px;
-    border-bottom: 1px solid #f5f5f5;
-    transition: background 0.2s;
-    cursor: pointer;
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-}
-
-.notif-item:hover {
-    background: #f8f9fc;
-}
-
-.notif-item.unread {
-    background: #f0f3ff;
-}
-
-.notif-dot {
-    width: 8px;
-    height: 8px;
-    background: #5142f5;
-    border-radius: 50%;
-    margin-top: 5px;
-    flex-shrink: 0;
-}
-
-.notif-content p {
-    margin: 0 0 3px 0;
-    font-size: 13px;
-    color: #222;
-}
-
-.notif-content .notif-msg {
-    font-size: 12px;
-    color: #666;
-    margin: 0;
-    line-height: 1.4;
-}
-
-.notif-content .notif-time {
-    font-size: 10px;
-    color: #999;
-    margin-top: 4px;
-    display: block;
 }
 
 /*=====================================

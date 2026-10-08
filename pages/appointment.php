@@ -415,7 +415,7 @@
 
                 <div class="appointment-left">
                     <h3 style="color: #1e1b4b; font-size: 16px; margin-bottom: 4px;">
-                        <i class="fa-solid fa-calendar-days" style="color: #5142f5;"></i>
+                        <i class="fa-solid fa-calendar-days" style="color: #163B7A;"></i>
                         Appointment Date & Time
                     </h3>
                     <p class="calendar-note" style="color: #64748b; font-size: 13px; margin-bottom: 16px;">
@@ -426,13 +426,13 @@
                     <div class="custom-datetime-wrapper">
                         <div class="datetime-display-box" id="datetimeToggleBtn">
                             <div style="display: flex; align-items: center; gap: 8px; color: #475569; font-size: 13px; font-weight: 500; overflow: hidden;">
-                                <i class="fa-regular fa-calendar" style="color: #5142f5; font-size: 15px;"></i>
+                                <i class="fa-regular fa-calendar" style="color: #163B7A; font-size: 15px;"></i>
                                 <span id="selectedDateText">Select Date</span>
                                 <span style="color: #cbd5e1;">|</span>
-                                <i class="fa-regular fa-clock" style="color: #5142f5; font-size: 15px;"></i>
+                                <i class="fa-regular fa-clock" style="color: #163B7A; font-size: 15px;"></i>
                                 <span id="selectedTimeText">--:-- --</span>
                             </div>
-                            <i class="fa-regular fa-calendar-days" style="color: #5142f5; font-size: 16px; flex-shrink: 0;"></i>
+                            <i class="fa-regular fa-calendar-days" style="color: #163B7A; font-size: 16px; flex-shrink: 0;"></i>
                         </div>
 
                         <!-- Hidden inputs para mag-sync sa backend/existing JS -->
@@ -488,6 +488,7 @@
                     <div class="form-group">
                         <label>Service</label>
                         <select id="service">
+                            <option value="Select a Service">Select a Service</option>
                             <option value="General Check Up">General Check Up</option>
                             <option value="Vaccination">Vaccination</option>
                             <option value="Surgery">Surgery</option>
@@ -497,7 +498,7 @@
                     <div class="form-group">
                         <label>Doctor</label>
                         <select id="doctor">
-                            <option value="">Select Doctor</option>
+                             <option value="">Select Doctor</option>
                             <option value="Dr. Alfie Tamesis">Dr. Alfie Tamesis (Mon–Wed)</option>
                             <option value="Dr. Crachzel Kyle Asistio">Dr. Crachzel Kyle Asistio (Saturday)</option>
                             <option value="Dr. James Nico Martinez">Dr. James Nico Martinez (Thu–Fri)</option>

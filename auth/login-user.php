@@ -15,7 +15,6 @@
         }
 
         body {
-            /* Palitan ang '../assets/images/clinic-bg.jpg' ng tamang file path patungo sa background image ninyo */
             background: linear-gradient(rgba(15, 23, 42, 0.65), rgba(15, 23, 42, 0.65)), url('../assets/images/clinic-bg.jpg') no-repeat center center fixed;
             background-size: cover;
             margin: 0;

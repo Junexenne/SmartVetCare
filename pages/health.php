@@ -136,7 +136,7 @@ if (session_status() === PHP_SESSION_NONE) {
                     <i class="fa-solid fa-heart-pulse" style="background: #eef4ff; padding: 10px; border-radius: 12px; color: #5142f5;"></i>
                     Health Records & Monitoring
                 </h1>
-                <p>Real-time monitoring and medical status from Furry Friends Animal Clinic</p>
+                <p>Medical status and updates recorded during your clinic visits at Furry Friends Animal Clinic</p>
             </div>
 
             <div id="healthRecordsContainer">

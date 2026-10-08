@@ -300,7 +300,6 @@
                 width: auto !important;
             }
 
-            /* Compact 2-column grid sa mobile para magkasya at hindi masyadong pahaba */
             #viewPetModal .view-grid {
                 flex: none !important;
                 width: 100% !important;
@@ -342,7 +341,6 @@
                 line-height: 1.2;
             }
 
-            /* Full width para sa allergies at vaccination record */
             #viewPetModal .view-item[style*="span 2"],
             #viewPetModal .view-grid > .view-item:nth-last-child(-n+2) {
                 grid-column: span 2 !important;
@@ -426,27 +424,6 @@
         </div>
 
         <form id="petForm">
-            <!-- Pet Picture -->
-            <div class="pet-image-upload" style="margin-bottom: 15px;">
-                <img
-                    src="../assets/images/default-pet.png"
-                    id="previewImage"
-                    alt="Pet Photo">
-
-                <input
-                    type="file"
-                    id="petImage"
-                    accept="image/*"
-                    hidden>
-
-                <button
-                    type="button"
-                    id="uploadBtn">
-                    <i class="fa-solid fa-camera"></i>
-                    Change Photo
-                </button>
-            </div>
-
             <!-- Editable Fields -->
             <div class="form-grid" style="gap: 12px;">
                 <div class="form-group">
@@ -478,8 +455,7 @@
 
             <div class="modal-note" style="margin: 12px 0; font-size: 12px;">
                 <i class="fa-solid fa-circle-info"></i>
-                You can update your pet's <strong>photo</strong>,
-                <strong>weight</strong>, <strong>color/markings</strong>, and 
+                You can update your pet's <strong>weight</strong>, <strong>color/markings</strong>, and 
                 <strong>allergies/medical notes</strong>. For changes to name, breed, or species, please contact the clinic.
             </div>
 
@@ -544,6 +520,14 @@
                         <small style="display: block; margin-top: 6px; font-size: 8.5px; color: #4a5568; font-weight: 600; line-height: 1.2; text-align: center;">
                             Screenshot for clinic visits & past transactions
                         </small>
+
+                        <!-- LAST UPDATED INFO INITIALLY PLACED BELOW QR CODE INSTRUCTION -->
+                        <div style="margin-top: 10px; width: 100%; background: #f1f5f9; padding: 6px 8px; border-radius: 6px; border: 1px solid #e2e8f0; text-align: left;">
+                            <small style="display: block; font-size: 7.5px; color: #64748b; text-transform: uppercase; font-weight: 700;">
+                                <i class="fa-solid fa-clock-rotate-left"></i> Last Updated Info
+                            </small>
+                            <span id="viewLastUpdated" style="display: block; font-size: 11px; color: #0f172a; font-weight: 600; margin-top: 1px;">-</span>
+                        </div>
                     </div>
                 </div>
 
