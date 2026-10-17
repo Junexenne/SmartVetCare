@@ -1,13 +1,13 @@
 <?php
 session_start();
 // Kung walang session user_id, gagamitin ang OWN-00004 bilang default/fallback para lumitaw pa rin ang chat history
-$userId = $_SESSION['user_id'] ?? 'OWN-00004';
+$userId =$_SESSION['user_id'] ?? 'OWN-00004';
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>MESSAGE - Smart Vet Care</title>
     <link rel="stylesheet" href="../assets/css/dashboard.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -17,6 +17,7 @@ $userId = $_SESSION['user_id'] ?? 'OWN-00004';
     <style>
         html, body {
             height: 100%;
+            height: -webkit-fill-available;
             margin: 0;
             padding: 0;
             overflow: hidden;
@@ -55,9 +56,10 @@ $userId = $_SESSION['user_id'] ?? 'OWN-00004';
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
             border: 1px solid rgba(226, 232, 240, 0.8);
             position: relative;
-            padding: 10px 18px 8px 18px;
+            padding: 10px 18px 12px 18px;
             gap: 8px;
         }
+        /* Gradient AI Header Style */
         .chat-header {
             flex-shrink: 0;
             background: linear-gradient(135deg, #163B7A 0%, #2563EB 50%, #38BDF8 100%);
@@ -69,7 +71,7 @@ $userId = $_SESSION['user_id'] ?? 'OWN-00004';
             justify-content: space-between;
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
             position: relative;
-            z-index: 50;
+            z-index: 10;
         }
         .chat-header-left {
             display: flex;
@@ -118,7 +120,7 @@ $userId = $_SESSION['user_id'] ?? 'OWN-00004';
         .chat-header-actions i {
             cursor: pointer;
             transition: color 0.2s;
-            padding: 10px;
+            padding: 8px;
             pointer-events: auto !important;
         }
         .chat-header-actions i:hover {
@@ -166,10 +168,10 @@ $userId = $_SESSION['user_id'] ?? 'OWN-00004';
             overflow-y: auto;
             min-height: 0;
             box-sizing: border-box;
-            padding: 4px;
+            padding: 10px 6px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 10px;
             background: #fdfcff;
             -webkit-overflow-scrolling: touch;
         }
@@ -213,6 +215,7 @@ $userId = $_SESSION['user_id'] ?? 'OWN-00004';
             margin-top: 4px;
             padding: 0 4px;
         }
+        /* Suggested Chips / Quick Prompts Style */
         .suggested-chips-container {
             display: flex;
             gap: 8px;
@@ -306,6 +309,7 @@ $userId = $_SESSION['user_id'] ?? 'OWN-00004';
         .chat-input-area button.send-btn:hover {
             opacity: 0.9;
         }
+        /* Sidebar Overlay & Z-Index Fix */
         .sidebar {
             z-index: 1100 !important;
         }
@@ -322,6 +326,7 @@ $userId = $_SESSION['user_id'] ?? 'OWN-00004';
         .sidebar-overlay.active {
             display: block !important;
         }
+        /* Modern SweetAlert Styling */
         .custom-swal-popup {
             border-radius: 20px !important;
             padding: 24px !important;
@@ -336,45 +341,52 @@ $userId = $_SESSION['user_id'] ?? 'OWN-00004';
             font-weight: 500 !important;
             font-size: 13px !important;
         }
+        /* Fixed Mobile Responsiveness & iPhone Safe-Area Rules */
         @media (max-width: 768px) {
             .chat-container {
                 margin: 0;
                 border-radius: 0;
                 border: none;
                 height: 100%;
+                /* Itinaas ang bottom padding para hindi sumagad sa pinakababa */
+                padding: 8px 10px calc(75px + env(safe-area-inset-bottom, 30px)) 10px;
             }
             .chat-header {
-                padding: 10px 14px;
-                border-radius: 10px;
+                padding: 10px 12px;
+                border-radius: 12px;
+                position: relative;
+                top: 0;
+                width: 100%;
+                box-sizing: border-box;
             }
             .chat-header div h3 {
-                font-size: 13.5px;
+                font-size: 13px;
             }
             .chat-header div p {
-                font-size: 10.5px;
+                font-size: 10px;
+            }
+            .chat-header .clinic-icon {
+                width: 36px;
+                height: 36px;
+                font-size: 15px;
             }
             .chat-messages {
-                padding: 10px;
+                padding: 8px 4px;
             }
             .message-wrapper {
                 max-width: 85%;
-            }
-            .chat-input-area {
-                padding: 8px 0;
-                border-radius: 0;
-                gap: 8px;
             }
             .chat-tools {
                 gap: 8px;
                 font-size: 16px;
             }
             .chat-input-area input[type="text"] {
-                padding: 10px 14px;
+                padding: 9px 12px;
                 font-size: 12px;
             }
             .chat-input-area button.send-btn {
-                width: 36px;
-                height: 36px;
+                width: 34px;
+                height: 34px;
             }
         }
     </style>
@@ -411,6 +423,7 @@ $userId = $_SESSION['user_id'] ?? 'OWN-00004';
                 <div id="chatMessages" class="chat-messages">
                     <!-- Dynamic Messages dito -->
                 </div>
+                <!-- Suggested Chips Container -->
                 <div class="suggested-chips-container">
                     <button type="button" class="chip-btn" data-text="Inquire about billing">
                         💳 Inquire about billing
@@ -433,6 +446,7 @@ $userId = $_SESSION['user_id'] ?? 'OWN-00004';
                         <input type="file" id="attachFileInput" style="display: none;">
                     </div>
                     <input type="text" id="messageInput" placeholder="Message clinic admin..." autocomplete="off" required>
+                    
                     <button type="submit" class="send-btn">
                         <i class="fa-solid fa-paper-plane" style="pointer-events: none;"></i>
                     </button>
@@ -461,7 +475,6 @@ $userId = $_SESSION['user_id'] ?? 'OWN-00004';
             firebase.initializeApp(firebaseConfig);
         }
         const db = firebase.firestore();
-
         document.addEventListener('DOMContentLoaded', () => {
             const sidebar = document.querySelector('.sidebar');
             const sidebarOverlay = document.getElementById('sidebarOverlay');
@@ -496,7 +509,7 @@ $userId = $_SESSION['user_id'] ?? 'OWN-00004';
                 });
             });
         });
-
+        // 1. Real-time Messages Loading
         function loadMessages() {
             const chatMessagesContainer = document.getElementById('chatMessages');
             if (!chatMessagesContainer) return;
@@ -519,6 +532,7 @@ $userId = $_SESSION['user_id'] ?? 'OWN-00004';
                   });
                   messages.forEach((msg) => {
                       const isUser = msg.senderId === currentUserId;
+                      
                       let timeString = "";
                       if (msg.timestamp) {
                           const date = msg.timestamp.toDate ? msg.timestamp.toDate() : new Date(msg.timestamp);
@@ -545,7 +559,7 @@ $userId = $_SESSION['user_id'] ?? 'OWN-00004';
                   console.error("Error loading messages: ", error);
               });
         }
-
+        // 2. Send Message
         const chatForm = document.getElementById('chatForm');
         if (chatForm) {
             chatForm.addEventListener('submit', async (e) => {
@@ -581,7 +595,7 @@ $userId = $_SESSION['user_id'] ?? 'OWN-00004';
                 }
             });
         }
-
+        // 3. Dropdown Menu Toggle
         const menuToggleBtn = document.getElementById('menuToggleBtn');
         const chatDropdownMenu = document.getElementById('chatDropdownMenu');
         if (menuToggleBtn && chatDropdownMenu) {
@@ -593,7 +607,7 @@ $userId = $_SESSION['user_id'] ?? 'OWN-00004';
                 chatDropdownMenu.classList.remove('active');
             });
         }
-
+        // 4. Clinic Info Modal
         const btnClinicInfo = document.getElementById('btnClinicInfo');
         if (btnClinicInfo) {
             btnClinicInfo.addEventListener('click', () => {
@@ -617,7 +631,7 @@ $userId = $_SESSION['user_id'] ?? 'OWN-00004';
                 });
             });
         }
-
+        // 5. Clear Chat Modal
         const btnClearChat = document.getElementById('btnClearChat');
         if (btnClearChat) {
             btnClearChat.addEventListener('click', async () => {
@@ -669,7 +683,7 @@ $userId = $_SESSION['user_id'] ?? 'OWN-00004';
                 });
             });
         }
-
+        // 6. Action Buttons
         const attachFileInput = document.getElementById('attachFileInput');
         if (attachFileInput) {
             attachFileInput.addEventListener('change', (e) => {

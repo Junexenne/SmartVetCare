@@ -44,7 +44,7 @@
             transform: translateY(-4px);
             box-shadow: 0 10px 25px rgba(81, 66, 245, 0.08);
         }
-        .doctor-img-placeholder {
+        .doctor-img-container {
             width: 90px;
             height: 90px;
             background: #eef4ff;
@@ -55,8 +55,11 @@
             justify-content: center;
             overflow: hidden;
             border: 2px solid #c7d2fe;
-            color: #5142f5;
-            font-size: 38px;
+        }
+        .doctor-img-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
         .doctor-info {
             text-align: center;
@@ -113,8 +116,8 @@
                 <!-- Doctor 1: Dr. Alfie G. Tamesis -->
                 <div class="doctor-card">
                     <div>
-                        <div class="doctor-img-placeholder">
-                            <i class="fa-solid fa-user-doctor"></i>
+                        <div class="doctor-img-container">
+                            <img src="../assets/images/adminPicture.png" alt="Dr. Alfie G. Tamesis">
                         </div>
                         <div class="doctor-info">
                             <h3>Dr. Alfie G. Tamesis</h3>
@@ -125,8 +128,8 @@
                 <!-- Doctor 2: Dr. Edmond Batan -->
                 <div class="doctor-card">
                     <div>
-                        <div class="doctor-img-placeholder">
-                            <i class="fa-solid fa-user-doctor"></i>
+                        <div class="doctor-img-container">
+                            <img src="../assets/images/adminPicture.png" alt="Dr. Edmond Batan">
                         </div>
                         <div class="doctor-info">
                             <h3>Dr. Edmond Batan</h3>
@@ -137,8 +140,8 @@
                 <!-- Doctor 3: Dr. Jovanito Ellema -->
                 <div class="doctor-card">
                     <div>
-                        <div class="doctor-img-placeholder">
-                            <i class="fa-solid fa-user-doctor"></i>
+                        <div class="doctor-img-container">
+                            <img src="../assets/images/adminPicture.png" alt="Dr. Jovanito Ellema">
                         </div>
                         <div class="doctor-info">
                             <h3>Dr. Jovanito Ellema</h3>
@@ -149,8 +152,8 @@
                 <!-- Doctor 4: Dr. Jan Karlo Fanito -->
                 <div class="doctor-card">
                     <div>
-                        <div class="doctor-img-placeholder">
-                            <i class="fa-solid fa-user-doctor"></i>
+                        <div class="doctor-img-container">
+                            <img src="../assets/images/adminPicture.png" alt="Dr. Jan Karlo Fanito">
                         </div>
                         <div class="doctor-info">
                             <h3>Dr. Jan Karlo Fanito</h3>
@@ -161,8 +164,8 @@
                 <!-- Doctor 5: Dr. Senr Cruz -->
                 <div class="doctor-card">
                     <div>
-                        <div class="doctor-img-placeholder">
-                            <i class="fa-solid fa-user-doctor"></i>
+                        <div class="doctor-img-container">
+                            <img src="../assets/images/adminPicture.png" alt="Dr. Senr Cruz">
                         </div>
                         <div class="doctor-info">
                             <h3>Dr. Senr Cruz</h3>

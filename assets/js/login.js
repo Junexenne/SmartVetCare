@@ -54,7 +54,6 @@ document.addEventListener("DOMContentLoaded", () => {
         rememberMeCheckbox.checked = true;
     }
 
-    // Inilagay ang restriction para puro numero lamang ang maitatype sa OTP input
     const otpCodeInput = document.getElementById("otpCodeInput");
     if (otpCodeInput) {
         otpCodeInput.addEventListener("input", function () {
@@ -68,13 +67,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     document.getElementById("sendEmailOtpBtn").addEventListener("click", () => {
-        // Gumagawa ng bagong random 6-digit code tuwing pipindutin
         generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
         showGivenOtpUI("Email");
     });
 
     document.getElementById("sendPhoneOtpBtn").addEventListener("click", () => {
-        // Gumagawa ng bagong random 6-digit code tuwing pipindutin
         generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
         showGivenOtpUI("SMS / Phone");
     });
@@ -105,14 +102,18 @@ async function handleLogin() {
     try {
         const persistenceType = rememberMe ? browserLocalPersistence : browserSessionPersistence;
         await setPersistence(auth, persistenceType);
+
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
-        const q = query(
-            collection(db, "users"),
-            where("email", "==", user.email)
-        );
-        const snapshot = await getDocs(q);
+        const usersRef = collection(db, "users");
+        let q = query(usersRef, where("email", "==", user.email));
+        let snapshot = await getDocs(q);
+
+        if (snapshot.empty) {
+            q = query(usersRef, where("personalEmail", "==", user.email));
+            snapshot = await getDocs(q);
+        }
 
         if (snapshot.empty) {
             triggerToast("Login Failed", "User record not found.", "error");
@@ -137,15 +138,13 @@ async function handleLogin() {
 
         tempUserData = { userDocId, ...userData };
         tempUserObject = user;
-        
+
         document.getElementById("otpSubtitle").innerHTML = `Choose verification method for <b>${userData.fullName}</b>:`;
         document.getElementById("otpSelectMethod").style.display = "flex";
         document.getElementById("otpInputContainer").style.display = "none";
-        
-        // I-clear ang lumang OTP input
+
         const otpCodeInput = document.getElementById("otpCodeInput");
         if (otpCodeInput) otpCodeInput.value = "";
-
         otpModal.style.display = "flex";
     } catch (error) {
         console.error(error);
@@ -165,7 +164,6 @@ function showGivenOtpUI(methodName) {
 
 async function verifyOtpProcess() {
     const enteredOtp = document.getElementById("otpCodeInput").value.trim();
-
     if (!enteredOtp || enteredOtp.length !== 6) {
         triggerToast("Invalid Code", "Please enter the 6-digit OTP code.", "error");
         return;
@@ -174,9 +172,8 @@ async function verifyOtpProcess() {
     if (enteredOtp === generatedOtp) {
         otpModal.style.display = "none";
         triggerToast("Verification Successful", "Access granted!", "success");
-        
-        const activeUserId = tempUserData.ownerId || tempUserData.userDocId;
 
+        const activeUserId = tempUserData.ownerId || tempUserData.userDocId;
         localStorage.setItem("isLoggedIn", "true");
         localStorage.setItem("userUID", tempUserObject.uid);
         localStorage.setItem("userEmail", tempUserObject.email);
@@ -204,7 +201,7 @@ async function verifyOtpProcess() {
             window.location.href = "../pages/dashboard.php";
         }, 1200);
     } else {
-        triggerToast("Verification Failed", `Incorrect code. Please try again.`, "error");
+        triggerToast("Verification Failed", "Incorrect code. Please try again.", "error");
     }
 }
 

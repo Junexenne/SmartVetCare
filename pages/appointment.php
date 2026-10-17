@@ -161,7 +161,6 @@
             color: #ffffff !important;
             font-weight: 600;
         }
-        /* Styling para sa mga Time Slots */
         .picker-slots-container {
             display: flex;
             flex-direction: column;
@@ -215,7 +214,6 @@
         .btn-done:hover {
             background: #4333e6;
         }
-        /* Form Controls Interactive UI */
         .form-group {
             margin-bottom: 16px;
         }
@@ -229,6 +227,8 @@
         .form-group select, 
         .form-group textarea {
             width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
             padding: 11px 14px;
             border: 1px solid #cbd5e1;
             border-radius: 10px;
@@ -239,11 +239,10 @@
             outline: none;
             transition: border-color 0.2s, box-shadow 0.2s;
         }
-        .form-group select:disabled {
-            background-color: #f1f5f9;
-            color: #94a3b8;
-            cursor: not-allowed;
-            opacity: 0.7;
+        .form-group select option {
+            max-width: 100%;
+            white-space: normal;
+            word-wrap: break-word;
         }
         .form-group select:focus, 
         .form-group textarea:focus {
@@ -262,6 +261,24 @@
             display: flex;
             align-items: flex-start;
             gap: 10px;
+        }
+        .alert-success {
+            background: #dcfce7;
+            color: #166534;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            display: none;
+        }
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            display: none;
         }
         @media (max-width: 992px) {
             .appointment-card {
@@ -308,59 +325,6 @@
                 box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35) !important;
                 border: 1px solid #e2e8f0 !important;
                 border-radius: 14px !important;
-            }
-            .calendar-day {
-                font-size: 11px !important;
-                height: 28px !important;
-            }
-            .calendar-nav button {
-                width: 28px !important;
-                height: 28px !important;
-            }
-            .calendar-nav select {
-                padding: 4px 6px !important;
-                font-size: 12px !important;
-            }
-            .picker-slots-container {
-                max-height: 130px !important;
-            }
-            .picker-time-slot {
-                padding: 6px 10px !important;
-                font-size: 12px !important;
-            }
-            .picker-time-side {
-                border-left: none;
-                border-top: 1px solid #f1f5f9;
-                padding-left: 0;
-                padding-top: 12px;
-                margin-top: 10px;
-            }
-            #userAppointmentsContainer {
-                grid-template-columns: repeat(2, 1fr) !important;
-                gap: 8px !important;
-            }
-            #userAppointmentsContainer > div {
-                padding: 8px !important;
-                border-radius: 12px !important;
-                box-sizing: border-box !important;
-                overflow: hidden !important;
-            }
-            #userAppointmentsContainer h4 {
-                font-size: 11px !important;
-                margin-bottom: 3px !important;
-                word-break: break-word !important;
-            }
-            #userAppointmentsContainer p, 
-            #userAppointmentsContainer span {
-                font-size: 10px !important;
-                line-height: 1.2 !important;
-                margin: 2px 0 !important;
-                word-break: break-word !important;
-            }
-            #userAppointmentsContainer button {
-                padding: 4px 6px !important;
-                font-size: 9px !important;
-                border-radius: 6px !important;
             }
         }
     </style>
@@ -454,9 +418,10 @@
                         <select id="service">
                             <option value="Select a Service">Select a Service</option>
                             <option value="Wellness (Vaccination / Deworming)">Wellness (Vaccination / Deworming)</option>
-                            <option value="Laboratories (CBC, Chemistry, Microscopy, Ultrasound, Laser Therapy)">Laboratories (CBC, Chemistry, Microscopy, Ultrasound, Laser Therapy)</option>
+                            <option value="Laboratories">Laboratories</option>
                             <option value="Check up">Check up</option>
                             <option value="Minor Surgeries">Minor Surgeries</option>
+                            <option value="Pet Grooming">Pet Grooming</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -595,18 +560,14 @@
             pickerSlotsContainer.innerHTML = '<p style="color: #888; font-size: 12px; text-align: center;">Loading slots...</p>';
             
             let standardSlots = [
-                { time: "10:00 AM", isBreak: false },
-                { time: "11:00 AM", isBreak: false },
+                { time: "09:00 AM", isBreak: false },
+                { time: "10:30 AM", isBreak: false },
                 { time: "12:00 PM - 01:00 PM (Break Time)", isBreak: true },
                 { time: "01:00 PM", isBreak: false },
                 { time: "02:30 PM", isBreak: false },
-                { time: "04:00 PM", isBreak: false },
-                { time: "05:30 PM", isBreak: false },
-                { time: "06:00 PM", isBreak: false }
+                { time: "04:00 PM", isBreak: false }
             ];
             
-            const now = new Date();
-            const isToday = (selectedYear === now.getFullYear() && selectedMonth === now.getMonth() && selectedDay === now.getDate());
             setTimeout(() => {
                 pickerSlotsContainer.innerHTML = '';
                 standardSlots.forEach(slotObj => {
@@ -620,32 +581,15 @@
                         slotDiv.style.borderColor = '#fca5a5';
                         slotDiv.style.fontSize = '11px';
                     } else {
-                        let isTimePassed = false;
-                        if (isToday) {
-                            const [timeStr, modifier] = slotObj.time.split(' ');
-                            let [hours, minutes] = timeStr.split(':').map(Number);
-                            if (modifier === 'PM' && hours < 12) hours += 12;
-                            if (modifier === 'AM' && hours === 12) hours = 0;
-                            
-                            const slotDate = new Date();
-                            slotDate.setHours(hours, minutes, 0, 0);
-                            if (slotDate <= now) {
-                                isTimePassed = true;
-                            }
+                        if (selectedTimeValue === slotObj.time) {
+                            slotDiv.classList.add('selected');
                         }
-                        if (isTimePassed) {
-                            slotDiv.classList.add('disabled');
-                        } else {
-                            if (selectedTimeValue === slotObj.time) {
-                                slotDiv.classList.add('selected');
-                            }
-                            slotDiv.addEventListener('click', () => {
-                                if (slotDiv.classList.contains('disabled') || slotDiv.classList.contains('booked')) return;
-                                document.querySelectorAll('.picker-time-slot').forEach(el => el.classList.remove('selected'));
-                                slotDiv.classList.add('selected');
-                                selectedTimeValue = slotObj.time;
-                            });
-                        }
+                        slotDiv.addEventListener('click', () => {
+                            if (slotDiv.classList.contains('disabled') || slotDiv.classList.contains('booked')) return;
+                            document.querySelectorAll('.picker-time-slot').forEach(el => el.classList.remove('selected'));
+                            slotDiv.classList.add('selected');
+                            selectedTimeValue = slotObj.time;
+                        });
                     }
                     pickerSlotsContainer.appendChild(slotDiv);
                 });

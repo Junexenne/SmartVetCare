@@ -12,11 +12,13 @@ if (session_status() === PHP_SESSION_NONE) {
     <link rel="stylesheet" href="../assets/css/dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* Mobile spacing and alignment fix */
         .main-content {
             box-sizing: border-box;
             overflow-x: hidden;
             width: 100%;
         }
+        
         .profile-main-container {
             width: 100%;
             box-sizing: border-box;
@@ -30,17 +32,39 @@ if (session_status() === PHP_SESSION_NONE) {
         }
         .form-grid {
             box-sizing: border-box;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
         }
-        .form-group input {
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group.full-width {
+            grid-column: span 2;
+        }
+        .form-group input, .form-group select {
             box-sizing: border-box;
             max-width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
         }
-        .form-group input:disabled {
+        .form-group select:focus, .form-group input:focus {
+            border-color: #4f46e5;
+        }
+        
+        /* Disabled input styling */
+        .form-group input:disabled, .form-group select:disabled {
             background-color: #f1f5f9 !important;
             color: #64748b !important;
             cursor: not-allowed;
             border-color: #cbd5e1 !important;
         }
+        
+        /* Last Updated Container Style */
         .last-updated-box {
             display: inline-flex;
             align-items: center;
@@ -57,6 +81,8 @@ if (session_status() === PHP_SESSION_NONE) {
         .last-updated-box i {
             color: #4f46e5;
         }
+        
+        /* Sidebar Overlay for Mobile */
         .sidebar-overlay {
             display: none;
             position: fixed;
@@ -68,6 +94,12 @@ if (session_status() === PHP_SESSION_NONE) {
             z-index: 1000;
         }
         @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .form-group.full-width {
+                grid-column: span 1;
+            }
             .main-content {
                 padding: 10px !important;
             }
@@ -108,16 +140,14 @@ if (session_status() === PHP_SESSION_NONE) {
     <div class="main-content">
         <?php include("../includes/topbar.php"); ?>
         <div class="profile-main-container">
+            
+            <!-- Profile Banner -->
             <div class="profile-banner">
                 <div class="profile-avatar-wrapper">
-                    <div class="profile-avatar-container" id="avatarContainer">
+                    <div class="profile-avatar-container" id="avatarContainer" style="overflow: hidden;">
                         <span id="avatarInitial">U</span>
                         <img id="profileImagePreview" src="" alt="Profile" style="display: none; width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
                     </div>
-                    <label for="avatarFileInput" class="upload-badge-btn" title="Change Profile Picture">
-                        <i class="fa-solid fa-camera"></i>
-                    </label>
-                    <input type="file" id="avatarFileInput" accept="image/*" style="display: none;">
                 </div>
                 <div class="profile-banner-info">
                     <h2 id="bannerName">Loading...</h2>
@@ -125,13 +155,18 @@ if (session_status() === PHP_SESSION_NONE) {
                     <span class="role-badge">Pet Owner</span>
                 </div>
             </div>
+
+            <!-- Update Form Card -->
             <div class="profile-card">
                 <h3><i class="fa-solid fa-user-pen"></i> Edit Account Information</h3>
+                
+                <!-- Last Updated Timestamp Badge -->
                 <div class="last-updated-box">
                     <i class="fa-solid fa-clock-rotate-left"></i>
                     <span><strong>Last Updated:</strong> <span id="lastUpdatedText">Loading...</span></span>
                 </div>
                 <div id="alertBox" style="display: none; padding: 10px; margin-bottom: 15px; border-radius: 5px;"></div>
+                
                 <form id="updateProfileForm">
                     <div class="form-grid">
                         <div class="form-group">
@@ -141,6 +176,14 @@ if (session_status() === PHP_SESSION_NONE) {
                         <div class="form-group">
                             <label>Email Address <small style="color: #888;">(Read-only)</small></label>
                             <input type="email" id="email" placeholder="Enter your email" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label>Gender</label>
+                            <select id="gender" required>
+                                <option value="" disabled selected>Select Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                            </select>
                         </div>
                         <div class="form-group">
                             <label>Contact Number</label>
@@ -155,7 +198,8 @@ if (session_status() === PHP_SESSION_NONE) {
                             <input type="text" id="address" placeholder="House No., Street, Barangay, City" required>
                         </div>
                     </div>
-                    <div class="btn-container">
+                    
+                    <div class="btn-container" style="margin-top: 20px;">
                         <button type="submit" class="btn-update" id="saveBtn">
                             <i class="fa-solid fa-floppy-disk"></i> Save Changes
                         </button>
@@ -165,7 +209,9 @@ if (session_status() === PHP_SESSION_NONE) {
         </div>
     </div>
 </div>
+
 <script>
+    // Script for Mobile Sidebar Toggle
     document.addEventListener("DOMContentLoaded", () => {
         const mobileBtn = document.getElementById('mobileMenuBtn');
         const sidebar = document.querySelector('.sidebar'); 
@@ -183,17 +229,21 @@ if (session_status() === PHP_SESSION_NONE) {
         }
     });
 </script>
+
 <script type="module">
-    import { db, storage } from '../assets/js/firebase-config.js';
+    import { db } from '../assets/js/firebase-config.js';
     import { collection, query, where, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
-    import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
+
     const currentUserId = localStorage.getItem("ownerId") || localStorage.getItem("userUID");
     const userEmail = localStorage.getItem("userEmail");
+
     if (!currentUserId || localStorage.getItem("isLoggedIn") !== "true") {
         window.location.href = 'login-user.php';
     }
+
     const fullNameInput = document.getElementById('fullName');
     const emailInput = document.getElementById('email');
+    const genderSelect = document.getElementById('gender');
     const contactInput = document.getElementById('contactNumber');
     const addressInput = document.getElementById('address');
     
@@ -201,13 +251,12 @@ if (session_status() === PHP_SESSION_NONE) {
     const bannerEmail = document.getElementById('bannerEmail');
     const avatarInitial = document.getElementById('avatarInitial');
     const profileImagePreview = document.getElementById('profileImagePreview');
-    const avatarFileInput = document.getElementById('avatarFileInput');
     const userIdField = document.getElementById('userIdField');
     const lastUpdatedText = document.getElementById('lastUpdatedText');
     const alertBox = document.getElementById('alertBox');
     const updateForm = document.getElementById('updateProfileForm');
     const saveBtn = document.getElementById('saveBtn');
-    let selectedFile = null;
+
     let activeUserDocRef = null;
 
     function formatTimestamp(timestamp) {
@@ -237,6 +286,7 @@ if (session_status() === PHP_SESSION_NONE) {
                 q = query(collection(db, "users"), where("email", "==", userEmail));
                 snapshot = await getDocs(q);
             }
+
             if (!snapshot.empty) {
                 const userDoc = snapshot.docs[0];
                 activeUserDocRef = userDoc.ref;
@@ -244,11 +294,13 @@ if (session_status() === PHP_SESSION_NONE) {
                 
                 if (fullNameInput) fullNameInput.value = data.fullName || '';
                 if (emailInput) emailInput.value = data.email || '';
+                if (genderSelect) genderSelect.value = data.gender || '';
                 if (contactInput) contactInput.value = data.contactNumber || data.phone || '';
                 if (addressInput) addressInput.value = data.address || '';
                 if (userIdField) userIdField.value = data.ownerId || currentUserId;
                 if (lastUpdatedText) lastUpdatedText.textContent = formatTimestamp(data.updatedAt || data.createdAt);
-                updateBanner(data.fullName || 'User', data.email || 'No email', data.profileImage || '');
+                
+                updateBanner(data.fullName || 'User', data.email || 'No email', data.gender || '');
             } else {
                 if (bannerName) bannerName.textContent = "New User";
                 if (bannerEmail) bannerEmail.textContent = "Please complete your profile";
@@ -259,37 +311,40 @@ if (session_status() === PHP_SESSION_NONE) {
         }
     }
 
-    function updateBanner(name, email, imageUrl) {
+    function updateBanner(name, email, gender) {
         if (bannerName) bannerName.textContent = name;
         if (bannerEmail) bannerEmail.textContent = email;
-        if (avatarInitial) {
-            avatarInitial.textContent = name && name !== "New User" ? name.charAt(0).toUpperCase() : "U";
+
+        const normalizedGender = (gender || "").toLowerCase();
+        let displayImage = "";
+
+        if (normalizedGender === "male") {
+            displayImage = "../assets/images/male-owner.png";
+        } else if (normalizedGender === "female") {
+            displayImage = "../assets/images/female-owner.png";
         }
-        if (imageUrl && imageUrl.trim() !== "") {
+
+        if (displayImage !== "") {
             if (profileImagePreview) {
-                profileImagePreview.src = imageUrl;
+                profileImagePreview.src = displayImage;
                 profileImagePreview.style.display = 'block';
             }
             if (avatarInitial) avatarInitial.style.display = 'none';
         } else {
             if (profileImagePreview) profileImagePreview.style.display = 'none';
-            if (avatarInitial) avatarInitial.style.display = 'block';
+            if (avatarInitial) {
+                avatarInitial.textContent = name && name !== "New User" ? name.charAt(0).toUpperCase() : "U";
+                avatarInitial.style.display = 'block';
+            }
         }
     }
 
     loadUserProfile();
 
-    if (avatarFileInput) {
-        avatarFileInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                selectedFile = file;
-                const reader = new FileReader();
-                reader.onload = (uploadEvent) => {
-                    updateBanner(fullNameInput.value || 'User', emailInput.value || '', uploadEvent.target.result);
-                };
-                reader.readAsDataURL(file);
-            }
+    // Real-time update of avatar when gender changes in dropdown
+    if (genderSelect) {
+        genderSelect.addEventListener('change', (e) => {
+            updateBanner(fullNameInput.value || 'User', emailInput.value || '', e.target.value);
         });
     }
 
@@ -300,29 +355,36 @@ if (session_status() === PHP_SESSION_NONE) {
                 showAlert("Error: User document not found for updating.", "error");
                 return;
             }
+
             if (saveBtn) {
                 saveBtn.disabled = true;
                 saveBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Saving...`;
             }
+
             try {
-                let profileImageUrl = profileImagePreview && profileImagePreview.src && profileImagePreview.style.display === 'block' ? profileImagePreview.src : '';
-                if (selectedFile) {
-                    const storageRef = ref(storage, `profile_images/${currentUserId}_${Date.now()}`);
-                    const snapshot = await uploadBytes(storageRef, selectedFile);
-                    profileImageUrl = await getDownloadURL(snapshot.ref);
-                }
+                const selectedGender = genderSelect ? genderSelect.value : '';
                 const now = new Date();
+
+                // Hardcoded image assignment based on gender selection
+                let profileImageUrl = "";
+                if (selectedGender.toLowerCase() === "male") {
+                    profileImageUrl = "../assets/images/male-owner.png";
+                } else if (selectedGender.toLowerCase() === "female") {
+                    profileImageUrl = "../assets/images/female-owner.png";
+                }
+
                 await setDoc(activeUserDocRef, {
+                    gender: selectedGender,
                     phone: contactInput ? contactInput.value : '',
                     contactNumber: contactInput ? contactInput.value : '',
                     address: addressInput ? addressInput.value : '',
                     profileImage: profileImageUrl,
                     updatedAt: now
                 }, { merge: true });
+
                 if (lastUpdatedText) lastUpdatedText.textContent = formatTimestamp(now);
-                updateBanner(fullNameInput.value, emailInput.value, profileImageUrl);
+                updateBanner(fullNameInput.value, emailInput.value, selectedGender);
                 showAlert("Profile successfully updated!", "success");
-                selectedFile = null; 
             } catch (error) {
                 console.error("Error updating profile: ", error);
                 showAlert("Failed to update profile.", "error");

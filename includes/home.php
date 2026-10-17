@@ -121,6 +121,8 @@
         <div class="video-player">
             <video
                 controls
+                playsinline
+                webkit-playsinline
                 preload="metadata"
                 poster="assets/images/rabies-thumbnail.jpg">
                 <source src="assets/videos/rabies-prevention.mp4" type="video/mp4">

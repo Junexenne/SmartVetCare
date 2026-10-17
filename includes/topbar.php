@@ -69,7 +69,7 @@
                             <h4>Notifications</h4>
                             <span id="notifCountBadge">0</span>
                        </div>
-                       <span id="markAllAsReadBtn">Mark all as read</span>
+                       <span id="markAllAsReadBtn" style="cursor: pointer;">Mark all as read</span>
                     </div>
                     <div id="notifListContainer" class="dropdown-list-container notif-list">
                        <div class="notif-empty-state">
@@ -85,7 +85,10 @@
             <!-- User Profile Dropdown Menu -->
             <div class="profile-dropdown-container" id="profileDropdownContainer">
                 <div class="user-profile" id="profileTrigger">
-                    <img src="../assets/images/default-user.png" class="profile-img" id="topbarProfileImg" alt="Profile Image">
+                    <div class="profile-initial-avatar" id="topbarInitialAvatarContainer" style="overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                        <span id="topbarInitialAvatar">U</span>
+                        <img id="topbarProfileImg" src="" alt="Profile" style="display: none; width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                    </div>
                     <div class="user-profile-info">
                         <h4 id="topbarUserName">Pet Owner</h4>
                         <span>Online</span>
@@ -287,6 +290,7 @@
         transition: all 0.2s ease;
         color: #475569;
         font-size: 14px;
+        position: relative;
     }
     .topbar-icon-btn:hover,
     .notification-btn:hover {
@@ -297,15 +301,16 @@
     }
     #notifBadge {
         position: absolute;
-        top: -2px;
-        right: -2px;
+        top: -3px;
+        right: -3px;
         background: #e53e3e;
         color: white;
-        font-size: 9px;
-        padding: 2px 5px;
+        font-size: 10px;
+        padding: 2px 6px;
         border-radius: 50%;
         display: none;
-        font-weight: 600;
+        font-weight: 700;
+        box-shadow: 0 2px 5px rgba(229, 62, 62, 0.4);
     }
     .dropdown-box {
         display: none;
@@ -322,7 +327,59 @@
         font-family: 'Poppins', sans-serif;
     }
     .notif-box {
-        width: 300px;
+        width: 320px;
+    }
+    .notif-item {
+        padding: 10px 14px;
+        border-bottom: 1px solid #f1f5f9;
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        text-decoration: none;
+        transition: background 0.15s ease;
+        cursor: pointer;
+    }
+    .notif-item.unread {
+        background: #f0f7ff;
+    }
+    .notif-item:hover {
+        background: #f8fafc;
+    }
+    .notif-icon-circle {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: #e0e7ff;
+        color: #4338ca;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        flex-shrink: 0;
+        margin-top: 2px;
+    }
+    .notif-item.approved .notif-icon-circle {
+        background: #dcfce7;
+        color: #15803d;
+    }
+    .notif-content {
+        flex: 1;
+    }
+    .notif-title {
+        font-size: 12px;
+        font-weight: 600;
+        color: #1e293b;
+        margin: 0 0 2px 0;
+    }
+    .notif-body {
+        font-size: 11px;
+        color: #64748b;
+        margin: 0 0 4px 0;
+        line-height: 1.3;
+    }
+    .notif-time {
+        font-size: 9.5px;
+        color: #94a3b8;
     }
     .profile-dropdown-box {
         width: 200px;
@@ -449,7 +506,7 @@
         gap: 5px;
     }
     .notif-list {
-        max-height: 250px;
+        max-height: 280px;
         background: #ffffff;
     }
     .empty-state-text {
@@ -499,13 +556,20 @@
         padding-left: 8px;
         border-left: 1px solid #e2e8f0;
     }
-    .profile-img {
+    .profile-initial-avatar {
         width: 36px;
         height: 36px;
         border-radius: 50%;
-        object-fit: cover;
+        background: #173F81;
+        color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 15px;
+        font-weight: 600;
         border: 2px solid #173F81;
         box-shadow: 0 2px 6px rgba(23, 63, 129, 0.15);
+        flex-shrink: 0;
     }
     .user-profile-info {
         text-align: left;
@@ -620,9 +684,10 @@
         .profile-dropdown-arrow {
             display: none; 
         }
-        .profile-img {
+        .profile-initial-avatar {
             width: 32px;
             height: 32px;
+            font-size: 13px;
             border-width: 1.5px;
         }
         .dropdown-box {
@@ -631,7 +696,7 @@
         }
         .notif-box {
             right: -30px !important;
-            width: 260px !important;
+            width: 280px !important;
         }
         .profile-dropdown-box {
             right: 0 !important;
@@ -639,9 +704,20 @@
         }
     }
 </style>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { 
+        getFirestore, 
+        collection, 
+        query, 
+        where, 
+        onSnapshot, 
+        getDocs, 
+        doc, 
+        updateDoc 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
     const firebaseConfig = {
         apiKey: "AIzaSyBwHmTjg_rT-bU0NL1c71f5qkonf7H7eNM",
         authDomain: "furryfriendsanimalclinic-13da3.firebaseapp.com",
@@ -651,9 +727,12 @@
         appId: "1:214577366989:web:fa96249b2a0321f3f52684",
         measurementId: "G-RZEKK3R3B2"
     };
+
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    document.addEventListener("DOMContentLoaded", () => {
+
+    document.addEventListener("DOMContentLoaded", async () => {
+        // Real-time Clock
         function updateClock() {
             const now = new Date();
             const options = { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
@@ -665,6 +744,7 @@
         setInterval(updateClock, 1000);
         updateClock();
 
+        // Menu / Sidebar Toggles
         const menuBtn = document.getElementById("menuBtn") || document.querySelector(".burger-btn") || document.querySelector(".menu-toggle");
         const sidebar = document.querySelector(".sidebar") || document.querySelector("aside");
         const sidebarOverlay = document.getElementById("sidebarOverlay") || document.querySelector(".sidebar-overlay");
@@ -684,12 +764,14 @@
             });
         }
 
+        // Dropdowns setup
         const calendarBtn = document.getElementById("calendarBtn");
         const calendarDropdown = document.getElementById("calendarDropdown");
         const notifBellBtn = document.getElementById("notifBellBtn");
         const notifDropdown = document.getElementById("notifDropdown");
         const profileTrigger = document.getElementById("profileTrigger");
         const profileDropdownMenu = document.getElementById("profileDropdownMenu");
+
         if (calendarBtn && calendarDropdown) {
             calendarBtn.addEventListener("click", (e) => {
                 e.stopPropagation();
@@ -729,14 +811,15 @@
             }
         });
 
+        // Search Bar Logic
         const searchInput = document.getElementById("topSearchInput");
         const searchDropdown = document.getElementById("liveSearchResults");
         if (searchInput && searchDropdown) {
             let debounceTimer;
             searchInput.addEventListener("input", function() {
-                const query = this.value.trim().toLowerCase();
+                const queryVal = this.value.trim().toLowerCase();
                 clearTimeout(debounceTimer);
-                if (query.length < 2) {
+                if (queryVal.length < 2) {
                     searchDropdown.style.display = "none";
                     searchDropdown.innerHTML = "";
                     return;
@@ -746,12 +829,12 @@
                         let matchedResults = [];
                         try {
                             const petsSnapshot = await getDocs(collection(db, "pets"));
-                            petsSnapshot.forEach((doc) => {
-                                const data = doc.data();
+                            petsSnapshot.forEach((docSnap) => {
+                                const data = docSnap.data();
                                 const petName = (data.petName || data.name || "").toLowerCase();
                                 const breed = (data.breed || "").toLowerCase();
                                 const owner = (data.ownerName || "").toLowerCase();
-                                if (petName.includes(query) || breed.includes(query) || owner.includes(query)) {
+                                if (petName.includes(queryVal) || breed.includes(queryVal) || owner.includes(queryVal)) {
                                     matchedResults.push({
                                         title: data.petName || data.name || "Unnamed Pet",
                                         description: `Breed: ${data.breed || 'N/A'} - Owner: ${data.ownerName || 'N/A'}`,
@@ -760,16 +843,16 @@
                                     });
                                 }
                             });
-                        } catch (e) { console.log("Pets collection error or empty"); }
-
+                        } catch (e) {}
+                        
                         try {
                             const apptSnapshot = await getDocs(collection(db, "appointments"));
-                            apptSnapshot.forEach((doc) => {
-                                const data = doc.data();
+                            apptSnapshot.forEach((docSnap) => {
+                                const data = docSnap.data();
                                 const service = (data.service || data.reason || "").toLowerCase();
                                 const clientName = (data.clientName || data.ownerName || "").toLowerCase();
                                 const petName = (data.petName || "").toLowerCase();
-                                if (service.includes(query) || clientName.includes(query) || petName.includes(query)) {
+                                if (service.includes(queryVal) || clientName.includes(queryVal) || petName.includes(queryVal)) {
                                     matchedResults.push({
                                         title: `Appointment: ${data.service || data.reason || 'Checkup'}`,
                                         description: `Pet: ${data.petName || 'N/A'} | Date: ${data.date || 'N/A'}`,
@@ -778,24 +861,7 @@
                                     });
                                 }
                             });
-                        } catch (e) { console.log("Appointments collection error or empty"); }
-
-                        try {
-                            const healthSnapshot = await getDocs(collection(db, "health_records"));
-                            healthSnapshot.forEach((doc) => {
-                                const data = doc.data();
-                                const petName = (data.petName || data.name || "").toLowerCase();
-                                const healthInfo = (data.diagnosis || data.symptoms || data.chiefComplaint || data["Chief Complaint"] || "").toLowerCase();
-                                if (petName.includes(query) || healthInfo.includes(query)) {
-                                    matchedResults.push({
-                                        title: `Health Record: ${data.petName || data.name || 'Pet'}`,
-                                        description: `Details: ${data.diagnosis || data.symptoms || data.chiefComplaint || data["Chief Complaint"] || 'General Checkup'}`,
-                                        type: "Health",
-                                        url: "health.php"
-                                    });
-                                }
-                            });
-                        } catch (e) { console.log("Health records collection error or empty"); }
+                        } catch (e) {}
 
                         if (matchedResults.length > 0) {
                             let html = "";
@@ -813,7 +879,7 @@
                             searchDropdown.innerHTML = html;
                             searchDropdown.style.display = "block";
                         } else {
-                            searchDropdown.innerHTML = `<p class="live-search-no-result">No results found for "${query}"</p>`;
+                            searchDropdown.innerHTML = `<p class="live-search-no-result">No results found for "${queryVal}"</p>`;
                             searchDropdown.style.display = "block";
                         }
                     } catch (error) {
@@ -828,6 +894,7 @@
             });
         }
 
+        // Logout Modals
         const topbarLogoutBtn = document.getElementById("topbarLogoutBtn");
         const logoutModal = document.getElementById("logoutModal");
         const cancelLogoutBtn = document.getElementById("cancelLogoutBtn");
@@ -850,6 +917,7 @@
             });
         }
 
+        // Mini Calendar
         const now = new Date();
         const monthYearEl = document.getElementById("currentMonthYear");
         if (monthYearEl) {
@@ -876,10 +944,209 @@
             daysContainer.innerHTML = daysHtml;
         }
 
+        // User profile and Avatar loader
+        const currentUserId = localStorage.getItem("ownerId") || localStorage.getItem("userUID");
+        const userEmail = localStorage.getItem("userEmail");
         const savedFullName = localStorage.getItem("fullName");
         const topbarUserName = document.getElementById("topbarUserName");
-        if (savedFullName && topbarUserName) {
-            topbarUserName.textContent = savedFullName;
+        const topbarInitialAvatar = document.getElementById("topbarInitialAvatar");
+        const topbarProfileImg = document.getElementById("topbarProfileImg");
+        if (savedFullName) {
+            if (topbarUserName) topbarUserName.textContent = savedFullName;
+        }
+        function setTopbarAvatar(fullName, gender) {
+            const normalizedGender = (gender || "").toLowerCase();
+            let displayImage = "";
+            if (normalizedGender === "male") {
+                displayImage = "../assets/images/male-owner.png";
+            } else if (normalizedGender === "female") {
+                displayImage = "../assets/images/female-owner.png";
+            }
+            if (displayImage !== "") {
+                if (topbarProfileImg) {
+                    topbarProfileImg.src = displayImage;
+                    topbarProfileImg.style.display = 'block';
+                }
+                if (topbarInitialAvatar) topbarInitialAvatar.style.display = 'none';
+            } else {
+                if (topbarProfileImg) topbarProfileImg.style.display = 'none';
+                if (topbarInitialAvatar) {
+                    topbarInitialAvatar.textContent = fullName ? fullName.charAt(0).toUpperCase() : "U";
+                    topbarInitialAvatar.style.display = 'block';
+                }
+            }
+        }
+        setTopbarAvatar(savedFullName, localStorage.getItem("gender"));
+
+        let currentOwnerId = currentUserId;
+        if (currentUserId) {
+            try {
+                let q = query(collection(db, "users"), where("ownerId", "==", currentUserId));
+                let snapshot = await getDocs(q);
+                if (snapshot.empty && userEmail) {
+                    q = query(collection(db, "users"), where("email", "==", userEmail));
+                    snapshot = await getDocs(q);
+                }
+                if (!snapshot.empty) {
+                    const userData = snapshot.docs[0].data();
+                    currentOwnerId = userData.ownerId || currentUserId;
+                    if (userData.fullName && topbarUserName) {
+                        topbarUserName.textContent = userData.fullName;
+                        localStorage.setItem("fullName", userData.fullName);
+                    }
+                    if (userData.gender) {
+                        localStorage.setItem("gender", userData.gender);
+                    }
+                    setTopbarAvatar(userData.fullName || savedFullName, userData.gender);
+                }
+            } catch (err) {
+                console.error("Error fetching topbar user profile:", err);
+            }
+        }
+
+        // ==========================================
+        // REAL-TIME NOTIFICATIONS & APPOINTMENTS LISTENER
+        // ==========================================
+        if (currentOwnerId) {
+            // 1. Listen to Notifications Collection
+            const notifBadge = document.getElementById("notifBadge");
+            const notifCountBadge = document.getElementById("notifCountBadge");
+            const notifListContainer = document.getElementById("notifListContainer");
+
+            const notifQuery = query(collection(db, "notifications"), where("ownerId", "==", currentOwnerId));
+            onSnapshot(notifQuery, (snapshot) => {
+                let unreadCount = 0;
+                let notifItems = [];
+
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    notifItems.push({ id: docSnap.id, ...data });
+                    if (!data.read) {
+                        unreadCount++;
+                    }
+                });
+
+                // Sort newest first
+                notifItems.sort((a, b) => {
+                    const timeA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0);
+                    const timeB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0);
+                    return timeB - timeA;
+                });
+
+                if (notifBadge) {
+                    if (unreadCount > 0) {
+                        notifBadge.textContent = unreadCount;
+                        notifBadge.style.display = "block";
+                    } else {
+                        notifBadge.style.display = "none";
+                    }
+                }
+                if (notifCountBadge) {
+                    notifCountBadge.textContent = unreadCount;
+                }
+
+                if (notifListContainer) {
+                    if (notifItems.length === 0) {
+                        notifListContainer.innerHTML = `
+                            <div class="notif-empty-state">
+                                <i class="fa-regular fa-bell-slash"></i>
+                                <p>No notifications yet</p>
+                            </div>
+                        `;
+                        return;
+                    }
+
+                    let html = "";
+                    notifItems.forEach(item => {
+                        const isUnread = !item.read ? "unread" : "";
+                        const isApproved = (item.title || "").toLowerCase().includes("approved") || (item.title || "").toLowerCase().includes("confirmed");
+                        const iconClass = isApproved ? "fa-calendar-check" : "fa-bell";
+                        const approvedClass = isApproved ? "approved" : "";
+
+                        let timeAgo = "Just now";
+                        if (item.createdAt) {
+                            const date = item.createdAt.toDate ? item.createdAt.toDate() : new Date(item.createdAt);
+                            timeAgo = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        }
+
+                        html += `
+                            <a href="appointment.php" class="notif-item ${isUnread} ${approvedClass}" data-id="${item.id}">
+                                <div class="notif-icon-circle">
+                                    <i class="fa-solid ${iconClass}"></i>
+                                </div>
+                                <div class="notif-content">
+                                    <p class="notif-title">${item.title || "Appointment Update"}</p>
+                                    <p class="notif-body">${item.message || "Your appointment status has been updated."}</p>
+                                    <span class="notif-time">${timeAgo}</span>
+                                </div>
+                            </a>
+                        `;
+                    });
+                    notifListContainer.innerHTML = html;
+
+                    // Mark individual notification as read on click
+                    document.querySelectorAll(".notif-item").forEach(itemEl => {
+                        itemEl.addEventListener("click", async () => {
+                            const notifId = itemEl.getAttribute("data-id");
+                            if (notifId) {
+                                try {
+                                    await updateDoc(doc(db, "notifications", notifId), { read: true });
+                                } catch (err) {
+                                    console.error("Error updating notification status:", err);
+                                }
+                            }
+                        });
+                    });
+                }
+            });
+
+            // Mark All as Read Button Event
+            const markAllBtn = document.getElementById("markAllAsReadBtn");
+            if (markAllBtn) {
+                markAllBtn.addEventListener("click", async () => {
+                    try {
+                        const unreadQuery = query(collection(db, "notifications"), where("ownerId", "==", currentOwnerId), where("read", "==", false));
+                        const unreadSnap = await getDocs(unreadQuery);
+                        unreadSnap.forEach(async (docSnap) => {
+                            await updateDoc(doc(db, "notifications", docSnap.id), { read: true });
+                        });
+                    } catch (err) {
+                        console.error("Error marking all as read:", err);
+                    }
+                });
+            }
+
+            // 2. Listen to Upcoming Appointments for the Calendar/Schedule Dropdown
+            const topbarAppointmentsList = document.getElementById("topbarAppointmentsList");
+            if (topbarAppointmentsList) {
+                const apptQuery = query(collection(db, "appointments"), where("ownerId", "==", currentOwnerId));
+                onSnapshot(apptQuery, (snapshot) => {
+                    let upcoming = [];
+                    snapshot.forEach(docSnap => {
+                        const data = docSnap.data();
+                        const status = (data.status || "").toLowerCase();
+                        if (status !== "cancelled" && status !== "archived") {
+                            upcoming.push({ id: docSnap.id, ...data });
+                        }
+                    });
+
+                    if (upcoming.length === 0) {
+                        topbarAppointmentsList.innerHTML = `<p class="empty-state-text">No upcoming appointments.</p>`;
+                        return;
+                    }
+
+                    let html = "";
+                    upcoming.slice(0, 3).forEach(item => {
+                        html += `
+                            <div style="padding: 8px 10px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 11px; margin-bottom: 4px;">
+                                <strong style="color: #1e1b4b; display: block;">${item.service || "Appointment"}</strong>
+                                <span style="color: #64748b;"><i class="fa-solid fa-paw"></i> ${item.petName || "Pet"} | ${item.date || ""} (${item.timeSlot || ""})</span>
+                            </div>
+                        `;
+                    });
+                    topbarAppointmentsList.innerHTML = html;
+                });
+            }
         }
     });
 </script>

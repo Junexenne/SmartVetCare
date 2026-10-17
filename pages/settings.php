@@ -260,6 +260,7 @@ if (session_status() === PHP_SESSION_NONE) {
                 </h1>
                 <p>Manage your account security and notification preferences.</p>
             </div>
+            
             <div class="settings-grid">
                 
                 <!-- Notification Preferences Section -->
@@ -305,33 +306,43 @@ if (session_status() === PHP_SESSION_NONE) {
                         </button>
                     </form>
                 </div>
-                <!-- Account Support / Password Assistance Section -->
-                <div class="settings-card support-card">
-                    <h3><i class="fa-solid fa-headset"></i> Password & Account Support</h3>
-                    <div class="support-box">
-                        <i class="fa-solid fa-circle-info"></i> Need to change your password or update sensitive account details? For security purposes, please contact the clinic administrator or reach out to our support team directly.
-                    </div>
-                    <div class="form-group">
-                        <label>Contact Number</label>
-                        <input type="text" class="form-control" value="0925-8897-811" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label>Facebook Page</label>
-                        <input type="text" class="form-control" value="https://www.facebook.com/furryfriendsanimalclinic" readonly>
-                    </div>
-                    <a href="https://m.me/furryfriendsanimalclinic?text=Hello%20Admin,%20I%20would%20like%20to%20request%20a%20password%20reset%20for%20my%20Smart%20Vet%20Care%20account." target="_blank" class="btn btn-warning">
-                        <i class="fa-brands fa-facebook-messenger"></i> Message Admin on Messenger
-                    </a>
+
+                <!-- Change Password Section -->
+                <div class="settings-card">
+                    <h3><i class="fa-solid fa-lock"></i> Change Password</h3>
+                    <p style="font-size: 13px; color: #858796; margin-bottom: 20px;">
+                        Update your password securely using your current password or via email reset.
+                    </p>
+                    <form id="changePasswordForm">
+                        <div class="form-group">
+                            <label>Current Password</label>
+                            <input type="password" id="currentPassword" class="form-control" placeholder="Enter current password" required>
+                        </div>
+                        <div class="form-group">
+                            <label>New Password</label>
+                            <input type="password" id="newPassword" class="form-control" placeholder="Enter new password" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Confirm New Password</label>
+                            <input type="password" id="confirmPassword" class="form-control" placeholder="Confirm new password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa-solid fa-key"></i> Update Password
+                        </button>
+                    </form>
                 </div>
+
             </div>
         </div>
     </div>
 </div>
+
 <!-- Toast Notification -->
 <div id="toastNotification">
     <i id="toastIcon" class="fa-solid"></i>
     <span id="toastMessage"></span>
 </div>
+
 <script>
     document.addEventListener("DOMContentLoaded", () => {
         const mobileBtn = document.getElementById('mobileMenuBtn');
@@ -350,6 +361,7 @@ if (session_status() === PHP_SESSION_NONE) {
         }
     });
 </script>
+
 <script type="module">
     import { auth, db } from "../assets/js/firebase-config.js";
     import {
@@ -360,11 +372,18 @@ if (session_status() === PHP_SESSION_NONE) {
         doc,
         updateDoc
     } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
-    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+    import { 
+        onAuthStateChanged, 
+        EmailAuthProvider, 
+        reauthenticateWithCredential, 
+        updatePassword 
+    } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+
     const toast = document.getElementById("toastNotification");
     const toastMessage = document.getElementById("toastMessage");
     const toastIcon = document.getElementById("toastIcon");
     let currentUserDocId = null;
+
     onAuthStateChanged(auth, async (user) => {
         if (!user) return;
         try {
@@ -385,6 +404,7 @@ if (session_status() === PHP_SESSION_NONE) {
             console.error("Error loading preferences:", error);
         }
     });
+
     document.getElementById("preferencesForm").addEventListener("submit", async (e) => {
         e.preventDefault();
         if (!currentUserDocId) {
@@ -405,6 +425,42 @@ if (session_status() === PHP_SESSION_NONE) {
             showToast("Failed to save preferences.", "error");
         }
     });
+
+    // Handle Password Change inside settings
+    document.getElementById("changePasswordForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const currentPassword = document.getElementById("currentPassword").value;
+        const newPassword = document.getElementById("newPassword").value;
+        const confirmPassword = document.getElementById("confirmPassword").value;
+
+        if (newPassword !== confirmPassword) {
+            showToast("New passwords do not match.", "error");
+            return;
+        }
+
+        if (newPassword.length < 6) {
+            showToast("Password must be at least 6 characters.", "error");
+            return;
+        }
+
+        const user = auth.currentUser;
+        if (!user) {
+            showToast("No active session found.", "error");
+            return;
+        }
+
+        try {
+            const credential = EmailAuthProvider.credential(user.email, currentPassword);
+            await reauthenticateWithCredential(user, credential);
+            await updatePassword(user, newPassword);
+            showToast("Password successfully updated!", "success");
+            document.getElementById("changePasswordForm").reset();
+        } catch (error) {
+            console.error("Error updating password:", error);
+            showToast(error.message || "Failed to update password.", "error");
+        }
+    });
+
     function showToast(msg, type) {
         if (!toast) return;
         toastMessage.textContent = msg;

@@ -72,10 +72,10 @@ function getPetDisplayDetails(species, rawImage) {
 
     if (s.includes("dog") || s.includes("canine")) {
         speciesText = "Canine";
-        img = "../assets/images/dog.png";
+        img = "../assets/images/canine.png";
     } else if (s.includes("cat") || s.includes("feline")) {
         speciesText = "Feline";
-        img = "../assets/images/cat.png";
+        img = "../assets/images/feline.png";
     } else if (rawImage && rawImage.trim() !== "") {
         img = rawImage;
     }

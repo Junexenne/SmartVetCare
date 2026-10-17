@@ -5,7 +5,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Smart Vet Care AI</title>
     <link rel="stylesheet" href="../assets/css/dashboard.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -13,6 +13,7 @@
     <style>
         html, body {
             height: 100%;
+            height: -webkit-fill-available;
             margin: 0;
             padding: 0;
             overflow: hidden;
@@ -58,12 +59,13 @@
             overflow: hidden;
             background: #ffffff;
             border-radius: 16px;
-            padding: 10px 18px 8px 18px;
+            padding: 12px 16px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
             border: 1px solid rgba(226, 232, 240, 0.8);
-            gap: 8px;
-            margin-top: 2px;
-            margin-bottom: 2px;
+            gap: 10px;
+            margin-top: 5px;
+            margin-bottom: 5px;
+            position: relative;
         }
         /* Gradient AI Header */
         .chat-ai-header {
@@ -122,7 +124,7 @@
             white-space: nowrap;
             display: flex;
             gap: 6px;
-            padding: 2px 0;
+            padding: 4px 0;
             scrollbar-width: thin;
             scrollbar-color: #cbd5e1 transparent;
         }
@@ -163,10 +165,10 @@
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 6px;
             background: #ffffff;
             border-top: 1px solid #f1f5f9;
-            padding-top: 6px;
+            padding-top: 8px;
         }
         .chat-input-area {
             display: flex;
@@ -208,7 +210,7 @@
             opacity: 0.9;
         }
         .chat-disclaimer {
-            font-size: 8.5px;
+            font-size: 10px;
             color: #94a3b8;
             line-height: 1.1;
             display: flex;
@@ -216,6 +218,7 @@
             justify-content: center;
             gap: 4px;
             margin-bottom: 0;
+            text-align: center;
         }
         .sidebar-overlay {
             display: none;
@@ -227,6 +230,8 @@
             background: rgba(0, 0, 0, 0.4);
             z-index: 1000;
         }
+        
+        /* Fixed Mobile Viewport Responsiveness */
         @media (max-width: 768px) {
             .sidebar {
                 position: fixed !important;
@@ -247,11 +252,27 @@
             .main-content {
                 padding: 6px !important;
                 width: 100vw !important;
+                height: calc(100vh - 110px) !important;
+                height: calc(100dvh - 110px) !important;
             }
             .chat-container {
-                margin-top: 0 !important;
-                border-radius: 14px !important;
-                padding: 8px 10px !important;
+                margin: 0;
+                border-radius: 0;
+                border: none;
+                height: 100%;
+                padding: 8px 10px calc(45px + env(safe-area-inset-bottom, 24px)) 10px;
+            }
+            .chat-input-area-wrapper {
+                padding-bottom: calc(12px + env(safe-area-inset-bottom, 10px));
+                margin-bottom: 8px;
+            }
+            .chat-input-area input {
+                padding: 8px 14px;
+                font-size: 12px;
+            }
+            .chat-input-area button {
+                width: 34px;
+                height: 34px;
             }
         }
     </style>
