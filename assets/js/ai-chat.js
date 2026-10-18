@@ -10,8 +10,8 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 // Initialize Google GenAI with API Key
-const ai = new GoogleGenAI({ apiKey: "AQ.Ab8RN6IZcqlkPNpqffqXqKjnvmgwVqgpbPm90ExRBj7dOoR4Zg" });
-const currentOwnerId = localStorage.getItem("ownerId") || "OWN-00004"; 
+const apiKey = window.GEMINI_API_KEY || "AQ.Ab8RN6IZcqlkPNpqffqXqKjnvmgwVqgpbPm90ExRBj7dOoR4Zg";
+const ai = new GoogleGenAI({ apiKey: apiKey });
 
 // Listahan ng mga active Gemini models na susubukan nang sunod-sunod
 const modelCandidates = [
