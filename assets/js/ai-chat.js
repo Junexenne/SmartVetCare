@@ -12,7 +12,7 @@ import {
 // Initialize Google GenAI with API Key
 const apiKey = window.GEMINI_API_KEY || "AQ.Ab8RN6IZcqlkPNpqffqXqKjnvmgwVqgpbPm90ExRBj7dOoR4Zg";
 const ai = new GoogleGenAI({ apiKey: apiKey });
-
+const currentOwnerId = localStorage.getItem("ownerId") || "OWN-00004";
 // Listahan ng mga active Gemini models na susubukan nang sunod-sunod
 const modelCandidates = [
     'gemini-2.5-flash',
