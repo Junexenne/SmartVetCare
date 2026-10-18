@@ -192,7 +192,7 @@ $userId = $_SESSION['user_id'] ?? 'OWN-00004';
             
             <div class="note-box">
                 <i class="fa-solid fa-circle-info" style="color: #2563EB; margin-right: 4px;"></i>
-                <strong>Note:</strong> Please use your <strong>personal email address</strong> (such as Gmail or Yahoo), and <strong>NOT</strong> your @furryfriends.com account.
+                <strong>Note:</strong> Please use your <strong>personal email address</strong> (such as Gmail or Yahoo)
             </div>
 
             <form id="forgotForm">

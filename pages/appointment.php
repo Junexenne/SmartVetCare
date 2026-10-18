@@ -197,7 +197,8 @@
             color: #cbd5e1 !important;
             border-color: #e2e8f0 !important;
             cursor: not-allowed !important;
-            opacity: 0.6;
+            opacity: 0.5;
+            pointer-events: none;
         }
         .btn-done {
             background: #5142f5;
@@ -492,11 +493,13 @@
         const hiddenDateInput = document.getElementById('appointmentDate');
         const hiddenTimeInput = document.getElementById('appointmentTime');
         const pickerSlotsContainer = document.getElementById('pickerSlotsContainer');
+        
         let currentDate = new Date();
         let selectedYear = currentDate.getFullYear();
         let selectedMonth = currentDate.getMonth();
         let selectedDay = currentDate.getDate();
         let selectedTimeValue = "";
+        
         const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
         const monthSelect = document.getElementById('monthSelect');
         const yearSelect = document.getElementById('yearSelect');
@@ -513,6 +516,7 @@
             opt.textContent = y;
             yearSelect.appendChild(opt);
         }
+        
         function renderCalendarDays() {
             const grid = document.getElementById('calendarDaysGrid');
             grid.innerHTML = '';
@@ -521,6 +525,7 @@
             const prevTotalDays = new Date(selectedYear, selectedMonth, 0).getDate();
             const today = new Date();
             today.setHours(0, 0, 0, 0);
+            
             for (let i = firstDayIndex; i > 0; i--) {
                 const dayEl = document.createElement('div');
                 dayEl.className = 'calendar-day muted';
@@ -556,30 +561,69 @@
                 grid.appendChild(dayEl);
             }
         }
+
+        // Helper function upang malaman kung lumipas na ang oras sa araw na ito
+        function isTimePassed(slotTimeStr, selectedDateObj) {
+            const now = new Date();
+            const checkDate = new Date(selectedDateObj);
+            checkDate.setHours(0, 0, 0, 0);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            if (checkDate > today) return false;
+            if (checkDate < today) return true;
+
+            const timePart = slotTimeStr.split('-')[0].trim();
+            const match = timePart.match(/(\d+):(\d+)\s*(AM|PM)/i);
+            if (!match) return false;
+
+            let hours = parseInt(match[1], 10);
+            const minutes = parseInt(match[2], 10);
+            const ampm = match[3].toUpperCase();
+
+            if (ampm === "PM" && hours < 12) hours += 12;
+            if (ampm === "AM" && hours === 12) hours = 0;
+
+            const slotDate = new Date();
+            slotDate.setHours(hours, minutes, 0, 0);
+
+            return now > slotDate;
+        }
+
         function loadPickerTimeSlots() {
             pickerSlotsContainer.innerHTML = '<p style="color: #888; font-size: 12px; text-align: center;">Loading slots...</p>';
             
+            // Clinic Hours: 10:00 AM to 7:00 PM (Inalis na ang 9:00 AM)
             let standardSlots = [
-                { time: "09:00 AM", isBreak: false },
-                { time: "10:30 AM", isBreak: false },
+                { time: "10:00 AM", isBreak: false },
+                { time: "11:30 AM", isBreak: false },
                 { time: "12:00 PM - 01:00 PM (Break Time)", isBreak: true },
                 { time: "01:00 PM", isBreak: false },
                 { time: "02:30 PM", isBreak: false },
-                { time: "04:00 PM", isBreak: false }
+                { time: "04:00 PM", isBreak: false },
+                { time: "05:30 PM", isBreak: false }
             ];
             
+            const selectedDateObj = new Date(selectedYear, selectedMonth, selectedDay);
+
             setTimeout(() => {
                 pickerSlotsContainer.innerHTML = '';
                 standardSlots.forEach(slotObj => {
                     const slotDiv = document.createElement('div');
                     slotDiv.className = 'picker-time-slot';
                     slotDiv.textContent = slotObj.time;
+
+                    const hasPassed = isTimePassed(slotObj.time, selectedDateObj);
+
                     if (slotObj.isBreak) {
                         slotDiv.classList.add('disabled');
                         slotDiv.style.backgroundColor = '#fee2e2';
                         slotDiv.style.color = '#991b1b';
                         slotDiv.style.borderColor = '#fca5a5';
                         slotDiv.style.fontSize = '11px';
+                    } else if (hasPassed) {
+                        slotDiv.classList.add('disabled');
+                        slotDiv.title = "This time slot has already passed.";
                     } else {
                         if (selectedTimeValue === slotObj.time) {
                             slotDiv.classList.add('selected');
@@ -595,6 +639,7 @@
                 });
             }, 150);
         }
+
         if (toggleBtn && popup) {
             toggleBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -668,6 +713,63 @@
             loadPickerTimeSlots();
         }
         updatePickerUI();
+
+        // Reschedule time slots handling
+        const rescheduleDateInput = document.getElementById("rescheduleDate");
+        const rescheduleTimeSlotsContainer = document.getElementById("rescheduleTimeSlots");
+        if (rescheduleDateInput && rescheduleTimeSlotsContainer) {
+            rescheduleDateInput.addEventListener("change", (e) => {
+                const newDateStr = e.target.value;
+                if (!newDateStr) return;
+
+                const dateParts = newDateStr.split('-');
+                const selectedDateObj = new Date(parseInt(dateParts[0]), parseInt(dateParts[1]) - 1, parseInt(dateParts[2]));
+
+                let standardSlots = [
+                    { time: "10:00 AM", isBreak: false },
+                    { time: "11:30 AM", isBreak: false },
+                    { time: "12:00 PM - 01:00 PM (Break Time)", isBreak: true },
+                    { time: "01:00 PM", isBreak: false },
+                    { time: "02:30 PM", isBreak: false },
+                    { time: "04:00 PM", isBreak: false },
+                    { time: "05:30 PM", isBreak: false }
+                ];
+
+                rescheduleTimeSlotsContainer.innerHTML = '';
+                standardSlots.forEach(slotObj => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.textContent = slotObj.time;
+                    btn.style.cssText = "padding: 6px 12px; border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 6px; font-size: 12px; cursor: pointer;";
+
+                    const hasPassed = isTimePassed(slotObj.time, selectedDateObj);
+
+                    if (slotObj.isBreak || hasPassed) {
+                        btn.disabled = true;
+                        btn.style.opacity = '0.5';
+                        btn.style.cursor = 'not-allowed';
+                        btn.style.background = '#f1f5f9';
+                    } else {
+                        btn.addEventListener('click', () => {
+                            Array.from(rescheduleTimeSlotsContainer.children).forEach(c => {
+                                if(!c.disabled) {
+                                    c.style.background = '#f8fafc';
+                                    c.style.color = '#334155';
+                                    c.style.borderColor = '#cbd5e1';
+                                    c.classList.remove('selected-reschedule-time');
+                                }
+                            });
+                            btn.style.background = '#5142f5';
+                            btn.style.color = '#fff';
+                            btn.style.borderColor = '#5142f5';
+                            btn.classList.add('selected-reschedule-time');
+                            btn.setAttribute('data-time', slotObj.time);
+                        });
+                    }
+                    rescheduleTimeSlotsContainer.appendChild(btn);
+                });
+            });
+        }
     });
 </script>
 <script type="module" src="../assets/js/appointment.js"></script>

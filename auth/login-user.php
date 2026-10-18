@@ -28,9 +28,9 @@
         }
         .login-box {
         width: 100%;
-        max-width: 400px; /* Baguhin ito mula 500px patungong 400px o 380px para mas pumuputol/sumikip ang lapad */
+        max-width: 350px; 
         background: white;
-        padding: 20px 25px; /* Pwede ring bawasan ang panloob na espasyo kung gusto mo */
+        padding: 20px 25px; 
         border-radius: 16px;
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
         text-align: center;

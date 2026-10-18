@@ -6,11 +6,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const notifCountBadge = document.getElementById('notifCountBadge');
     const listContainer = document.getElementById('notifListContainer');
     
-    // Kunin ang user identifier (halimbawa ay ownerName o ownerId mula sa localStorage)
-    const ownerName = localStorage.getItem("fullName") || localStorage.getItem("userName") || "Jerome Polo";
+    // Kunin ang ownerId o ownerName mula sa localStorage
+    const currentOwnerId = localStorage.getItem("ownerId") || localStorage.getItem("userUID");
+    const ownerName = localStorage.getItem("fullName") || localStorage.getItem("userName") || "";
     
     if (!listContainer) return;
-
     let notificationsList = [];
 
     function renderNotifications() {
@@ -19,9 +19,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (unreadCount === 0) {
             listContainer.innerHTML = `
-                <div style="text-align: center; padding: 30px 20px; color: #a0aec0;">
-                    <i class="fa-regular fa-bell-slash" style="font-size: 24px; margin-bottom: 8px; color: #cbd5e0;"></i>
-                    <p style="margin: 0; font-size: 13px; font-weight: 500;">No notifications yet</p>
+                <div style="text-align: center; padding: 25px 15px; color: #a0aec0;">
+                    <i class="fa-regular fa-bell-slash" style="font-size: 22px; margin-bottom: 6px; color: #cbd5e0;"></i>
+                    <p style="margin: 0; font-size: 12px; font-weight: 500;">No notifications yet</p>
                 </div>`;
             if (badge) badge.style.display = 'none';
             if (notifCountBadge) notifCountBadge.textContent = '0';
@@ -37,27 +37,27 @@ document.addEventListener("DOMContentLoaded", () => {
                 display: flex;
                 align-items: stretch;
                 background: #ffffff;
-                border-radius: 14px;
-                margin-bottom: 12px;
-                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+                border-radius: 12px;
+                margin-bottom: 8px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
                 overflow: hidden;
                 border: 1px solid #edf2f7;
             `;
 
             item.innerHTML = `
-                <div style="background: ${accentColor}; min-width: 55px; display: flex; align-items: center; justify-content: center; color: #ffffff;">
-                    <i class="${iconClass}" style="font-size: 16px;"></i>
+                <div style="background: ${accentColor}; min-width: 45px; display: flex; align-items: center; justify-content: center; color: #ffffff;">
+                    <i class="${iconClass}" style="font-size: 14px;"></i>
                 </div>
-                <div style="padding: 14px 16px; flex-grow: 1; display: flex; align-items: center; justify-content: space-between; gap: 15px;">
+                <div style="padding: 10px 12px; flex-grow: 1; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
                     <div>
-                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 3px;">
-                            <p style="font-weight: 600; font-size: 14px; color: #1e1b4b; margin: 0;">${notif.title}</p>
-                            <span style="width: 7px; height: 7px; background: ${accentColor}; border-radius: 50%; display: inline-block;"></span>
+                        <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 2px;">
+                            <p style="font-weight: 600; font-size: 12.5px; color: #1e1b4b; margin: 0;">${notif.title}</p>
+                            <span style="width: 6px; height: 6px; background: ${accentColor}; border-radius: 50%; display: inline-block;"></span>
                         </div>
-                        <p style="margin: 0; font-size: 12px; color: #64748b; line-height: 1.4;">${notif.message}</p>
+                        <p style="margin: 0; font-size: 11px; color: #64748b; line-height: 1.3;">${notif.message}</p>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
-                        <a href="${notif.link}" style="background: ${accentColor}; color: #ffffff; padding: 6px 14px; font-size: 12px; font-weight: 500; border-radius: 8px; text-decoration: none;">View</a>
+                    <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                        <a href="${notif.link}" style="background: ${accentColor}; color: #ffffff; padding: 4px 10px; font-size: 11px; font-weight: 500; border-radius: 6px; text-decoration: none;">View</a>
                     </div>
                 </div>`;
             listContainer.appendChild(item);
@@ -65,56 +65,46 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (badge) {
             badge.textContent = unreadCount;
-            badge.style.display = unreadCount > 0 ? 'inline-block' : 'none';
+            badge.style.display = unreadCount > 0 ? 'block' : 'none';
         }
         if (notifCountBadge) {
             notifCountBadge.textContent = unreadCount;
         }
     }
 
-    // 1. Makinig sa real-time updates ng Appointments (Kapag na-approve)
-    const appointmentsQuery = query(collection(db, "appointments"), where("status", "in", ["Approved", "approved"]));
-    onSnapshot(appointmentsQuery, (snapshot) => {
-        // Alisin muna ang lumang appointment notifications para i-update
-        notificationsList = notificationsList.filter(n => n.category !== 'appointment');
+    // Awtomatikong kukunin ang mga na-approve/confirmed na appointment para maging notification
+    if (currentOwnerId || ownerName) {
+        const appointmentsQuery = query(collection(db, "appointments"));
         
-        snapshot.forEach((docSnap) => {
-            const data = docSnap.data();
-            // I-match kung para sa user na ito ang appointment
-            if (data.ownerName === ownerName || data.clientName === ownerName) {
-                notificationsList.push({
-                    id: docSnap.id,
-                    category: 'appointment',
-                    title: 'Appointment Approved!',
-                    message: `Na-approve na ang iyong appointment para sa ${data.service || 'checkup'} ng iyong alagang si ${data.petName || 'Pet'}.`,
-                    link: 'appointment.php',
-                    icon: 'fa-solid fa-calendar-check',
-                    color: '#10b981'
-                });
-            }
-        });
-        renderNotifications();
-    });
+        onSnapshot(appointmentsQuery, (snapshot) => {
+            notificationsList = []; 
 
-    // 2. Makinig sa real-time updates ng Health Records (Kapag may bago o na-update)
-    const healthQuery = collection(db, "health_records");
-    onSnapshot(healthQuery, (snapshot) => {
-        notificationsList = notificationsList.filter(n => n.category !== 'health');
-        
-        snapshot.forEach((docSnap) => {
-            const data = docSnap.data();
-            if (data.ownerName === ownerName) {
-                notificationsList.push({
-                    id: docSnap.id,
-                    category: 'health',
-                    title: 'New Medical Record',
-                    message: `May bagong health record update para kay ${data.petName || 'pets'}.`,
-                    link: 'health.php',
-                    icon: 'fa-solid fa-notes-medical',
-                    color: '#f59e0b'
-                });
-            }
+            snapshot.forEach((docSnap) => {
+                const data = docSnap.data();
+                
+                // Suriin kung ang appointment na ito ay para sa user na naka-login
+                const isMatch = (currentOwnerId && data.ownerId === currentOwnerId) ||
+                                (ownerName && (data.ownerName === ownerName || data.clientName === ownerName));
+
+                if (isMatch) {
+                    const status = (data.status || "Pending").toLowerCase();
+                    
+                    // Kapag na-accept na o confirmed na ng admin
+                    if (status === 'confirmed' || status === 'approved' || status === 'in progress' || status === 'completed') {
+                        notificationsList.push({
+                            id: docSnap.id,
+                            category: 'appointment',
+                            title: `Appointment ${data.status}!`,
+                            message: `Your appointment for ${data.service || 'checkup'} of ${data.petName || 'Pet'} has been approved by the Admin.`,
+                            link: 'appointment.php',
+                            icon: 'fa-solid fa-calendar-check',
+                            color: status === 'completed' ? '#3b82f6' : '#10b981'
+                        });
+                    }
+                }
+            });
+            
+            renderNotifications();
         });
-        renderNotifications();
-    });
+    }
 });

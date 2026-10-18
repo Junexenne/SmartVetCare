@@ -382,6 +382,8 @@ error_reporting(E_ALL);
         }
         
         const badge = document.getElementById('clinicStatusBadge');
+        let isClinicOpen = true; 
+
         if (badge) {
             const options = { timeZone: 'Asia/Manila', hour: 'numeric', minute: 'numeric', hour12: false };
             const formatter = new Intl.DateTimeFormat([], options);
@@ -391,16 +393,17 @@ error_reporting(E_ALL);
             const currentHour = parseInt(hourStr, 10);
             const currentMinute = parseInt(minuteStr, 10);
             const currentTimeDecimal = currentHour + (currentMinute / 60);
-
             // Open from 10:00 AM (10.0) to 07:00 PM (19.0)
             const openingHour = 10.0;
             const closingHour = 19.0;
-
+            
             if (currentTimeDecimal >= openingHour && currentTimeDecimal < closingHour) {
+                isClinicOpen = true;
                 badge.style.background = "#dcfce7";
                 badge.style.color = "#166534";
                 badge.innerHTML = '<span style="width: 6px; height: 6px; background: #22c55e; border-radius: 50%; display: inline-block;"></span> Open';
             } else {
+                isClinicOpen = false;
                 badge.style.background = "#fee2e2";
                 badge.style.color = "#991b1b";
                 badge.innerHTML = '<span style="width: 6px; height: 6px; background: #ef4444; border-radius: 50%; display: inline-block;"></span> Closed';
@@ -415,6 +418,7 @@ error_reporting(E_ALL);
         const chatInput = document.getElementById("chatInput");
         const chatMessages = document.getElementById("chatMessages");
         const faqChips = document.querySelectorAll(".faq-chip");
+
         toggleBtn.addEventListener("click", () => {
             const isOpen = chatWindow.style.display === "flex";
             chatWindow.style.display = isOpen ? "none" : "flex";
@@ -429,15 +433,17 @@ error_reporting(E_ALL);
             if (sender === 'user') {
                 msgDiv.style.cssText = "background: #173F81; color: #ffffff; padding: 10px 14px; border-radius: 12px; font-size: 12.5px; margin-left: auto; max-width: 85%; word-break: break-word;";
             } else {
-                msgDiv.style.cssText = "background: #ffffff; color: #1e293b; padding: 10px 14px; border-radius: 12px; font-size: 12.5px; margin-right: auto; max-width: 85%; border: 1px solid #edf2f7; word-break: break-word;";
+                msgDiv.style.cssText = "background: #ffffff; color: #1e293b; padding: 10px 14px; border-radius: 12px; font-size: 12.5px; margin-right: auto; max-width: 85%; border: 1px solid #edf2f7; word-break: break-word; white-space: pre-line;";
             }
             msgDiv.textContent = text;
             chatMessages.appendChild(msgDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
         function handleBotResponse(question) {
-            let reply = "Pasensya na po, maaari kayong sumangguni sa ating Help & Support page para sa iba pang detalye o mag-message direkta sa klinika.";
+            let reply = "";
             const q = question.toLowerCase();
+
+            // Unang susuriin ang mga keyword kung may tumugma (para gumana pa rin ang time, book, records, etc. kahit offline)
             if (q.includes("book") || q.includes("appointment")) {
                 reply = "To book an appointment, simply go to 'Book Appointment' in the left menu, then select the date, time, and service for your pet.";
             } else if (q.includes("oras") || q.includes("time") || q.includes("clinic") || q.includes("hours")) {
@@ -445,10 +451,18 @@ error_reporting(E_ALL);
             } else if (q.includes("health") || q.includes("records") || q.includes("medikal")) {
                 reply = "You can view the complete medical records and history of your pets in the 'Health Records' or 'Records & History' section in the sidebar.";
             } else if (q.includes("emergency")) {
-                reply = "For emergencies, no appointment is needed! Please proceed directly to the clinic or call us immediately at 0991-572-3015 so we can assist your pet right away";
+                reply = "For emergencies, no appointment is needed! Please proceed directly to the clinic or call us immediately at 0925-8897811 so we can assist your pet right away.";
             } else if (q.includes("walk-in") || q.includes("fee") || q.includes("price") || q.includes("magkano")|| q.includes("bayad"))  {
                 reply = "Yes, walk-ins are accepted, but scheduled appointments are prioritized for regular checkups. Standard consultation fees range from ₱300 to ₱500.";
+            } else {
+                // Kung walang natagpuang keyword at naka-close ang klinika, saka lang lalabas ang offline/emergency notice
+                if (!isClinicOpen) {
+                    reply = "We are currently offline and attending to a patient. If beyond clinic hours and it is a medical emergency, please don't wait for our response instead bring your Pet to the nearest 24 hr animal Clinic.\n\nFor immediate response (during clinic hours) kindly call or text us at:\n0925-8897811 (sun)\nLocation: Bagong Barrio Caloocan\n(Infront of 711, beside Lourdes Church)\n\nWe are OPEN everyday 10am - 7pm";
+                } else {
+                    reply = "I'm sorry, but you can refer to our Help & Support page for more details or message the clinic directly.";
+                }
             }
+
             setTimeout(() => {
                 appendMessage('bot', reply);
             }, 500);

@@ -15,7 +15,8 @@
                 <div id="liveSearchResults" class="live-search-dropdown" style="display: none;"></div>
             </div>
         </div>
-        <!-- Right: Real-time Clock, Calendar Dropdown, Bell & Profile Dropdown -->
+
+        <!-- Right: Real-time Clock, Calendar Dropdown, Report Flag, Bell & Profile Dropdown -->
         <div class="top-icons">
             
             <!-- Real-time Clock Display -->
@@ -23,6 +24,12 @@
                 <i class="fa-regular fa-clock"></i>
                 <span id="clockText">Loading time...</span>
             </div>
+
+            <!-- Report a Problem Flag Button -->
+            <button class="topbar-icon-btn report-flag-btn" type="button" onclick="openReportProblemModal()" title="Report a Problem">
+                <i class="fa-solid fa-flag"></i>
+            </button>
+
             <!-- Calendar Dropdown Wrapper -->
             <div class="calendar-dropdown-wrapper">
                 <button class="topbar-icon-btn" id="calendarBtn" type="button">
@@ -55,6 +62,7 @@
                     </div>
                 </div>
             </div>
+
             <!-- Notification Wrapper -->
             <div class="notification-dropdown-wrapper">
                 <button class="notification-btn" id="notifBellBtn" type="button">
@@ -82,6 +90,7 @@
                     </div>
                 </div>
             </div>
+
             <!-- User Profile Dropdown Menu -->
             <div class="profile-dropdown-container" id="profileDropdownContainer">
                 <div class="user-profile" id="profileTrigger">
@@ -109,9 +118,69 @@
                     </a>
                 </div>
             </div>
+
         </div>
     </div>
 </div>
+
+<!-- REPORT A PROBLEM MODAL (SMART VET CARE UI THEME) -->
+<div id="reportProblemModal" class="report-modal-overlay" style="display: none;">
+    <div class="report-modal-card">
+        <button class="report-modal-close" id="closeReportModalBtn" type="button">&times;</button>
+        
+        <div class="report-header">
+            <div class="report-icon-box">
+                <i class="fa-solid fa-flag"></i>
+            </div>
+            <div>
+                <h2>Report a problem</h2>
+                <p>Something broken, confusing or missing? Tell us and we'll look into it.</p>
+            </div>
+        </div>
+        <form id="reportProblemForm">
+            <!-- What is it about? -->
+            <div class="report-section">
+                <label class="report-label">What is it about?</label>
+                <div class="report-chips-grid">
+                    <button type="button" class="report-chip active" data-category="Something isn't working">
+                        <i class="fa-solid fa-bug"></i> Something isn't working
+                    </button>
+                    <button type="button" class="report-chip" data-category="Wrong or missing info">
+                        <i class="fa-solid fa-circle-info"></i> Wrong or missing info
+                    </button>
+                    <button type="button" class="report-chip" data-category="Account & sign-in">
+                        <i class="fa-solid fa-circle-user"></i> Account & sign-in
+                    </button>
+                    <button type="button" class="report-chip" data-category="Suggestion">
+                        <i class="fa-solid fa-lightbulb"></i> Suggestion
+                    </button>
+                    <button type="button" class="report-chip" data-category="Other">
+                        <i class="fa-solid fa-ellipsis"></i> Other
+                    </button>
+                </div>
+                <input type="hidden" id="selectedCategory" value="Something isn't working">
+            </div>
+            <!-- What happened? -->
+            <div class="report-section">
+                <label class="report-label">What happened?</label>
+                <div class="textarea-wrapper">
+                    <textarea id="problemDescription" maxlength="1000" rows="4" placeholder="Example: The appointment didn't load after I tapped the book button." required></textarea>
+                    <span class="char-count" id="charCount">0/1000</span>
+                </div>
+            </div>
+            <!-- Email (Optional) -->
+            <div class="report-section">
+                <label class="report-label">Email <small>(optional, so we can reply)</small></label>
+                <input type="email" id="userReportEmail" placeholder="you@example.com" class="report-input">
+            </div>
+            <!-- Submit Button -->
+            <button type="submit" id="submitReportBtn" class="report-submit-btn">
+                <i class="fa-solid fa-paper-plane"></i> Submit Report
+            </button>
+        </form>
+    </div>
+</div>
+
 <!-- Custom Logout Confirmation Modal -->
 <div id="logoutModal" class="custom-modal-overlay" style="display: none;">
     <div class="custom-modal-box">
@@ -126,6 +195,10 @@
         </div>
     </div>
 </div>
+
+<!-- SweetAlert2 CDN for Modern UI Alerts -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <style>
     .topbar-wrapper-main {
         width: 100%;
@@ -298,6 +371,11 @@
         color: #ffffff;
         border-color: #173F81;
         transform: translateY(-1px);
+    }
+    .report-flag-btn:hover {
+        background: #fee2e2 !important;
+        color: #dc2626 !important;
+        border-color: #fca5a5 !important;
     }
     #notifBadge {
         position: absolute;
@@ -642,6 +720,196 @@
         background: #e53e3e;
         color: #fff;
     }
+    /* SMART VET CARE EXCLUSIVE LIGHT THEME FOR REPORT MODAL */
+    .report-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(15, 23, 42, 0.45);
+        backdrop-filter: blur(4px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 99999;
+        padding: 15px;
+        box-sizing: border-box;
+    }
+    .report-modal-card {
+        background: #ffffff;
+        color: #1e293b;
+        width: 100%;
+        max-width: 480px;
+        border-radius: 18px;
+        padding: 24px;
+        position: relative;
+        box-shadow: 0 20px 40px rgba(23, 63, 129, 0.12);
+        border: 1px solid #e2e8f0;
+        font-family: 'Poppins', sans-serif;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+    .report-modal-close {
+        position: absolute;
+        top: 18px;
+        right: 18px;
+        background: #f1f5f9;
+        border: none;
+        color: #64748b;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+    .report-modal-close:hover {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+    .report-header {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+    .report-icon-box {
+        background: #e0edff;
+        color: #173F81;
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+    .report-header h2 {
+        font-size: 18px;
+        margin: 0 0 4px 0;
+        font-weight: 700;
+        color: #173F81;
+    }
+    .report-header p {
+        font-size: 11.5px;
+        color: #64748b;
+        margin: 0;
+        line-height: 1.4;
+    }
+    .report-section {
+        margin-bottom: 16px;
+    }
+    .report-label {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        color: #334155;
+        margin-bottom: 8px;
+    }
+    .report-chips-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .report-chip {
+        background: #f8fafc;
+        color: #475569;
+        border: 1.5px solid #e2e8f0;
+        padding: 8px 14px;
+        border-radius: 20px;
+        font-size: 11.5px;
+        font-weight: 500;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+        font-family: 'Poppins', sans-serif;
+    }
+    .report-chip:hover {
+        border-color: #173F81;
+        color: #173F81;
+        background: #f1f5f9;
+    }
+    .report-chip.active {
+        background: #173F81;
+        border-color: #173F81;
+        color: #ffffff;
+        box-shadow: 0 4px 10px rgba(23, 63, 129, 0.2);
+    }
+    .textarea-wrapper {
+        position: relative;
+    }
+    textarea#problemDescription {
+        width: 100%;
+        background: #f8fafc;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 12px;
+        color: #1e293b;
+        font-size: 12px;
+        outline: none;
+        box-sizing: border-box;
+        resize: none;
+        font-family: 'Poppins', sans-serif;
+    }
+    textarea#problemDescription:focus {
+        border-color: #173F81;
+        background: #ffffff;
+        box-shadow: 0 0 0 3px rgba(23, 63, 129, 0.1);
+    }
+    .char-count {
+        position: absolute;
+        bottom: 8px;
+        right: 12px;
+        font-size: 10px;
+        color: #94a3b8;
+    }
+    .report-input {
+        width: 100%;
+        background: #f8fafc;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 10px 14px;
+        color: #1e293b;
+        font-size: 12px;
+        outline: none;
+        box-sizing: border-box;
+        font-family: 'Poppins', sans-serif;
+    }
+    .report-input:focus {
+        border-color: #173F81;
+        background: #ffffff;
+        box-shadow: 0 0 0 3px rgba(23, 63, 129, 0.1);
+    }
+    .report-submit-btn {
+        width: 100%;
+        background: #173F81;
+        color: #ffffff;
+        border: none;
+        padding: 12px;
+        border-radius: 12px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 10px;
+        font-family: 'Poppins', sans-serif;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 12px rgba(23, 63, 129, 0.2);
+    }
+    .report-submit-btn:hover {
+        background: #0f2b5a;
+        transform: translateY(-1px);
+    }
     @media screen and (max-width: 768px) {
         .topbar {
             padding: 8px 10px;
@@ -715,9 +983,11 @@
         onSnapshot, 
         getDocs, 
         doc, 
-        updateDoc 
+        updateDoc,
+        addDoc,
+        serverTimestamp 
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
+    
     const firebaseConfig = {
         apiKey: "AIzaSyBwHmTjg_rT-bU0NL1c71f5qkonf7H7eNM",
         authDomain: "furryfriendsanimalclinic-13da3.firebaseapp.com",
@@ -727,12 +997,92 @@
         appId: "1:214577366989:web:fa96249b2a0321f3f52684",
         measurementId: "G-RZEKK3R3B2"
     };
-
+    
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+    window.openReportProblemModal = () => {
+        const modal = document.getElementById("reportProblemModal");
+        if (modal) modal.style.display = "flex";
+    };
+
     document.addEventListener("DOMContentLoaded", async () => {
-        // Real-time Clock
+        const reportModal = document.getElementById("reportProblemModal");
+        const closeReportBtn = document.getElementById("closeReportModalBtn");
+        const chips = document.querySelectorAll(".report-chip");
+        const categoryInput = document.getElementById("selectedCategory");
+        const textarea = document.getElementById("problemDescription");
+        const charCount = document.getElementById("charCount");
+        const reportForm = document.getElementById("reportProblemForm");
+
+        if (closeReportBtn) {
+            closeReportBtn.addEventListener("click", () => {
+                if (reportModal) reportModal.style.display = "none";
+            });
+        }
+
+        chips.forEach(chip => {
+            chip.addEventListener("click", () => {
+                chips.forEach(c => c.classList.remove("active"));
+                chip.classList.add("active");
+                if (categoryInput) {
+                    categoryInput.value = chip.getAttribute("data-category");
+                }
+            });
+        });
+
+        if (textarea && charCount) {
+            textarea.addEventListener("input", () => {
+                charCount.textContent = `${textarea.value.length}/1000`;
+            });
+        }
+
+        if (reportForm) {
+            reportForm.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const category = categoryInput.value;
+                const description = textarea.value.trim();
+                const email = document.getElementById("userReportEmail").value.trim();
+                const currentOwnerId = localStorage.getItem("ownerId") || localStorage.getItem("userUID") || "ANONYMOUS";
+                const submitBtn = document.getElementById("submitReportBtn");
+                const originalBtnText = submitBtn.innerHTML;
+
+                try {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Submitting...`;
+                    await addDoc(collection(db, "system_reports"), {
+                        userId: currentOwnerId,
+                        category: category,
+                        description: description,
+                        email: email || "Not provided",
+                        status: "Pending",
+                        createdAt: serverTimestamp()
+                    });
+                    Swal.fire({
+                        title: 'Report Submitted!',
+                        text: 'Thank you for helping us improve Smart Vet Care.',
+                        icon: 'success',
+                        confirmButtonColor: '#173F81',
+                        confirmButtonText: 'OK'
+                    });
+                    reportForm.reset();
+                    charCount.textContent = "0/1000";
+                    if (reportModal) reportModal.style.display = "none";
+                } catch (error) {
+                    console.error("Error submitting problem report:", error);
+                    Swal.fire({
+                        title: 'Error!',
+                        text: 'Failed to submit report. Please try again.',
+                        icon: 'error',
+                        confirmButtonColor: '#e53e3e'
+                    });
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
+                }
+            });
+        }
+
         function updateClock() {
             const now = new Date();
             const options = { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
@@ -744,7 +1094,6 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        // Menu / Sidebar Toggles
         const menuBtn = document.getElementById("menuBtn") || document.querySelector(".burger-btn") || document.querySelector(".menu-toggle");
         const sidebar = document.querySelector(".sidebar") || document.querySelector("aside");
         const sidebarOverlay = document.getElementById("sidebarOverlay") || document.querySelector(".sidebar-overlay");
@@ -764,7 +1113,6 @@
             });
         }
 
-        // Dropdowns setup
         const calendarBtn = document.getElementById("calendarBtn");
         const calendarDropdown = document.getElementById("calendarDropdown");
         const notifBellBtn = document.getElementById("notifBellBtn");
@@ -780,6 +1128,7 @@
                 calendarDropdown.style.display = calendarDropdown.style.display === "block" ? "none" : "block";
             });
         }
+
         if (notifBellBtn && notifDropdown) {
             notifBellBtn.addEventListener("click", (e) => {
                 e.stopPropagation();
@@ -788,6 +1137,7 @@
                 notifDropdown.style.display = notifDropdown.style.display === "block" ? "none" : "block";
             });
         }
+
         if (profileTrigger && profileDropdownMenu) {
             profileTrigger.addEventListener("click", (e) => {
                 e.stopPropagation();
@@ -798,6 +1148,7 @@
                 profileTrigger.classList.toggle("active", !isOpen);
             });
         }
+
         document.addEventListener("click", (e) => {
             if (calendarDropdown && !calendarDropdown.contains(e.target) && calendarBtn && !calendarBtn.contains(e.target)) {
                 calendarDropdown.style.display = "none";
@@ -809,9 +1160,12 @@
                 profileDropdownMenu.style.display = "none";
                 profileTrigger.classList.remove("active");
             }
+            const reportModalCard = document.querySelector(".report-modal-card");
+            if (reportModal && reportModal.style.display === "flex" && reportModalCard && !reportModalCard.contains(e.target) && !e.target.closest('.report-flag-btn')) {
+                reportModal.style.display = "none";
+            }
         });
 
-        // Search Bar Logic
         const searchInput = document.getElementById("topSearchInput");
         const searchDropdown = document.getElementById("liveSearchResults");
         if (searchInput && searchDropdown) {
@@ -894,7 +1248,6 @@
             });
         }
 
-        // Logout Modals
         const topbarLogoutBtn = document.getElementById("topbarLogoutBtn");
         const logoutModal = document.getElementById("logoutModal");
         const cancelLogoutBtn = document.getElementById("cancelLogoutBtn");
@@ -917,7 +1270,6 @@
             });
         }
 
-        // Mini Calendar
         const now = new Date();
         const monthYearEl = document.getElementById("currentMonthYear");
         if (monthYearEl) {
@@ -944,16 +1296,17 @@
             daysContainer.innerHTML = daysHtml;
         }
 
-        // User profile and Avatar loader
         const currentUserId = localStorage.getItem("ownerId") || localStorage.getItem("userUID");
         const userEmail = localStorage.getItem("userEmail");
         const savedFullName = localStorage.getItem("fullName");
         const topbarUserName = document.getElementById("topbarUserName");
         const topbarInitialAvatar = document.getElementById("topbarInitialAvatar");
         const topbarProfileImg = document.getElementById("topbarProfileImg");
+
         if (savedFullName) {
             if (topbarUserName) topbarUserName.textContent = savedFullName;
         }
+
         function setTopbarAvatar(fullName, gender) {
             const normalizedGender = (gender || "").toLowerCase();
             let displayImage = "";
@@ -1004,34 +1357,24 @@
             }
         }
 
-        // ==========================================
-        // REAL-TIME NOTIFICATIONS & APPOINTMENTS LISTENER
-        // ==========================================
+        // ==============================================================
+        // DUAL REAL-TIME LISTENER: PUMUKAW SA APPOINTMENTS & NOTIFICATIONS
+        // ==============================================================
         if (currentOwnerId) {
-            // 1. Listen to Notifications Collection
             const notifBadge = document.getElementById("notifBadge");
             const notifCountBadge = document.getElementById("notifCountBadge");
             const notifListContainer = document.getElementById("notifListContainer");
 
-            const notifQuery = query(collection(db, "notifications"), where("ownerId", "==", currentOwnerId));
-            onSnapshot(notifQuery, (snapshot) => {
-                let unreadCount = 0;
-                let notifItems = [];
+            let activeNotifications = [];
 
-                snapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
-                    notifItems.push({ id: docSnap.id, ...data });
-                    if (!data.read) {
-                        unreadCount++;
-                    }
-                });
-
-                // Sort newest first
-                notifItems.sort((a, b) => {
+            function renderAllNotifications() {
+                activeNotifications.sort((a, b) => {
                     const timeA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0);
                     const timeB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0);
                     return timeB - timeA;
                 });
+
+                let unreadCount = activeNotifications.filter(n => !n.read).length;
 
                 if (notifBadge) {
                     if (unreadCount > 0) {
@@ -1046,7 +1389,7 @@
                 }
 
                 if (notifListContainer) {
-                    if (notifItems.length === 0) {
+                    if (activeNotifications.length === 0) {
                         notifListContainer.innerHTML = `
                             <div class="notif-empty-state">
                                 <i class="fa-regular fa-bell-slash"></i>
@@ -1057,12 +1400,11 @@
                     }
 
                     let html = "";
-                    notifItems.forEach(item => {
+                    activeNotifications.forEach(item => {
                         const isUnread = !item.read ? "unread" : "";
                         const isApproved = (item.title || "").toLowerCase().includes("approved") || (item.title || "").toLowerCase().includes("confirmed");
                         const iconClass = isApproved ? "fa-calendar-check" : "fa-bell";
                         const approvedClass = isApproved ? "approved" : "";
-
                         let timeAgo = "Just now";
                         if (item.createdAt) {
                             const date = item.createdAt.toDate ? item.createdAt.toDate() : new Date(item.createdAt);
@@ -1070,7 +1412,7 @@
                         }
 
                         html += `
-                            <a href="appointment.php" class="notif-item ${isUnread} ${approvedClass}" data-id="${item.id}">
+                            <a href="appointment.php" class="notif-item ${isUnread} ${approvedClass}" data-id="${item.id}" data-type="${item.sourceType || 'notification'}">
                                 <div class="notif-icon-circle">
                                     <i class="fa-solid ${iconClass}"></i>
                                 </div>
@@ -1084,11 +1426,11 @@
                     });
                     notifListContainer.innerHTML = html;
 
-                    // Mark individual notification as read on click
                     document.querySelectorAll(".notif-item").forEach(itemEl => {
                         itemEl.addEventListener("click", async () => {
                             const notifId = itemEl.getAttribute("data-id");
-                            if (notifId) {
+                            const sourceType = itemEl.getAttribute("data-type");
+                            if (notifId && sourceType === "notification") {
                                 try {
                                     await updateDoc(doc(db, "notifications", notifId), { read: true });
                                 } catch (err) {
@@ -1098,9 +1440,46 @@
                         });
                     });
                 }
+            }
+
+            // 1. Makinig sa `notifications` collection
+            const notifQuery = query(collection(db, "notifications"), where("ownerId", "==", currentOwnerId));
+            onSnapshot(notifQuery, (snapshot) => {
+                activeNotifications = activeNotifications.filter(n => n.sourceType !== "notification");
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    activeNotifications.push({ 
+                        id: docSnap.id, 
+                        sourceType: "notification",
+                        ...data 
+                    });
+                });
+                renderAllNotifications();
             });
 
-            // Mark All as Read Button Event
+            // 2. Makinig sa `appointments` collection para awtomatikong lumitaw kapag na-approve/confirmed
+            const apptQuery = query(collection(db, "appointments"), where("ownerId", "==", currentOwnerId));
+            onSnapshot(apptQuery, (snapshot) => {
+                activeNotifications = activeNotifications.filter(n => n.sourceType !== "appointment");
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const status = (data.status || "").toLowerCase();
+
+                    if (status === "confirmed" || status === "approved" || status === "in progress" || status === "completed") {
+                        activeNotifications.push({
+                            id: "appt_" + docSnap.id,
+                            sourceType: "appointment",
+                            title: `Appointment ${data.status.charAt(0).toUpperCase() + data.status.slice(1)}!`,
+                            message: `Your appointment for ${data.service || 'checkup'} has been approved by the Admin.`,
+                            read: false,
+                            createdAt: data.createdAt || new Date(),
+                            link: 'appointment.php'
+                        });
+                    }
+                });
+                renderAllNotifications();
+            });
+
             const markAllBtn = document.getElementById("markAllAsReadBtn");
             if (markAllBtn) {
                 markAllBtn.addEventListener("click", async () => {
@@ -1110,16 +1489,16 @@
                         unreadSnap.forEach(async (docSnap) => {
                             await updateDoc(doc(db, "notifications", docSnap.id), { read: true });
                         });
+                        activeNotifications.forEach(n => n.read = true);
+                        renderAllNotifications();
                     } catch (err) {
                         console.error("Error marking all as read:", err);
                     }
                 });
             }
 
-            // 2. Listen to Upcoming Appointments for the Calendar/Schedule Dropdown
             const topbarAppointmentsList = document.getElementById("topbarAppointmentsList");
             if (topbarAppointmentsList) {
-                const apptQuery = query(collection(db, "appointments"), where("ownerId", "==", currentOwnerId));
                 onSnapshot(apptQuery, (snapshot) => {
                     let upcoming = [];
                     snapshot.forEach(docSnap => {
@@ -1129,16 +1508,14 @@
                             upcoming.push({ id: docSnap.id, ...data });
                         }
                     });
-
                     if (upcoming.length === 0) {
                         topbarAppointmentsList.innerHTML = `<p class="empty-state-text">No upcoming appointments.</p>`;
                         return;
                     }
-
                     let html = "";
                     upcoming.slice(0, 3).forEach(item => {
                         html += `
-                            <div style="padding: 8px 10px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 11px; margin-bottom: 4px;">
+                            <div style="padding: 8px 10px; background: #f8fafc; border-radius: 8px; border: 1.5px solid #e2e8f0; font-size: 11px; margin-bottom: 4px;">
                                 <strong style="color: #1e1b4b; display: block;">${item.service || "Appointment"}</strong>
                                 <span style="color: #64748b;"><i class="fa-solid fa-paw"></i> ${item.petName || "Pet"} | ${item.date || ""} (${item.timeSlot || ""})</span>
                             </div>

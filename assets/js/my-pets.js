@@ -69,7 +69,6 @@ function getPetDisplayDetails(species, rawImage) {
     const s = (species || "").toLowerCase();
     let img = "../assets/images/default-pet.png";
     let speciesText = species || "N/A";
-
     if (s.includes("dog") || s.includes("canine")) {
         speciesText = "Canine";
         img = "../assets/images/canine.png";
@@ -117,7 +116,6 @@ async function loadPets() {
         
         const details = getPetDisplayDetails(pet.species, pet.petImage);
         const lastUpdatedText = formatTimestamp(pet.updatedAt || pet.createdAt);
-
         petsContainer.insertAdjacentHTML("beforeend",`
         <div class="pet-card">
             <img src="${details.img}" class="pet-photo">
@@ -141,7 +139,6 @@ async function loadPets() {
         </div>
         `);
     });
-
     if (!hasActivePets) {
         petsContainer.innerHTML = `
         <div class="empty-state">
@@ -152,7 +149,6 @@ async function loadPets() {
         `;
         return;
     }
-
     document.querySelectorAll(".view-btn").forEach(btn=>{
         btn.onclick=()=>{
             openViewModal(btn.dataset.id);
@@ -193,7 +189,6 @@ function formatTimestamp(timestamp) {
 // =========================
 function fillPetDetailsToDOM(pet) {
     const details = getPetDisplayDetails(pet.species, pet.petImage);
-
     const fields = [
         { ids: ["viewPetImage"], val: details.img, isImg: true },
         { ids: ["viewPetName", "scannedPetName"], val: pet.petName || "" },
@@ -222,7 +217,7 @@ function fillPetDetailsToDOM(pet) {
 }
 
 // =========================
-// VIEW PET & GENERATE QR CODE
+// VIEW PET & GENERATE QR CODE (Connected to Database)
 // =========================
 async function openViewModal(id){
     let snap = await getDoc(doc(db,"pets",id));
@@ -237,7 +232,7 @@ async function openViewModal(id){
     if(!snap || !snap.exists()) return;
     const pet = snap.data();
     fillPetDetailsToDOM(pet);
-
+    
     const qrContainer = document.getElementById("petQRCodeInner") || document.getElementById("petQRCode");
     if (qrContainer && typeof QRCode !== "undefined") {
         qrContainer.innerHTML = ""; 
@@ -252,14 +247,15 @@ async function openViewModal(id){
             });
         }
     }
-    const vaccineContainers = [document.getElementById("vaccinationListContainer"), document.getElementById("scannedVaccinationListContainer")];
     
+    const vaccineContainers = [document.getElementById("vaccinationListContainer"), document.getElementById("scannedVaccinationListContainer")];
     let vaccineHTML = `<p style="font-size: 13px; color: #7f8c8d; margin: 0;">Loading vaccination records...</p>`;
     
     vaccineContainers.forEach(container => {
         if (container) container.innerHTML = vaccineHTML;
     });
-   try {
+    
+    try {
         const vaccineQuery = query(
             collection(db, "vaccination_records"),
             where("petId", "==", pet.petId)
@@ -278,12 +274,9 @@ async function openViewModal(id){
                 </thead>
                 <tbody>`;
             
-            // Gamitin ang for...of para sa async/await sa loob ng loop
             for (const docSnap of vaccineSnapshot.docs) {
                 const v = docSnap.data();
                 let vetName = 'Clinic Staff';
-
-                // Kung may doctorId, hanapin natin sa 'doctors' collection
                 const targetDoctorId = v.doctorId || v.administeredBy || v.veterinarian;
                 
                 if (targetDoctorId) {
@@ -297,10 +290,9 @@ async function openViewModal(id){
                         
                         if (!docSnapShot.empty) {
                             const doctorData = docSnapShot.docs[0].data();
-                            // Kunin ang pangalan ng doktor (maaaring firstName/lastName o fullName)
                             vetName = doctorData.fullName || `${doctorData.firstName || ''} ${doctorData.lastName || ''}`.trim() || targetDoctorId;
                         } else {
-                            vetName = targetDoctorId; // Fallback kung walang mahanap na match
+                            vetName = targetDoctorId;
                         }
                     } catch (err) {
                         console.error("Error fetching doctor:", err);
@@ -325,14 +317,16 @@ async function openViewModal(id){
         console.error("Error loading vaccinations:", error);
         vaccineHTML = `<p style="font-size: 13px; color: #e74c3c; margin: 0;">Failed to load vaccination records.</p>`;
     }
+    
     vaccineContainers.forEach(container => {
         if (container) container.innerHTML = vaccineHTML;
     });
+    
     if (viewModal) viewModal.style.display = "flex";
 }
 
 // =========================
-// QR CODE SCANNER HANDLER
+// QR CODE SCANNER HANDLER (Para sa Admin Scan)
 // =========================
 async function handleQRCodeScanned(scannedPetId) {
     if (!scannedPetId) return;
@@ -414,6 +408,7 @@ if (archivePetBtn) {
         const originalText = archivePetBtn.innerHTML;
         archivePetBtn.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> Click again to confirm archive`;
         archivePetBtn.style.background = "#c0392b";
+        
         const confirmHandler = async () => {
             archivePetBtn.removeEventListener("click", confirmHandler);
             try {
