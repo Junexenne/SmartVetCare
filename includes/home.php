@@ -225,7 +225,7 @@
                 <div class="info-box">
                     <h3>📞 Phone</h3>
                     <p>
-                        09258897811
+                        0925-889-7811
                     </p>
                 </div>
                 <div class="info-box">
@@ -238,7 +238,7 @@
                     <h3>🕒 Clinic Hours</h3>
                     <p>
                         Monday - Sunday<br>
-                        8:00 AM - 5:00 PM
+                        10:00 AM - 07:00 PM
                     </p>
                 </div>
             </div>

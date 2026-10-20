@@ -229,6 +229,16 @@ if (session_status() === PHP_SESSION_NONE) {
             margin-bottom: 0;
             text-align: center;
         }
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+        }
         @media (max-width: 768px) {
             .sidebar {
                 position: fixed !important;
@@ -242,6 +252,9 @@ if (session_status() === PHP_SESSION_NONE) {
             }
             .sidebar.active {
                 left: 0 !important;
+            }
+            .sidebar-overlay.active {
+                display: block !important;
             }
             .main-content {
                 padding: 6px !important;
@@ -265,6 +278,7 @@ if (session_status() === PHP_SESSION_NONE) {
     </style>
 </head>
 <body>
+<?php include("pages-header.php"); // o kaya ay include("../includes/pages-header.php"); ?>
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 <div class="dashboard">
     <?php include("../includes/sidebar.php"); ?>
@@ -286,7 +300,6 @@ if (session_status() === PHP_SESSION_NONE) {
                     <i class="fa-solid fa-sparkles" style="color: #2563EB; margin-right: 6px;"></i> Hello, Smart Vet Fam! How can I help you today with your pets or booking an appointment?
                 </div>
             </div>
-
             <!-- Quick Suggestion Pills -->
             <div class="chat-suggestions-wrapper">
                 <button class="suggestion-chip" type="button" onclick="sendSuggestion('What are the common symptoms of vomiting in dogs?')">
@@ -308,7 +321,6 @@ if (session_status() === PHP_SESSION_NONE) {
                     <i class="fa-solid fa-syringe"></i> Puppy Vaccination
                 </button>
             </div>
-
             <div class="chat-input-area-wrapper">
                 <div class="chat-input-area">
                     <input type="text" id="userInput" placeholder="Ask anything about pet care..." autocomplete="off">
@@ -323,7 +335,6 @@ if (session_status() === PHP_SESSION_NONE) {
         </div>
     </div>
 </div>
-
 <!-- Integrated Script para sa AI at Firestore Database -->
 <script type="module">
     import { GoogleGenAI } from "https://esm.run/@google/genai";
@@ -336,11 +347,9 @@ if (session_status() === PHP_SESSION_NONE) {
         arrayUnion, 
         serverTimestamp 
     } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
-
     const apiKey = window.GEMINI_API_KEY || "AIzaSyBwHmTjg_rT-bU0NL1c71f5qkonf7H7eNM";
     const ai = new GoogleGenAI({ apiKey: apiKey });
     const currentOwnerId = localStorage.getItem("ownerId") || "OWN-00004";
-
     const modelCandidates = [
         'gemini-2.5-flash',
         'gemini-2.0-flash',
@@ -348,7 +357,6 @@ if (session_status() === PHP_SESSION_NONE) {
         'gemini-1.5-pro-latest',
         'gemini-1.5-flash'
     ];
-
     async function loadChatHistory() {
         const chatMessages = document.getElementById("chatMessages");
         if (!chatMessages) return;
@@ -373,7 +381,6 @@ if (session_status() === PHP_SESSION_NONE) {
             console.error("Error loading chat history:", error);
         }
     }
-
     function appendMessageUI(sender, text, scroll = true) {
         const chatMessages = document.getElementById("chatMessages");
         if (!chatMessages) return;
@@ -392,7 +399,6 @@ if (session_status() === PHP_SESSION_NONE) {
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
     }
-
     async function saveMessageToFirestore(sender, text) {
         try {
             const docRef = doc(db, "ai_chats", currentOwnerId);
@@ -418,7 +424,6 @@ if (session_status() === PHP_SESSION_NONE) {
             console.error("Error saving message to Firestore:", error);
         }
     }
-
     function generateSmartVetResponse(query) {
         const q = query.toLowerCase();
         if ((q.includes('pakain') || q.includes('pagkain') || q.includes('food') || q.includes('diet') || q.includes('eat') || q.includes('kain')) && !q.includes('bawal') && !q.includes('toxic') && !q.includes('walang gana')) {
@@ -438,17 +443,14 @@ if (session_status() === PHP_SESSION_NONE) {
         }
         return 'Kumusta! Ako ang iyong Smart Vet Care AI Assistant mula sa Furry Friends Animal Clinic. 🐾\n\nPaano ko matutulungan ang iyong alaga ngayon? Maaari kang magtanong tungkol sa kalusugan, pagkain, o mag-book ng appointment.';
     }
-
     async function handleSendMessage(messageText) {
         const userInput = document.getElementById("userInput");
         const chatMessages = document.getElementById("chatMessages");
         const promptText = messageText || (userInput ? userInput.value.trim() : "");
         if (!promptText) return;
-
         appendMessageUI("user", promptText);
         await saveMessageToFirestore("user", promptText);
         if (userInput) userInput.value = "";
-
         const loadingId = "loading-" + Date.now();
         const loadingDiv = document.createElement("div");
         loadingDiv.classList.add("message", "ai");
@@ -456,11 +458,9 @@ if (session_status() === PHP_SESSION_NONE) {
         loadingDiv.innerHTML = `<span style="display: inline-flex; gap: 4px; align-items: center;">Nag-iisip<span style="animation: blink 1.4s infinite both;">.</span><span style="animation: blink 1.4s infinite both .2s;">.</span><span style="animation: blink 1.4s infinite both .4s;">.</span></span>`;
         chatMessages.appendChild(loadingDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
-
         const systemInstruction = `You are Smart Vet Care AI, a specialized veterinary assistant for Furry Friends Animal Clinic. Answer in polite Tagalog or Taglish regarding pets and vet care.`;
         const fullPrompt = `${systemInstruction}\n\nTanong ng pet owner: "${promptText}"`;
         let aiResponseText = null;
-
         for (const modelName of modelCandidates) {
             try {
                 const response = await ai.models.generateContent({
@@ -475,25 +475,38 @@ if (session_status() === PHP_SESSION_NONE) {
                 console.warn(`Nabigo ang ${modelName}, sinusubukan ang susunod...`, err);
             }
         }
-
         if (!aiResponseText) {
             await new Promise(resolve => setTimeout(resolve, 800));
             aiResponseText = generateSmartVetResponse(promptText);
         }
-
         const loadElem = document.getElementById(loadingId);
         if (loadElem) loadElem.remove();
         
         appendMessageUI("ai", aiResponseText);
         await saveMessageToFirestore("ai", aiResponseText);
     }
-
     window.sendSuggestion = function(text) {
         handleSendMessage(text);
     };
-
     document.addEventListener("DOMContentLoaded", () => {
         loadChatHistory();
+        
+        // Eksaktong Burger Button Handler mula sa Dashboard
+        const mobileBtn = document.getElementById('mobileMenuBtn');
+        const sidebar = document.querySelector('.sidebar'); 
+        const overlay = document.getElementById('sidebarOverlay');
+        if (mobileBtn && sidebar && overlay) {
+            mobileBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                sidebar.classList.toggle('active');
+                overlay.classList.toggle('active');
+            });
+            overlay.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            });
+        }
+
         const sendBtn = document.getElementById("sendBtn");
         const userInput = document.getElementById("userInput");
         if (sendBtn) {
