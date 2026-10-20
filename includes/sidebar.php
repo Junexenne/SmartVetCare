@@ -70,7 +70,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
         <li class="sidebar-help-item <?= ($currentPage == 'help.php') ? 'active' : '' ?>">
             <a href="help.php">
                 <i class="fa-solid fa-circle-question"></i>
-                <span>Help & Feedback</span>
+                <span>Help & Support</span>
             </a>
         </li>
     </ul>

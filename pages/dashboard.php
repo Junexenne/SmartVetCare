@@ -451,7 +451,7 @@ error_reporting(E_ALL);
             } else if (q.includes("health") || q.includes("records") || q.includes("medikal")) {
                 reply = "You can view the complete medical records and history of your pets in the 'Health Records' or 'Records & History' section in the sidebar.";
             } else if (q.includes("emergency")) {
-                reply = "For emergencies, no appointment is needed! Please proceed directly to the clinic or call us immediately at 0925-8897811 so we can assist your pet right away.";
+                reply = "For emergencies, no appointment is needed! Please proceed directly to the clinic or call us immediately at 0925-889-7811 so we can assist your pet right away.";
             } else if (q.includes("walk-in") || q.includes("fee") || q.includes("price") || q.includes("magkano")|| q.includes("bayad"))  {
                 reply = "Yes, walk-ins are accepted, but scheduled appointments are prioritized for regular checkups. Standard consultation fees range from ₱300 to ₱500.";
             } else {

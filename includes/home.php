@@ -158,7 +158,7 @@
                 <div class="testimonial-card">
                     <img src="assets/images/testimonial-2.jpg" alt="Client 2">
                     <div class="stars">★★★★★</div>
-                    <p>"Excellent service! Scheduling an appointment was very easy and convenient."</p>
+                    <p>"Malinis ang clinic very comfortable at mababait yung mga doctor"</p>
                     <h4>Joshua Reyes</h4>
                 </div>
                 <!-- Testimonial 3 -->

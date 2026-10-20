@@ -1,6 +1,6 @@
 <?php
 session_start();
-// Kung walang session user_id, gagamitin ang OWN-00004 bilang default/fallback para lumitaw pa rin ang chat history
+// Gamitin ang user_id galing sa session o ang default na OWN-00004
 $userId =$_SESSION['user_id'] ?? 'OWN-00004';
 ?>
 <!DOCTYPE html>
@@ -348,7 +348,6 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
                 border-radius: 0;
                 border: none;
                 height: 100%;
-                /* Itinaas ang bottom padding para hindi sumagad sa pinakababa */
                 padding: 8px 10px calc(75px + env(safe-area-inset-bottom, 30px)) 10px;
             }
             .chat-header {
@@ -420,9 +419,11 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
                         </div>
                     </div>
                 </div>
+                
                 <div id="chatMessages" class="chat-messages">
                     <!-- Dynamic Messages dito -->
                 </div>
+
                 <!-- Suggested Chips Container -->
                 <div class="suggested-chips-container">
                     <button type="button" class="chip-btn" data-text="Inquire about billing">
@@ -438,6 +439,7 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
                         🚨 Emergency assistance
                     </button>
                 </div>
+
                 <form id="chatForm" class="chat-input-area">
                     <div class="chat-tools">
                         <label for="attachFileInput" style="cursor: pointer;">
@@ -454,6 +456,7 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
             </div>
         </div> 
     </div> 
+
     <!-- Firebase v8 SDK Scripts -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -475,6 +478,9 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
             firebase.initializeApp(firebaseConfig);
         }
         const db = firebase.firestore();
+
+        let activeConvId = null;
+
         document.addEventListener('DOMContentLoaded', () => {
             const sidebar = document.querySelector('.sidebar');
             const sidebarOverlay = document.getElementById('sidebarOverlay');
@@ -493,9 +499,11 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
                     sidebarOverlay.classList.remove('active');
                 });
             }
+
             const chipButtons = document.querySelectorAll('.chip-btn');
             const messageInput = document.getElementById('messageInput');
             const chatForm = document.getElementById('chatForm');
+            
             chipButtons.forEach(button => {
                 button.addEventListener('click', () => {
                     const text = button.getAttribute('data-text');
@@ -509,57 +517,96 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
                 });
             });
         });
-        // 1. Real-time Messages Loading
-        function loadMessages() {
+
+        // Hanapin o i-initialize ang conversation document ID base sa ownerId (hal. CONV-00001)
+        async function getOrCreateConversationDoc() {
+            if (activeConvId) return activeConvId;
+
+            try {
+                const convQuery = db.collection("conversations").where("ownerId", "==", currentUserId);
+                const snapshot = await convQuery.get();
+
+                if (!snapshot.empty) {
+                    activeConvId = snapshot.docs[0].id;
+                    return activeConvId;
+                } else {
+                    const newDocRef = db.collection("conversations").doc();
+                    activeConvId = newDocRef.id;
+                    await newDocRef.set({
+                        conversationId: activeConvId,
+                        ownerId: currentUserId,
+                        status: "Open",
+                        unreadCount: 0,
+                        assignedAdminId: null,
+                        lastMessage: "",
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    return activeConvId;
+                }
+            } catch (err) {
+                console.error("Error getting/creating conversation doc: ", err);
+                return "CONV-00001"; // Fallback ID
+            }
+        }
+
+        // 1. Real-time Messages Loading galing sa sub-collection na `messages`
+        async function loadMessages() {
             const chatMessagesContainer = document.getElementById('chatMessages');
             if (!chatMessagesContainer) return;
             
+            const convId = await getOrCreateConversationDoc();
+            
+            // Makinig sa sub-collection na `messages` sa loob ng conversation document, naka-order by createdAt asc[cite: 21]
             db.collection("conversations")
-              .doc(currentUserId)
-              .onSnapshot((docSnapshot) => {
+              .doc(convId)
+              .collection("messages")
+              .orderBy("createdAt", "asc")
+              .onSnapshot((snapshot) => {
                   chatMessagesContainer.innerHTML = ""; 
                   
-                  if (!docSnapshot.exists || !docSnapshot.data().messages || docSnapshot.data().messages.length === 0) {
+                  if (snapshot.empty) {
                       chatMessagesContainer.innerHTML = `<p style="text-align:center; color:#888; font-size:12px; margin-top:20px;">No messages yet. Start a conversation with the clinic support!</p>`;
                       return;
                   }
-                  const data = docSnapshot.data();
-                  let messages = data.messages || [];
-                  messages.sort((a, b) => {
-                      const timeA = a.timestamp && a.timestamp.toDate ? a.timestamp.toDate() : new Date(a.timestamp || 0);
-                      const timeB = b.timestamp && b.timestamp.toDate ? b.timestamp.toDate() : new Date(b.timestamp || 0);
-                      return timeA - timeB;
-                  });
-                  messages.forEach((msg) => {
+                  
+                  snapshot.forEach((docSnap) => {
+                      const msg = docSnap.data();
                       const isUser = msg.senderId === currentUserId;
                       
                       let timeString = "";
-                      if (msg.timestamp) {
-                          const date = msg.timestamp.toDate ? msg.timestamp.toDate() : new Date(msg.timestamp);
+                      if (msg.createdAt) {
+                          const date = msg.createdAt.toDate ? msg.createdAt.toDate() : new Date(msg.createdAt);
                           if (!isNaN(date)) {
                               timeString = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                           }
                       }
+                      
                       const wrapperDiv = document.createElement('div');
                       wrapperDiv.classList.add('message-wrapper', isUser ? 'user' : 'admin');
+                      
                       const messageDiv = document.createElement('div');
                       messageDiv.classList.add('message');
                       messageDiv.textContent = msg.text;
                       wrapperDiv.appendChild(messageDiv);
+                      
                       if (timeString) {
                           const timeDiv = document.createElement('div');
                           timeDiv.classList.add('message-time');
                           timeDiv.textContent = timeString;
                           wrapperDiv.appendChild(timeDiv);
                       }
+                      
                       chatMessagesContainer.appendChild(wrapperDiv);
                   });
+                  
                   chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
               }, (error) => {
                   console.error("Error loading messages: ", error);
               });
         }
-        // 2. Send Message
+
+        // 2. Send Message papunta sa sub-collection na `messages` at i-update ang parent document
         const chatForm = document.getElementById('chatForm');
         if (chatForm) {
             chatForm.addEventListener('submit', async (e) => {
@@ -569,17 +616,28 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
                 
                 if (!messageText) return;
                 try {
-                    const userDocRef = db.collection("conversations").doc(currentUserId);
-                    await userDocRef.set({
-                        participants: [currentUserId, "admin"],
+                    const convId = await getOrCreateConversationDoc();
+                    const messagesRef = db.collection("conversations").doc(convId).collection("messages");
+                    const convDocRef = db.collection("conversations").doc(convId);
+                    
+                    // Magdagdag ng bagong document sa sub-collection na `messages`[cite: 21]
+                    await messagesRef.add({
+                        text: messageText,
+                        senderId: currentUserId,
+                        senderRole: "PetOwner",
+                        messageType: "text",
+                        isRead: false,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+
+                    // I-update din ang parent document para sa last message info ng admin[cite: 21]
+                    await convDocRef.set({
                         lastMessage: messageText,
-                        updatedAt: new Date(),
-                        messages: firebase.firestore.FieldValue.arrayUnion({
-                            senderId: currentUserId,
-                            text: messageText,
-                            timestamp: new Date()
-                        })
+                        lastSenderId: currentUserId,
+                        lastMessageAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                     }, { merge: true });
+
                     inputField.value = "";
                 } catch (error) {
                     console.error("Error sending message: ", error);
@@ -595,6 +653,7 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
                 }
             });
         }
+
         // 3. Dropdown Menu Toggle
         const menuToggleBtn = document.getElementById('menuToggleBtn');
         const chatDropdownMenu = document.getElementById('chatDropdownMenu');
@@ -607,6 +666,7 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
                 chatDropdownMenu.classList.remove('active');
             });
         }
+
         // 4. Clinic Info Modal
         const btnClinicInfo = document.getElementById('btnClinicInfo');
         if (btnClinicInfo) {
@@ -631,7 +691,8 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
                 });
             });
         }
-        // 5. Clear Chat Modal
+
+        // 5. Clear Chat Modal (Burahin ang mga messages sa sub-collection)
         const btnClearChat = document.getElementById('btnClearChat');
         if (btnClearChat) {
             btnClearChat.addEventListener('click', async () => {
@@ -652,10 +713,19 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
                 }).then(async (result) => {
                     if (result.isConfirmed) {
                         try {
-                            const userDocRef = db.collection("conversations").doc(currentUserId);
-                            await userDocRef.set({
-                                messages: [],
-                                lastMessage: ""
+                            const convId = await getOrCreateConversationDoc();
+                            const messagesRef = db.collection("conversations").doc(convId).collection("messages");
+                            const snapshot = await messagesRef.get();
+                            
+                            const batch = db.batch();
+                            snapshot.docs.forEach((doc) => {
+                                batch.delete(doc.ref);
+                            });
+                            await batch.commit();
+
+                            await db.collection("conversations").doc(convId).set({
+                                lastMessage: "",
+                                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                             }, { merge: true });
                             
                             Swal.fire({
@@ -683,7 +753,8 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
                 });
             });
         }
-        // 6. Action Buttons
+
+        // 6. Attachment Input Handler
         const attachFileInput = document.getElementById('attachFileInput');
         if (attachFileInput) {
             attachFileInput.addEventListener('change', (e) => {
@@ -694,6 +765,8 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
                 messageInput.focus();
             });
         }
+
+        // Simulan ang Real-time Messages Listener
         loadMessages();
     </script>
 </body>

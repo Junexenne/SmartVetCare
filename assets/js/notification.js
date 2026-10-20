@@ -16,7 +16,6 @@ document.addEventListener("DOMContentLoaded", () => {
     function renderNotifications() {
         listContainer.innerHTML = "";
         let unreadCount = notificationsList.length;
-
         if (unreadCount === 0) {
             listContainer.innerHTML = `
                 <div style="text-align: center; padding: 25px 15px; color: #a0aec0;">
@@ -31,7 +30,6 @@ document.addEventListener("DOMContentLoaded", () => {
         notificationsList.forEach((notif) => {
             let iconClass = notif.icon || "fa-solid fa-bell";
             let accentColor = notif.color || "#5142f5";
-
             const item = document.createElement('div');
             item.style.cssText = `
                 display: flex;
@@ -43,7 +41,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 overflow: hidden;
                 border: 1px solid #edf2f7;
             `;
-
             item.innerHTML = `
                 <div style="background: ${accentColor}; min-width: 45px; display: flex; align-items: center; justify-content: center; color: #ffffff;">
                     <i class="${iconClass}" style="font-size: 14px;"></i>
@@ -72,24 +69,23 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // Awtomatikong kukunin ang mga na-approve/confirmed na appointment para maging notification
+    // Awtomatikong kukunin ang mga na-approve/confirmed na appointment mula sa appointments_v2 para maging notification
     if (currentOwnerId || ownerName) {
-        const appointmentsQuery = query(collection(db, "appointments"));
+        const appointmentsQuery = query(
+            collection(db, "appointments_v2"),
+            where("ownerId", "==", currentOwnerId)
+        );
         
         onSnapshot(appointmentsQuery, (snapshot) => {
             notificationsList = []; 
-
             snapshot.forEach((docSnap) => {
                 const data = docSnap.data();
                 
-                // Suriin kung ang appointment na ito ay para sa user na naka-login
-                const isMatch = (currentOwnerId && data.ownerId === currentOwnerId) ||
-                                (ownerName && (data.ownerName === ownerName || data.clientName === ownerName));
-
-                if (isMatch) {
-                    const status = (data.status || "Pending").toLowerCase();
+                // Siguraduhing hindi naka-archive o tinanggal
+                if (data.isArchived !== true) {
+                    const status = (data.status || "Pending").toLowerCase().trim();
                     
-                    // Kapag na-accept na o confirmed na ng admin
+                    // Kapag na-accept, confirmed, in progress, o completed na ng admin
                     if (status === 'confirmed' || status === 'approved' || status === 'in progress' || status === 'completed') {
                         notificationsList.push({
                             id: docSnap.id,

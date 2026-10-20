@@ -14,10 +14,8 @@ function checkClinicStatus() {
     const currentHour = parseInt(hourStr, 10);
     const currentMinute = parseInt(minuteStr, 10);
     const currentTimeDecimal = currentHour + (currentMinute / 60);
-
     const openingHour = 10.0;
     const closingHour = 19.0;
-
     const statusBadge = document.getElementById('clinicStatusBadge');
     if (statusBadge) {
         if (currentTimeDecimal >= openingHour && currentTimeDecimal < closingHour) {
@@ -40,6 +38,7 @@ if (greeting) {
     const hour = new Date().getHours();
     greeting.textContent = hour >= 5 && hour < 12 ? "Good Morning, Furry Friends!" : hour < 18 ? "Good Afternoon, Furry Friends!" : "Good Evening, Furry Friends!";
 }
+
 function loadSeasonalReminder() {
     const month = new Date().getMonth();
     const titleEl = document.getElementById('reminderTitle');
@@ -61,24 +60,25 @@ function loadSeasonalReminder() {
 }
 loadSeasonalReminder();
 
-// --- 2. Topbar Calendar Appointments Loader ---
+// --- 2. Topbar Calendar Appointments Loader (appointments_v2) ---
 async function loadTopbarAppointments(ownerId) {
     const container = document.getElementById("topbarAppointmentsList");
     if (!container) return;
     try {
-        const q = query(collection(db, "appointments"), where("ownerId", "==", ownerId));
+        const q = query(collection(db, "appointments_v2"), where("ownerId", "==", ownerId));
         const snapshot = await getDocs(q);
         const todayStr = new Date().toISOString().split('T')[0];
         let html = '';
         let validCount = 0;
-        snapshot.forEach((doc) => {
-            const data = doc.data();
-            if ((data.status === 'Confirmed' || data.status === 'In Progress' || data.status === 'Pending') && data.date >= todayStr) {
+        snapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            const statusLower = (data.status || "").toLowerCase().trim();
+            if (data.isArchived !== true && statusLower !== "trash" && statusLower !== "cancelled" && data.date >= todayStr) {
                 validCount++;
                 html += `
                     <div style="background: #f8f9fa; padding: 10px; border-radius: 8px; border-left: 3px solid #5142f5; font-size: 12px; margin-bottom: 5px;">
                         <div style="font-weight: 600; color: #173f81;">${data.service || 'Consultation'} (${data.petName || 'Pet'})</div>
-                        <div style="color: #4a5568; margin-top: 2px;"><i class="fa-regular fa-clock" style="margin-right: 4px;"></i> ${data.date} (${data.time || '10:00 AM - 7:00 PM'})</div>
+                        <div style="color: #4a5568; margin-top: 2px;"><i class="fa-regular fa-clock" style="margin-right: 4px;"></i> ${data.date} (${data.timeSlot || data.time || '10:00 AM - 7:00 PM'})</div>
                     </div>`;
             }
         });
@@ -92,45 +92,52 @@ async function loadTopbarAppointments(ownerId) {
     }
 }
 
-// --- 3. Main Dashboard Data Loader (Multiple Appointments for Today) ---
+// --- 3. Main Dashboard Data Loader (appointments_v2) ---
 function loadDashboardData(ownerId) {
     const upcomingContainer = document.getElementById("upcomingAppointmentContainer");
-    const apptQuery = query(collection(db, "appointments"), where("ownerId", "==", ownerId));
+    const apptQuery = query(collection(db, "appointments_v2"), where("ownerId", "==", ownerId));
     
     onSnapshot(apptQuery, (snapshot) => {
         if (!upcomingContainer) return;
         const todayStr = new Date().toISOString().split('T')[0];
         let todaysAppointments = [];
-        snapshot.forEach((doc) => {
-            const data = doc.data();
-            if ((data.status === 'Pending' || data.status === 'Confirmed' || data.status === 'In Progress') && data.date === todayStr) {
+        snapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            const statusLower = (data.status || "").toLowerCase().trim();
+            // Ipakita ang active appointments para sa petsa ngayon
+            if (data.isArchived !== true && statusLower !== "trash" && statusLower !== "cancelled" && data.date === todayStr) {
                 todaysAppointments.push(data);
             }
         });
+
         if (todaysAppointments.length === 0) {
             upcomingContainer.innerHTML = `<p class="empty-state" style="text-align: center; color: #64748b; padding: 20px; font-size: 13px;">You don't have any appointments scheduled for today.</p>`;
             return;
         }
+
         let containerHtml = '<div style="display: flex; flex-direction: column; gap: 16px;">';
         todaysAppointments.forEach((nextAppt) => {
             let currentStatus = nextAppt.status || 'Pending';
             let step1Class = 'step active';
             let step2Class = 'step';
             let step3Class = 'step';
-            if (currentStatus === 'Confirmed' || currentStatus === 'In Progress') {
+            
+            const sLower = currentStatus.toLowerCase();
+            if (sLower === 'confirmed' || sLower === 'approved' || sLower === 'in progress') {
                 step1Class = 'step completed';
                 step2Class = 'step active';
-            } else if (currentStatus === 'Completed') {
+            } else if (sLower === 'completed') {
                 step1Class = 'step completed';
                 step2Class = 'step completed';
                 step3Class = 'step active completed';
             }
+
             containerHtml += `
                 <div style="background: #ffffff; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 20px rgba(81, 66, 245, 0.04); border-left: 5px solid #5142f5;">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
                         <div>
                             <h4 style="margin: 0 0 4px 0; color: #1e1b4b; font-size: 16px; font-weight: 600;">${nextAppt.service || 'Vet Consultation'} - <span style="color: #5142f5;">${nextAppt.petName || 'Pet'}</span></h4>
-                            <p style="margin: 0; color: #64748b; font-size: 13px; display: flex; align-items: center; gap: 6px;"><i class="fa-regular fa-calendar" style="color: #5142f5;"></i> ${nextAppt.date} (${nextAppt.time || '10:00 AM - 7:00 PM'})</p>
+                            <p style="margin: 0; color: #64748b; font-size: 13px; display: flex; align-items: center; gap: 6px;"><i class="fa-regular fa-calendar" style="color: #5142f5;"></i> ${nextAppt.date} (${nextAppt.timeSlot || nextAppt.time || '10:00 AM - 7:00 PM'})</p>
                         </div>
                         <span style="background: #eef2ff; color: #5142f5; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1px solid #c7d2fe;">${currentStatus}</span>
                     </div>
@@ -174,8 +181,8 @@ function loadDashboardData(ownerId) {
             return;
         }
         let activitiesList = [];
-        snapshot.forEach((doc) => {
-            activitiesList.push({ id: doc.id, ...doc.data() });
+        snapshot.forEach((docSnap) => {
+            activitiesList.push({ id: docSnap.id, ...docSnap.data() });
         });
         activitiesList.sort((a, b) => {
             let timeA = a.timestamp?.toDate ? a.timestamp.toDate() : new Date(a.timestamp || 0);
@@ -230,12 +237,15 @@ onAuthStateChanged(auth, async (user) => {
             const el = document.getElementById("totalPets");
             if (el) el.innerText = s.size;
         });
-        onSnapshot(query(collection(db, "appointments"), where("ownerId", "==", ownerId)), (s) => {
+
+        // Bilangin ang active appointments sa appointments_v2 para sa counter badge
+        onSnapshot(query(collection(db, "appointments_v2"), where("ownerId", "==", ownerId)), (s) => {
             let count = 0;
             const todayStr = new Date().toISOString().split('T')[0];
             s.forEach(d => {
                 const data = d.data();
-                if ((data.status === 'Confirmed' || data.status === 'In Progress' || data.status === 'Pending') && data.date >= todayStr) {
+                const statusLower = (data.status || "").toLowerCase().trim();
+                if (data.isArchived !== true && statusLower !== "trash" && statusLower !== "cancelled" && data.date >= todayStr) {
                     count++;
                 }
             });

@@ -1442,7 +1442,7 @@
                 }
             }
 
-            // 1. Makinig sa `notifications` collection
+             // 1. Makinig sa `notifications` collection
             const notifQuery = query(collection(db, "notifications"), where("ownerId", "==", currentOwnerId));
             onSnapshot(notifQuery, (snapshot) => {
                 activeNotifications = activeNotifications.filter(n => n.sourceType !== "notification");
@@ -1457,27 +1457,54 @@
                 renderAllNotifications();
             });
 
-            // 2. Makinig sa `appointments` collection para awtomatikong lumitaw kapag na-approve/confirmed
-            const apptQuery = query(collection(db, "appointments"), where("ownerId", "==", currentOwnerId));
+            // 2. Makinig sa `appointments_v2` collection (gaya ng nakita sa database schema)
+            const apptQuery = query(collection(db, "appointments_v2"), where("ownerId", "==", currentOwnerId));
             onSnapshot(apptQuery, (snapshot) => {
                 activeNotifications = activeNotifications.filter(n => n.sourceType !== "appointment");
+                let upcoming = [];
+
                 snapshot.forEach((docSnap) => {
                     const data = docSnap.data();
                     const status = (data.status || "").toLowerCase();
-
+                    
+                    // Kung confirmed o approved na ng doktor, gawan ng notification item
                     if (status === "confirmed" || status === "approved" || status === "in progress" || status === "completed") {
                         activeNotifications.push({
                             id: "appt_" + docSnap.id,
                             sourceType: "appointment",
                             title: `Appointment ${data.status.charAt(0).toUpperCase() + data.status.slice(1)}!`,
-                            message: `Your appointment for ${data.service || 'checkup'} has been approved by the Admin.`,
+                            message: `Your appointment for ${data.service || 'checkup'} (Pet: ${data.petName || 'N/A'}) has been confirmed.`,
                             read: false,
                             createdAt: data.createdAt || new Date(),
                             link: 'appointment.php'
                         });
                     }
+
+                    // Para sa upcoming appointments list sa calendar dropdown
+                    if (status !== "cancelled" && status !== "archived" && !data.isArchived) {
+                        upcoming.push({ id: docSnap.id, ...data });
+                    }
                 });
+
                 renderAllNotifications();
+
+                // Render sa Calendar Dropdown upcoming appointments list
+                if (topbarAppointmentsList) {
+                    if (upcoming.length === 0) {
+                        topbarAppointmentsList.innerHTML = `<p class="empty-state-text">No upcoming appointments.</p>`;
+                    } else {
+                        let html = "";
+                        upcoming.slice(0, 3).forEach(item => {
+                            html += `
+                                <div style="padding: 8px 10px; background: #f8fafc; border-radius: 8px; border: 1.5px solid #e2e8f0; font-size: 11px; margin-bottom: 4px;">
+                                    <strong style="color: #1e1b4b; display: block;">${item.service || "Appointment"}</strong>
+                                    <span style="color: #64748b;"><i class="fa-solid fa-paw"></i> ${item.petName || "Pet"} | ${item.date || ""} (${item.timeSlot || ""})</span>
+                                </div>
+                            `;
+                        });
+                        topbarAppointmentsList.innerHTML = html;
+                    }
+                }
             });
 
             const markAllBtn = document.getElementById("markAllAsReadBtn");
@@ -1494,34 +1521,6 @@
                     } catch (err) {
                         console.error("Error marking all as read:", err);
                     }
-                });
-            }
-
-            const topbarAppointmentsList = document.getElementById("topbarAppointmentsList");
-            if (topbarAppointmentsList) {
-                onSnapshot(apptQuery, (snapshot) => {
-                    let upcoming = [];
-                    snapshot.forEach(docSnap => {
-                        const data = docSnap.data();
-                        const status = (data.status || "").toLowerCase();
-                        if (status !== "cancelled" && status !== "archived") {
-                            upcoming.push({ id: docSnap.id, ...data });
-                        }
-                    });
-                    if (upcoming.length === 0) {
-                        topbarAppointmentsList.innerHTML = `<p class="empty-state-text">No upcoming appointments.</p>`;
-                        return;
-                    }
-                    let html = "";
-                    upcoming.slice(0, 3).forEach(item => {
-                        html += `
-                            <div style="padding: 8px 10px; background: #f8fafc; border-radius: 8px; border: 1.5px solid #e2e8f0; font-size: 11px; margin-bottom: 4px;">
-                                <strong style="color: #1e1b4b; display: block;">${item.service || "Appointment"}</strong>
-                                <span style="color: #64748b;"><i class="fa-solid fa-paw"></i> ${item.petName || "Pet"} | ${item.date || ""} (${item.timeSlot || ""})</span>
-                            </div>
-                        `;
-                    });
-                    topbarAppointmentsList.innerHTML = html;
                 });
             }
         }

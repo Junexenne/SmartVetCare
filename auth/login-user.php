@@ -27,14 +27,14 @@
             width: 100%;
         }
         .login-box {
-        width: 100%;
-        max-width: 350px; 
-        background: white;
-        padding: 20px 25px; 
-        border-radius: 16px;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-        text-align: center;
-}
+            width: 100%;
+            max-width: 350px; 
+            background: white;
+            padding: 20px 25px; 
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+            text-align: center;
+        }
         .login-box h1 {
             color: #173F81;
             font-size: 26px;
@@ -226,7 +226,6 @@
             </div>
         </div>
     </div>
-
     <div id="toast" class="toast">
         <div class="toast-content">
             <i id="toastIcon" class="fa-solid fa-circle-check"></i>
@@ -236,7 +235,6 @@
             </div>
         </div>
     </div>
-
     <script>
         const togglePassword = document.getElementById("togglePassword");
         const passwordInput = document.getElementById("password");

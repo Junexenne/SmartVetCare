@@ -8,7 +8,7 @@ if (session_status() === PHP_SESSION_NONE) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Help & Feedback - Smart Vet Care</title>
+    <title>Help & Support - Smart Vet Care</title>
     
     <link rel="stylesheet" href="../assets/css/dashboard.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -159,8 +159,21 @@ if (session_status() === PHP_SESSION_NONE) {
             color: #475569;
             line-height: 1.7;
         }
+        .help-answer h4 {
+            color: #1e1b4b;
+            font-size: 14px;
+            margin: 14px 0 6px 0;
+            font-weight: 600;
+        }
+        .help-answer ul {
+            margin: 6px 0 12px 20px;
+            padding: 0;
+        }
+        .help-answer li {
+            margin-bottom: 4px;
+        }
         .help-card.active .help-answer {
-            max-height: 250px;
+            max-height: 1000px;
             padding: 18px 22px;
             border-top-color: #f1f5f9;
         }
@@ -312,9 +325,10 @@ if (session_status() === PHP_SESSION_NONE) {
                     Help & Support
                 </h1>
                 <p style="color: #64748b; font-size: 13px; margin: 0;">
-                    Learn how to use the system or send us your feedback and suggestions.
+                    Learn how to use the system, review policies, or send us your feedback and suggestions.
                 </p>
             </div>
+            
             <!-- Popular Help Resources with Accordion Answers -->
             <div class="section-title">Popular Help Resources</div>
             <div class="help-list">
@@ -332,6 +346,7 @@ if (session_status() === PHP_SESSION_NONE) {
                         Go to your Account Settings or Profile page, look for the "Change Password" section, enter your current password followed by your new password, and click Save Changes. If you forgot your password, use the "Forgot Password" link on the login page.
                     </div>
                 </div>
+
                 <!-- Question 2 -->
                 <div class="help-card">
                     <div class="help-item">
@@ -345,6 +360,7 @@ if (session_status() === PHP_SESSION_NONE) {
                         To book an appointment, navigate to the Appointments page, select your preferred date, time, and veterinarian, then confirm. To cancel, go to your upcoming appointments list and click the "Cancel Appointment" button before the scheduled time.
                     </div>
                 </div>
+
                 <!-- Question 3 -->
                 <div class="help-card">
                     <div class="help-item">
@@ -358,6 +374,7 @@ if (session_status() === PHP_SESSION_NONE) {
                         Access the "My Pets" or "Pet Profiles" section from the sidebar. Choose the specific pet whose details you want to update, click the edit button, modify the information or health logs, and click save to update your database records.
                     </div>
                 </div>
+
                 <!-- Question 4 -->
                 <div class="help-card">
                     <div class="help-item">
@@ -372,6 +389,72 @@ if (session_status() === PHP_SESSION_NONE) {
                     </div>
                 </div>
             </div>
+
+            <!-- Legal & Policy Documents Section -->
+            <div class="section-title">Legal & Policies</div>
+            <div class="help-list">
+                
+                <!-- Privacy Policy Card -->
+                <div class="help-card">
+                    <div class="help-item">
+                        <div class="help-item-left">
+                            <i class="fa-solid fa-user-shield"></i>
+                            <span>Privacy Policy</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-down chevron-icon"></i>
+                    </div>
+                    <div class="help-answer">
+                        <h4>ABOUT THIS POLICY</h4>
+                        <p>To provide a seamless and reliable veterinary experience, Furry Friends Animal Clinic and the Smart Vet Care system ("we," "us," "our") put you and your pets first. Because we care for you, we regard your privacy with the utmost importance. This Privacy Policy outlines our guidelines in relation to the collection, use, and protection of your Personal Data when you use our web platform and services.</p>
+                        
+                        <h4>INFORMATION WE COLLECT AND USE</h4>
+                        <p>We collect information to provide better services to all our users. This includes:</p>
+                        <ul>
+                            <li><strong>Personal Information:</strong> Your full name, email address, contact number, and home address when you register an account.</li>
+                            <li><strong>Pet Information:</strong> Details regarding your pets, such as their name, species (dogs and cats), breed, age, and medical/vaccination history.</li>
+                            <li><strong>Transaction & Appointment Data:</strong> Records of your scheduled appointments, consultation logs, and service history within the clinic.</li>
+                        </ul>
+
+                        <h4>PROTECTION OF DATA</h4>
+                        <p>We implement strict security measures to maintain the safety of your personal and medical information. Access to your data is restricted strictly to authorized clinic staff and administrators needed to fulfill veterinary services.</p>
+
+                        <h4>CHANGES TO THIS POLICY</h4>
+                        <p>From time to time, we may update our Privacy Policy to reflect current changes in our system and legal requirements. Any updates will be posted directly on this page for your reference.</p>
+                    </div>
+                </div>
+
+                <!-- Terms and Conditions Card -->
+                <div class="help-card">
+                    <div class="help-item">
+                        <div class="help-item-left">
+                            <i class="fa-solid fa-file-contract"></i>
+                            <span>Terms and Conditions</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-down chevron-icon"></i>
+                    </div>
+                    <div class="help-answer">
+                        <p>These Terms and Conditions are binding between you and Furry Friends Animal Clinic operating the Smart Vet Care platform ("Smart Vet Care," "we," "us," or "our"). Smart Vet Care is an online system connecting pet owners ("End User/s", "pet owner/s") and their pets to veterinarians, clinics, and staff ("Services").</p>
+                        <p>By using the Platform and/or any of its features, you agree to be bound by the Terms and Conditions set forth below. If you do not wish to be bound by these terms, you may not access or use our system.</p>
+
+                        <h4>I. ACCOUNT CREATION</h4>
+                        <p>When you create an account with Smart Vet Care, you guarantee that you are at least 18 years of age, and that the information you provide us is accurate, complete, and current at all times. Inaccurate or obsolete information may result in the suspension or termination of your account.</p>
+
+                        <h4>II. APPOINTMENTS AND SERVICES</h4>
+                        <ul>
+                            <li><strong>Booking Policy:</strong> Registered users can set appointments based on real-time clinic availability during regular operational hours.</li>
+                            <li><strong>Emergency Cases:</strong> Emergency cases are accommodated depending on clinic capacity and availability. Walk-ins or direct phone calls are advised for severe emergencies.</li>
+                            <li><strong>Accepted Animals:</strong> Our clinic currently provides formal scheduling and medical tracking specifically for dogs and cats.</li>
+                        </ul>
+
+                        <h4>III. USER RESPONSIBILITIES</h4>
+                        <p>You are responsible for safeguarding the password that you use to access the system and for any activities or actions under your account. You agree not to disclose your password to any third party.</p>
+
+                        <h4>IV. MODIFICATIONS</h4>
+                        <p>Smart Vet Care reserves the right to modify or replace these Terms at any time. Your continued use of the platform after any changes constitutes acceptance of those new terms.</p>
+                    </div>
+                </div>
+            </div>
+
             <!-- Send Feedback Section -->
             <div class="feedback-card" id="send-feedback-section">
                 <div class="feedback-header">
@@ -405,15 +488,19 @@ if (session_status() === PHP_SESSION_NONE) {
         </div>
     </div>
 </div>
+
 <!-- Firebase SDK Imports & App Initialization -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
     import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    
     const firebaseConfig = {
         projectId: "furryfriendsanimalclinic-13da3"
     };
+    
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    
     function showToast() {
         const toast = document.getElementById('toastNotification');
         toast.classList.add('show');
@@ -422,10 +509,12 @@ if (session_status() === PHP_SESSION_NONE) {
             toast.classList.remove('show');
         }, 4000);
     }
+    
     document.addEventListener("DOMContentLoaded", () => {
         const mobileBtn = document.getElementById('mobileMenuBtn');
         const sidebar = document.querySelector('.sidebar'); 
         const overlay = document.getElementById('sidebarOverlay');
+        
         if (mobileBtn && sidebar && overlay) {
             mobileBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -437,6 +526,7 @@ if (session_status() === PHP_SESSION_NONE) {
                 overlay.classList.remove('active');
             });
         }
+        
         const helpItems = document.querySelectorAll('.help-item');
         helpItems.forEach(item => {
             item.addEventListener('click', () => {
@@ -451,14 +541,17 @@ if (session_status() === PHP_SESSION_NONE) {
             });
         });
     });
+    
     document.getElementById('feedbackForm').addEventListener('submit', async function(e) {
         e.preventDefault();
         
         const feedbackType = document.getElementById('feedback_type').value;
         const message = document.getElementById('message').value;
         const submitBtn = document.getElementById('submitBtn');
+        
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
+        
         try {
             await addDoc(collection(db, "feedback"), {
                 feedbackType: feedbackType,

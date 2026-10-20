@@ -9,7 +9,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <style>
-        /* Sidebar Overlay para sa Mobile */
         .sidebar-overlay {
             display: none;
             position: fixed;
@@ -20,7 +19,6 @@
             background: rgba(0, 0, 0, 0.4);
             z-index: 1000;
         }
-        /* Responsive Layout & Grid Adjustments */
         .appointment-container {
             max-width: 1200px;
             margin: 0 auto;
@@ -40,7 +38,6 @@
             position: relative;
             z-index: 50;
         }
-        /* Custom Interactive DateTime Picker Styles */
         .custom-datetime-wrapper {
             position: relative;
             width: 100%;
@@ -217,6 +214,7 @@
         }
         .form-group {
             margin-bottom: 16px;
+            width: 100%;
         }
         .form-group label {
             display: block;
@@ -227,9 +225,9 @@
         }
         .form-group select, 
         .form-group textarea {
-            width: 100%;
-            max-width: 100%;
-            box-sizing: border-box;
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
             padding: 11px 14px;
             border: 1px solid #cbd5e1;
             border-radius: 10px;
@@ -239,6 +237,9 @@
             background: #fff;
             outline: none;
             transition: border-color 0.2s, box-shadow 0.2s;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
         }
         .form-group select option {
             max-width: 100%;
@@ -326,6 +327,10 @@
                 box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35) !important;
                 border: 1px solid #e2e8f0 !important;
                 border-radius: 14px !important;
+            }
+            .form-group select {
+                font-size: 12px !important;
+                padding: 10px !important;
             }
         }
     </style>
@@ -418,8 +423,24 @@
                         <label>Service</label>
                         <select id="service">
                             <option value="Select a Service">Select a Service</option>
-                            <option value="Wellness (Vaccination / Deworming)">Wellness (Vaccination / Deworming)</option>
-                            <option value="Laboratories">Laboratories</option>
+                            <optgroup label="Wellness">
+                                <option value="Wellness - Deworming">Deworming</option>
+                                <option value="Wellness - Anti Rabies">Anti Rabies</option>
+                                <option value="Wellness - Vaccination (2in1)">2in1 Vaccine</option>
+                                <option value="Wellness - Vaccination (4in1 Cat)">4in1 Vaccine (Cat)</option>
+                                <option value="Wellness - Vaccination (4in1 Dog)">4in1 Vaccine (Dog)</option>
+                                <option value="Wellness - Vaccination (5in1)">5in1 Vaccine</option>
+                                <option value="Wellness - Vaccination (6in1)">6in1 Vaccine</option>
+                                <option value="Wellness - Vaccination (7in1)">7in1 Vaccine</option>
+                                <option value="Wellness - Vaccination (8in1)">8in1 Vaccine</option>
+                            </optgroup>
+                            <optgroup label="Laboratories">
+                                <option value="Laboratories - CBC">CBC</option>
+                                <option value="Laboratories - Chemistry">Chemistry</option>
+                                <option value="Laboratories - Microscopy">Microscopy</option>
+                                <option value="Laboratories - Ultrasound">Ultrasound</option>
+                                <option value="Laboratories - Laser Therapy">Laser Therapy</option>
+                            </optgroup>
                             <option value="Check up">Check up</option>
                             <option value="Minor Surgeries">Minor Surgeries</option>
                             <option value="Pet Grooming">Pet Grooming</option>
@@ -561,39 +582,29 @@
                 grid.appendChild(dayEl);
             }
         }
-
-        // Helper function upang malaman kung lumipas na ang oras sa araw na ito
         function isTimePassed(slotTimeStr, selectedDateObj) {
             const now = new Date();
             const checkDate = new Date(selectedDateObj);
             checkDate.setHours(0, 0, 0, 0);
             const today = new Date();
             today.setHours(0, 0, 0, 0);
-
             if (checkDate > today) return false;
             if (checkDate < today) return true;
-
             const timePart = slotTimeStr.split('-')[0].trim();
             const match = timePart.match(/(\d+):(\d+)\s*(AM|PM)/i);
             if (!match) return false;
-
             let hours = parseInt(match[1], 10);
             const minutes = parseInt(match[2], 10);
             const ampm = match[3].toUpperCase();
-
             if (ampm === "PM" && hours < 12) hours += 12;
             if (ampm === "AM" && hours === 12) hours = 0;
-
             const slotDate = new Date();
             slotDate.setHours(hours, minutes, 0, 0);
-
             return now > slotDate;
         }
-
         function loadPickerTimeSlots() {
             pickerSlotsContainer.innerHTML = '<p style="color: #888; font-size: 12px; text-align: center;">Loading slots...</p>';
             
-            // Clinic Hours: 10:00 AM to 7:00 PM (Inalis na ang 9:00 AM)
             let standardSlots = [
                 { time: "10:00 AM", isBreak: false },
                 { time: "11:30 AM", isBreak: false },
@@ -605,16 +616,13 @@
             ];
             
             const selectedDateObj = new Date(selectedYear, selectedMonth, selectedDay);
-
             setTimeout(() => {
                 pickerSlotsContainer.innerHTML = '';
                 standardSlots.forEach(slotObj => {
                     const slotDiv = document.createElement('div');
                     slotDiv.className = 'picker-time-slot';
                     slotDiv.textContent = slotObj.time;
-
                     const hasPassed = isTimePassed(slotObj.time, selectedDateObj);
-
                     if (slotObj.isBreak) {
                         slotDiv.classList.add('disabled');
                         slotDiv.style.backgroundColor = '#fee2e2';
@@ -639,7 +647,6 @@
                 });
             }, 150);
         }
-
         if (toggleBtn && popup) {
             toggleBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -713,18 +720,15 @@
             loadPickerTimeSlots();
         }
         updatePickerUI();
-
-        // Reschedule time slots handling
+        
         const rescheduleDateInput = document.getElementById("rescheduleDate");
         const rescheduleTimeSlotsContainer = document.getElementById("rescheduleTimeSlots");
         if (rescheduleDateInput && rescheduleTimeSlotsContainer) {
             rescheduleDateInput.addEventListener("change", (e) => {
                 const newDateStr = e.target.value;
                 if (!newDateStr) return;
-
                 const dateParts = newDateStr.split('-');
                 const selectedDateObj = new Date(parseInt(dateParts[0]), parseInt(dateParts[1]) - 1, parseInt(dateParts[2]));
-
                 let standardSlots = [
                     { time: "10:00 AM", isBreak: false },
                     { time: "11:30 AM", isBreak: false },
@@ -734,16 +738,13 @@
                     { time: "04:00 PM", isBreak: false },
                     { time: "05:30 PM", isBreak: false }
                 ];
-
                 rescheduleTimeSlotsContainer.innerHTML = '';
                 standardSlots.forEach(slotObj => {
                     const btn = document.createElement('button');
                     btn.type = 'button';
                     btn.textContent = slotObj.time;
                     btn.style.cssText = "padding: 6px 12px; border: 1px solid #cbd5e1; background: #f8fafc; border-radius: 6px; font-size: 12px; cursor: pointer;";
-
                     const hasPassed = isTimePassed(slotObj.time, selectedDateObj);
-
                     if (slotObj.isBreak || hasPassed) {
                         btn.disabled = true;
                         btn.style.opacity = '0.5';

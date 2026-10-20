@@ -4,8 +4,8 @@ import {
     query,
     where,
     getDocs,
-    addDoc,
     doc,
+    setDoc,
     updateDoc,
     Timestamp
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
@@ -52,9 +52,11 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
         document.body.appendChild(cancelModal);
     }
+
     const cancelApptIdTarget = document.getElementById("cancelApptIdTarget");
     const closeCancelModalBtn = document.getElementById("closeCancelModalBtn");
     const confirmCancelBtn = document.getElementById("confirmCancelBtn");
+
     let currentOwnerId = null;
 
     // 1. Authentication and loading user pets/appointments
@@ -99,6 +101,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const petData = docSnap.data();
                 const option = document.createElement("option");
                 option.value = petData.petName || docSnap.id;
+                option.setAttribute("data-petid", docSnap.id);
                 option.textContent = petData.petName || 'Unnamed Pet';
                 petSelect.appendChild(option);
             });
@@ -120,13 +123,13 @@ document.addEventListener("DOMContentLoaded", () => {
         return new Date(dateStr);
     }
 
-    // 4. Fetch and Display User's Booked Appointments (Grouped by Month)
+    // 4. Fetch and Display User's Booked Appointments from appointments_v2
     async function loadUserAppointments(ownerId) {
         const container = document.getElementById("userAppointmentsContainer");
         if (!container) return;
         try {
             const q = query(
-                collection(db, "appointments"),
+                collection(db, "appointments_v2"),
                 where("ownerId", "==", ownerId)
             );
             const snapshot = await getDocs(q);
@@ -139,14 +142,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 `;
                 return;
             }
+
             let appointmentsList = [];
             snapshot.forEach((docSnap) => {
                 const apptData = docSnap.data();
                 const status = (apptData.status || "").toLowerCase().trim();
-                if (status !== "archived" && status !== "trash" && status !== "cancelled") {
+                if (apptData.isArchived !== true && status !== "trash") {
                     appointmentsList.push({ id: docSnap.id, ...apptData });
                 }
             });
+
             if (appointmentsList.length === 0) {
                 container.innerHTML = `
                     <div style="grid-column: 1 / -1; text-align: center; padding: 20px; color: #64748b;">
@@ -155,13 +160,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 `;
                 return;
             }
+
             appointmentsList.sort((a, b) => {
                 const dateA = parseDateString(a.date);
                 const dateB = parseDateString(b.date);
                 return dateB - dateA; 
             });
 
-            // Group appointments by Month and Year
             let groupedAppointments = {};
             appointmentsList.forEach(appt => {
                 const d = parseDateString(appt.date);
@@ -184,13 +189,18 @@ document.addEventListener("DOMContentLoaded", () => {
                     let statusColor = "#d97706";
                     const currentStatus = (appt.status || "Pending").trim();
                     const statusLower = currentStatus.toLowerCase();
+
                     if (statusLower === "completed") {
                         statusBg = "#E1FDF4";
                         statusColor = "#065F46";
                     } else if (statusLower === "confirmed" || statusLower === "approved") {
                         statusBg = "#dcfce7";
                         statusColor = "#16a34a";
+                    } else if (statusLower === "cancelled") {
+                        statusBg = "#fee2e2";
+                        statusColor = "#991b1b";
                     }
+
                     const canModify = statusLower === "pending" || statusLower === "confirmed" || statusLower === "approved";
                     
                     container.insertAdjacentHTML("beforeend", `
@@ -201,7 +211,7 @@ document.addEventListener("DOMContentLoaded", () => {
                                     <small style="color: #64748b; font-size: 12px;"><i class="fa-solid fa-paw"></i> ${appt.petName || "Unnamed Pet"}</small>
                                 </div>
                                 <h4 style="color: #1e1b4b; font-size: 16px; margin-bottom: 8px;">${appt.service}</h4>
-                                <p style="color: #475569; font-size: 13px; margin: 4px 0;"><i class="fa-solid fa-calendar-days" style="width: 18px; color: #5142f5;"></i> ${appt.date} (${appt.timeSlot || "Time not set"})</p>
+                                <p style="color: #475569; font-size: 13px; margin: 4px 0;"><i class="fa-solid fa-calendar-days" style="width: 18px; color: #5142f5;"></i> ${appt.date} (${appt.timeSlot || appt.time || "Time not set"})</p>
                                 ${appt.notes ? `<p style="color: #64748b; font-size: 12px; margin-top: 8px; font-style: italic;">Note: "${appt.notes}"</p>` : ""}
                             </div>
                             ${canModify ? `
@@ -224,6 +234,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     openRescheduleModal(btn.getAttribute("data-id"));
                 });
             });
+
             document.querySelectorAll(".cancel-appt-btn").forEach(btn => {
                 btn.addEventListener("click", () => {
                     cancelApptIdTarget.value = btn.getAttribute("data-id");
@@ -241,13 +252,18 @@ document.addEventListener("DOMContentLoaded", () => {
             cancelModal.style.display = "none";
         });
     }
+
     if (confirmCancelBtn) {
         confirmCancelBtn.addEventListener("click", async () => {
             const apptId = cancelApptIdTarget.value;
             if (!apptId) return;
             try {
-                const apptRef = doc(db, "appointments", apptId);
-                await updateDoc(apptRef, { status: "Cancelled" });
+                const apptRef = doc(db, "appointments_v2", apptId);
+                await updateDoc(apptRef, { 
+                    status: "Cancelled",
+                    cancellationReason: "Cancelled by client/owner",
+                    cancelledAt: Timestamp.now()
+                });
                 cancelModal.style.display = "none";
                 showAlert("Appointment cancelled successfully.", "success");
                 loadUserAppointments(currentOwnerId);
@@ -263,20 +279,84 @@ document.addEventListener("DOMContentLoaded", () => {
         rescheduleDateInput.value = "";
         rescheduleModal.style.display = "flex";
     }
+
     if (closeModalBtn) {
         closeModalBtn.addEventListener("click", () => {
             rescheduleModal.style.display = "none";
         });
     }
 
-    // 6. Booking Process
+    if (confirmRescheduleBtn) {
+        confirmRescheduleBtn.addEventListener("click", async () => {
+            const apptId = rescheduleApptIdInput.value;
+            const newDate = rescheduleDateInput.value;
+            const selectedTimeBtn = rescheduleTimeSlotsContainer.querySelector(".selected-reschedule-time");
+            
+            if (!newDate) {
+                alert("Please select a new date.");
+                return;
+            }
+            if (!selectedTimeBtn) {
+                alert("Please select a new time slot.");
+                return;
+            }
+            const newTime = selectedTimeBtn.getAttribute("data-time");
+
+            try {
+                const apptRef = doc(db, "appointments_v2", apptId);
+                await updateDoc(apptRef, {
+                    date: newDate,
+                    timeSlot: newTime,
+                    status: "Pending"
+                });
+                rescheduleModal.style.display = "none";
+                showAlert("Appointment successfully rescheduled!", "success");
+                loadUserAppointments(currentOwnerId);
+            } catch (error) {
+                console.error("Error rescheduling appointment:", error);
+                alert("Failed to reschedule appointment.");
+            }
+        });
+    }
+
+    // STRICT SEQUENTIAL ID LOGIC (APT-00001, APT-00002, ...)
+    async function generateNextAppointmentId() {
+        try {
+            const querySnapshot = await getDocs(collection(db, "appointments_v2"));
+            let maxNum = 0;
+
+            querySnapshot.forEach((docSnap) => {
+                const data = docSnap.data();
+                const idVal = data.appointmentId || docSnap.id;
+                
+                if (idVal && idVal.startsWith("APT-")) {
+                    const numPart = parseInt(idVal.split("-")[1], 10);
+                    if (!isNaN(numPart) && numPart < 90000) {
+                        if (numPart > maxNum) {
+                            maxNum = numPart;
+                        }
+                    }
+                }
+            });
+
+            const nextNum = maxNum + 1;
+            return `APT-${String(nextNum).padStart(5, '0')}`;
+        } catch (e) {
+            console.warn("Error generating sequential ID, falling back:", e);
+            return `APT-00009`;
+        }
+    }
+
+    // 6. Booking Process connected to appointments_v2 WITH STRICT SEQUENTIAL ID
     if (bookBtn) {
         bookBtn.addEventListener("click", async () => {
             if (!currentOwnerId) {
                 showAlert("Authentication session not ready.", "error");
                 return;
             }
+            const selectedOption = petSelect.options[petSelect.selectedIndex];
             const petName = petSelect.value;
+            const petId = selectedOption ? selectedOption.getAttribute("data-petid") || "" : "";
             const service = serviceSelect.value;
             const dateVal = appointmentDateInput.value;
             const timeVal = appointmentTimeInput.value;
@@ -291,23 +371,31 @@ document.addEventListener("DOMContentLoaded", () => {
             bookBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Submitting...`;
 
             try {
-                await addDoc(collection(db, "appointments"), {
+                const generatedApptId = await generateNextAppointmentId();
+
+                await setDoc(doc(db, "appointments_v2", generatedApptId), {
+                    appointmentId: generatedApptId,
                     ownerId: currentOwnerId,
                     petName: petName,
+                    petId: petId,
                     service: service,
-                    doctor: "Assigned by Clinic",
+                    doctorId: "DOC-00001",
                     date: dateVal,
                     timeSlot: timeVal,
                     notes: notes,
                     status: "Pending",
+                    bookingsSource: "Online Portal",
+                    isArchived: false,
+                    isUrgent: false,
                     createdAt: Timestamp.now()
                 });
+
                 showAlert("Appointment successfully booked!", "success");
                 petSelect.selectedIndex = 0;
                 serviceSelect.selectedIndex = 0;
                 appointmentDateInput.value = "";
                 if (appointmentTimeInput) appointmentTimeInput.value = "";
-                if (timeSlotsContainer) timeSlotsContainer.innerHTML = `<p style="color: #888; font-size: 13px;">Please select a date first.</p>`;
+                if (timeSlotsContainer) timeSlotsContainer.innerHTML = `<p style="color: #888; font-size: 13px;">Select a date first.</p>`;
                 notesInput.value = "";
                 
                 const dateTextEl = document.getElementById("selectedDateText");
