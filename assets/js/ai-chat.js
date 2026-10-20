@@ -8,7 +8,6 @@ import {
     arrayUnion, 
     serverTimestamp 
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
-
 // Initialize Google GenAI with API Key
 const apiKey = window.GEMINI_API_KEY || "AQ.Ab8RN6IZcqlkPNpqffqXqKjnvmgwVqgpbPm90ExRBj7dOoR4Zg";
 const ai = new GoogleGenAI({ apiKey: apiKey });
@@ -21,7 +20,6 @@ const modelCandidates = [
     'gemini-1.5-pro-latest',
     'gemini-1.5-flash'
 ];
-
 // 1. Load Chat History mula sa iisang Document gamit ang Array
 async function loadChatHistory() {
     const chatMessages = document.getElementById("chatMessages");
@@ -45,7 +43,6 @@ async function loadChatHistory() {
         console.error("Error loading chat history:", error);
     }
 }
-
 // 2. Append Message to UI na may tamang Spacing at Line Breaks
 function appendMessageUI(sender, text, scroll = true) {
     const chatMessages = document.getElementById("chatMessages");
@@ -62,7 +59,6 @@ function appendMessageUI(sender, text, scroll = true) {
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 }
-
 // 3. I-save o I-update ang Array sa iisang Document lang sa Firestore
 async function saveMessageToFirestore(sender, text) {
     try {
@@ -89,11 +85,9 @@ async function saveMessageToFirestore(sender, text) {
         console.error("Error saving message to Firestore:", error);
     }
 }
-
 // --- SMART CLINICAL VET ENGINE (100% Defense-Safe Knowledge Base) ---
 function generateSmartVetResponse(query) {
     const q = query.toLowerCase();
-
     // 1. Pagkain ng Aso at Pusa (Safe Foods / Diet)
     if ((q.includes('pakain') ||
             q.includes('pagkain') ||
@@ -118,7 +112,6 @@ function generateSmartVetResponse(query) {
             '4. Kanin (Plain White/Brown Rice): Magandang ihalo sa nilagang manok lalo na kung medyo malambot ang dumi.\n\n' +
             '⚠️ Iwasan: Tsokolate, sibuyas, bawang, ubas (grapes), matatabang pagkain, at lutong buto ng manok dahil delikado ito sa kanila.';
     }
-
     // 2. Bawal / Toxic Foods
     if (q.includes('bawal') ||
         q.includes('toxic') ||
@@ -133,7 +126,6 @@ function generateSmartVetResponse(query) {
             '• Lutong Buto (Cooked Bones): Madaling makatusok sa lalamunan o makabutas ng bituka.\n\n' +
             'Kung nakakain nito ang iyong alaga, dalhin agad sa Furry Friends Animal Clinic para mabigyan ng lunas!';
     }
-
     // 3. Bakuna / Vaccine Schedule
     if (q.includes('bakuna') ||
         q.includes('vaccine') ||
@@ -149,7 +141,6 @@ function generateSmartVetResponse(query) {
             '• Yearly: Annual Booster shots para sa 5-in-1 at Anti-Rabies.\n\n' +
             'Maaari kang mag-book ng vaccination appointment dito mismo sa Smart Vet Care system!';
     }
-
     // 4. Nagsusuka / Pagtatae / Walang Gana (Vomiting / Diarrhea / Lethargy)
     if (q.includes('suka') ||
         q.includes('tae') ||
@@ -167,7 +158,6 @@ function generateSmartVetResponse(query) {
             '3. Obserbahan: Tingnan kung may dugo sa dumi o suka at kung maputla ang gilagid (gums).\n\n' +
             '🚨 Kailan dapat itakbo sa Vet: Kung mahigit 2 beses nang nagsuka sa loob ng 24 oras, may dugo sa dumi, o sobrang nanghihina, magpa-checkup na agad sa Furry Friends Animal Clinic.';
     }
-
     // 5. Garapata / Pulgas / Galis (Ticks, Fleas, Skin)
     if (q.includes('garapata') ||
         q.includes('pulgas') ||
@@ -183,7 +173,6 @@ function generateSmartVetResponse(query) {
             '3. Linisin ang Paligid: Labhan ang higaan ng alaga at linisin ang mga sulok ng bahay kung saan nangingitlog ang garapata.\n\n' +
             'Iwasang tirisin ang garapata gamit ang kamay para hindi kumalat ang bacteria.';
     }
-
     // 6. Emergency / Contact Info
     if (q.includes('emergency') ||
         q.includes('contact') ||
@@ -194,17 +183,15 @@ function generateSmartVetResponse(query) {
         return '🚨 Furry Friends Animal Clinic – Emergency & Clinic Info:\n\n' +
             '• 24/7 Emergency Hotline: 0991-572-3015\n\n' +
             '• Regular Clinic Hours: Monday to Sunday, 10:00 AM – 7:00 PM\n\n' +
-            '• Services: Consultation, Vaccination, Deworming,Lab Tests & Emergency Triage.\n\n' +
+            '• Services: Consultation, Vaccination, Deworming, Lab Tests & Emergency Triage.\n\n' +
             'Kung ang iyong alaga ay nahihirapang huminga, nag-seizure, o nakakain ng lason, dalhin agad sa aming clinic!';
     }
-
     // 7. General / Greeting / Iba pang tanong
     return 'Kumusta! Ako ang iyong Smart Vet Care AI Assistant mula sa Furry Friends Animal Clinic. 🐾\n\n' +
         'Tungkol sa iyong tanong:\n' +
         'Para mabigyan ng pinakaligtas na pangangalaga ang iyong alaga, siguraduhing mayroon siyang sapat na malinis na tubig, tamang nutrisyon na angkop sa kanyang edad, at updated na bakuna at deworming.\n\n' +
         'Kung may napapansin kang kakaibang sintomas gaya ng katamlayan, kawalan ng gana kumain, o pagsusuka, maaari mo itong ikwento sa akin nang detalyado o mag-book ng appointment sa aming clinic!';
 }
-
 // 4. Primary Send Function na may Multi-Model Fallback at Offline Clinical Fallback
 async function handleSendMessage() {
     const userInput = document.getElementById("userInput");
@@ -212,12 +199,10 @@ async function handleSendMessage() {
     if (!userInput) return;
     const promptText = userInput.value.trim();
     if (!promptText) return;
-
     // A. I-display at i-save ang user message
     appendMessageUI("user", promptText);
     await saveMessageToFirestore("user", promptText);
     userInput.value = "";
-
     // B. Loading state para kay AI na may animated dots
     const loadingId = "loading-" + Date.now();
     const loadingDiv = document.createElement("div");
@@ -226,18 +211,14 @@ async function handleSendMessage() {
     loadingDiv.innerHTML = `<span style="display: inline-flex; gap: 4px; align-items: center;">Nag-iisip<span style="animation: blink 1.4s infinite both;">.</span><span style="animation: blink 1.4s infinite both .2s;">.</span><span style="animation: blink 1.4s infinite both .4s;">.</span></span>`;
     chatMessages.appendChild(loadingDiv);
     chatMessages.scrollTop = chatMessages.scrollHeight;
-
     const systemInstruction = `
         You are Smart Vet Care AI, a specialized veterinary assistant for Furry Friends Animal Clinic. 
         CRITICAL RULE 1: You must ONLY answer questions related to pets, animals, veterinary care, health monitoring, pet nutrition, and clinic services. If the user asks about anything unrelated, politely decline.
         CRITICAL RULE 2: Always match the language of the user. If the user asks in Tagalog or Taglish, you MUST reply in polite, clear, and helpful Tagalog or Taglish. 
         Keep your answers professional, structured, and use proper line breaks for readability.
     `;
-
     const fullPrompt = `${systemInstruction}\n\nTanong ng pet owner: "${promptText}"`;
-
     let aiResponseText = null;
-
     // 1. Subukan ang Live Gemini API gamit ang mga model candidates nang sunud-sunod
     for (const modelName of modelCandidates) {
         try {
@@ -254,24 +235,43 @@ async function handleSendMessage() {
             continue; // Subukan ang susunod na modelo kung sakaling mag-error
         }
     }
-
     // 2. Kung mag-fail ang lahat ng online models, gamitin ang Smart Clinical Vet Engine
     if (!aiResponseText) {
         await new Promise(resolve => setTimeout(resolve, 800)); // Natural delay
         aiResponseText = generateSmartVetResponse(promptText);
     }
-
     // C. Alisin ang loading, i-display at i-save ang sagot ni AI
     const loadElem = document.getElementById(loadingId);
     if (loadElem) loadElem.remove();
-
     appendMessageUI("ai", aiResponseText);
     await saveMessageToFirestore("ai", aiResponseText);
 }
-
 // 5. I-attach ang listeners pagka-load ng DOM
 document.addEventListener("DOMContentLoaded", () => {
     loadChatHistory();
+    // Handler para sa Mobile Sidebar / Burger Button Toggle
+    const burgerBtn = document.getElementById("mobileMenuBtn") || document.querySelector('.sidebar-toggle') || document.querySelector('.menu-btn') || document.querySelector('#sidebarToggle') || document.querySelector('.topbar .fa-bars');
+    const sidebar = document.getElementById("appSidebar") || document.querySelector('.sidebar');
+    const sidebarOverlay = document.getElementById("sidebarOverlay");
+    
+    if (burgerBtn && sidebar) {
+        burgerBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            sidebar.classList.toggle('active');
+            if (sidebarOverlay) {
+                sidebarOverlay.style.display = sidebar.classList.contains('active') ? 'block' : 'none';
+            }
+        });
+    }
+
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', () => {
+            if (sidebar) sidebar.classList.remove('active');
+            sidebarOverlay.style.display = 'none';
+        });
+    }
+
     const sendBtn = document.getElementById("sendBtn");
     const userInput = document.getElementById("userInput");
     if (sendBtn) {
