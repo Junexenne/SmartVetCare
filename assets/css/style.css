@@ -112,7 +112,8 @@ body {
 .hero {
     width: 100%;
     min-height: 500px;
-    background-image: url("/SmartVetCare/assets/images/home-banner.jpg");
+    /* Pinalitan ang path para gumana sa Render at kahit anong environment */
+    background-image: url("../images/home-banner.jpg");
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
