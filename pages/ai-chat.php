@@ -21,7 +21,7 @@ if (session_status() === PHP_SESSION_NONE) {
             padding: 0;
             overflow: hidden;
             font-family: 'Poppins', sans-serif;
-            background-color: #f8fafc;
+            background-color: #f8faff;
         }
         .dashboard {
             height: 100vh;
@@ -38,10 +38,11 @@ if (session_status() === PHP_SESSION_NONE) {
             flex-shrink: 0;
             overflow-y: auto;
             overflow-x: hidden;
+            z-index: 1100 !important;
         }
         .main-content {
             flex: 1;
-            background: #f8fafc;
+            background: #f8faff;
             height: 100vh;
             height: 100dvh;
             padding: 10px 20px;
@@ -55,18 +56,17 @@ if (session_status() === PHP_SESSION_NONE) {
             display: flex;
             flex-direction: column;
             flex: 1;
-            min-height: 0; 
-            box-sizing: border-box;
+            min-height: 0;
             overflow: hidden;
+            box-sizing: border-box;
             background: #ffffff;
-            border-radius: 16px;
-            padding: 12px 16px;
+            margin: 15px;
+            border-radius: 20px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
             border: 1px solid rgba(226, 232, 240, 0.8);
-            gap: 10px;
-            margin-top: 5px;
-            margin-bottom: 5px;
             position: relative;
+            padding: 10px 18px 12px 18px;
+            gap: 8px;
         }
         .chat-ai-header {
             flex-shrink: 0;
@@ -78,6 +78,8 @@ if (session_status() === PHP_SESSION_NONE) {
             align-items: center;
             justify-content: space-between;
             box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+            position: relative;
+            z-index: 10;
         }
         .chat-ai-header-content h2 {
             font-size: 14.5px;
@@ -100,29 +102,43 @@ if (session_status() === PHP_SESSION_NONE) {
             overflow-wrap: break-word;
             box-sizing: border-box;
             min-height: 0;
-            padding: 4px;
+            padding: 10px 6px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 10px;
+            background: #fdfcff;
             -webkit-overflow-scrolling: touch;
         }
+        .message-wrapper {
+            display: flex;
+            flex-direction: column;
+            max-width: 75%;
+        }
+        .message-wrapper.user {
+            align-self: flex-end;
+            align-items: flex-end;
+        }
+        .message-wrapper.ai {
+            align-self: flex-start;
+            align-items: flex-start;
+        }
         .message {
-            max-width: 85%;
-            padding: 8px 12px;
-            border-radius: 12px;
+            padding: 12px 16px;
+            border-radius: 14px;
             font-size: 13px;
             line-height: 1.4;
+            max-width: 100%;
+            box-sizing: border-box;
+            display: inline-block;
         }
-        .message.user {
+        .message-wrapper.user .message {
             background: #2563EB;
             color: #ffffff;
-            align-self: flex-end;
             border-bottom-right-radius: 4px;
         }
-        .message.ai {
+        .message-wrapper.ai .message {
             background: #f1f5f9;
             color: #1e293b;
-            align-self: flex-start;
             border-bottom-left-radius: 4px;
         }
         .chat-suggestions-wrapper {
@@ -131,25 +147,21 @@ if (session_status() === PHP_SESSION_NONE) {
             overflow-x: auto;
             white-space: nowrap;
             display: flex;
-            gap: 6px;
-            padding: 4px 0;
-            scrollbar-width: thin;
-            scrollbar-color: #cbd5e1 transparent;
+            gap: 8px;
+            padding: 6px 2px;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
         }
         .chat-suggestions-wrapper::-webkit-scrollbar {
-            height: 4px;
-        }
-        .chat-suggestions-wrapper::-webkit-scrollbar-thumb {
-            background-color: #cbd5e1;
-            border-radius: 10px;
+            display: none;
         }
         .suggestion-chip {
-            background: #f0f4ff;
-            color: #173F81;
-            border: 1px solid #d2e3fc;
-            padding: 6px 12px;
+            background: #f1f5f9;
+            color: #1e293b;
+            border: 1px solid #e2e8f0;
+            padding: 8px 14px;
             border-radius: 20px;
-            font-size: 11px;
+            font-size: 12px;
             font-weight: 500;
             cursor: pointer;
             display: inline-flex;
@@ -157,15 +169,17 @@ if (session_status() === PHP_SESSION_NONE) {
             gap: 6px;
             flex-shrink: 0;
             transition: all 0.2s ease;
+            font-family: inherit;
         }
         .suggestion-chip:hover {
-            background: #e2ecff;
-            border-color: #bad2fc;
+            background: #e2e8f0;
+            color: #2563EB;
+            border-color: #cbd5e1;
             transform: translateY(-1px);
         }
         .suggestion-chip i {
             color: #2563EB;
-            font-size: 11px;
+            font-size: 12px;
         }
         .chat-input-area-wrapper {
             flex-shrink: 0; 
@@ -183,7 +197,8 @@ if (session_status() === PHP_SESSION_NONE) {
             align-items: center;
             width: 100%;
             box-sizing: border-box;
-            gap: 8px;
+            gap: 12px;
+            padding: 4px 0;
         }
         .chat-input-area input {
             flex: 1;
@@ -196,6 +211,7 @@ if (session_status() === PHP_SESSION_NONE) {
             outline: none;
             background: #f8fafc;
             color: #1e293b;
+            transition: all 0.3s ease;
         }
         .chat-input-area input:focus {
             border-color: #2563EB;
@@ -221,7 +237,7 @@ if (session_status() === PHP_SESSION_NONE) {
         .chat-disclaimer {
             font-size: 10px;
             color: #94a3b8;
-            line-height: 1.1;
+            line-height: 1.2;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -234,19 +250,22 @@ if (session_status() === PHP_SESSION_NONE) {
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             background: rgba(0, 0, 0, 0.4);
-            z-index: 1000;
+            z-index: 1050;
         }
-        @media (max-width: 768px) {
+        .sidebar-overlay.active {
+            display: block !important;
+        }
+      @media (max-width: 768px) {
             .sidebar {
                 position: fixed !important;
                 top: 0;
                 left: -270px;
                 height: 100% !important;
                 transition: left 0.3s ease;
-                z-index: 1001;
+                z-index: 1100 !important;
                 box-shadow: 4px 0 15px rgba(0,0,0,0.1);
                 background: var(--sidebar-bg, #173F81) !important; 
             }
@@ -257,17 +276,22 @@ if (session_status() === PHP_SESSION_NONE) {
                 display: block !important;
             }
             .main-content {
-                padding: 6px !important;
+                padding: 0 !important;
                 width: 100vw !important;
                 height: calc(100vh - 110px) !important;
                 height: calc(100dvh - 110px) !important;
             }
             .chat-container {
-                margin: 0;
-                border-radius: 0;
-                border: none;
-                height: 100%;
-                padding: 8px 10px calc(45px + env(safe-area-inset-bottom, 24px)) 10px;
+                margin: 0 !important;
+                width: 100% !important;
+                border-radius: 0 !important;
+                border: none !important;
+                height: 100% !important;
+                padding: 8px 10px calc(45px + env(safe-area-inset-bottom, 24px)) 10px !important;
+                box-sizing: border-box !important;
+            }
+            .message-wrapper {
+                max-width: 100%;
             }
         }
         @keyframes blink {
@@ -278,7 +302,7 @@ if (session_status() === PHP_SESSION_NONE) {
     </style>
 </head>
 <body>
-<?php include("pages-header.php"); // o kaya ay include("../includes/pages-header.php"); ?>
+<?php include("pages-header.php"); ?>
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 <div class="dashboard">
     <?php include("../includes/sidebar.php"); ?>
@@ -296,8 +320,10 @@ if (session_status() === PHP_SESSION_NONE) {
             </div>
             
             <div class="chat-messages" id="chatMessages">
-                <div class="message ai">
-                    <i class="fa-solid fa-sparkles" style="color: #2563EB; margin-right: 6px;"></i> Hello, Smart Vet Fam! How can I help you today with your pets or booking an appointment?
+                <div class="message-wrapper ai">
+                    <div class="message">
+                        <i class="fa-solid fa-sparkles" style="color: #2563EB; margin-right: 6px;"></i> Hello, Smart Vet Fam! How can I help you today with your pets or booking an appointment?
+                    </div>
                 </div>
             </div>
             <!-- Quick Suggestion Pills -->
@@ -384,8 +410,12 @@ if (session_status() === PHP_SESSION_NONE) {
     function appendMessageUI(sender, text, scroll = true) {
         const chatMessages = document.getElementById("chatMessages");
         if (!chatMessages) return;
+        
+        const wrapperDiv = document.createElement("div");
+        wrapperDiv.classList.add("message-wrapper", sender === 'ai' ? 'ai' : 'user');
+
         const msgDiv = document.createElement("div");
-        msgDiv.classList.add("message", sender);
+        msgDiv.classList.add("message");
         msgDiv.style.whiteSpace = "pre-wrap";
         
         if (sender === 'ai' && text.includes('Hello, Smart Vet Fam')) {
@@ -394,7 +424,9 @@ if (session_status() === PHP_SESSION_NONE) {
             msgDiv.textContent = text;
         }
         
-        chatMessages.appendChild(msgDiv);
+        wrapperDiv.appendChild(msgDiv);
+        chatMessages.appendChild(wrapperDiv);
+        
         if (scroll) {
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
@@ -452,12 +484,19 @@ if (session_status() === PHP_SESSION_NONE) {
         await saveMessageToFirestore("user", promptText);
         if (userInput) userInput.value = "";
         const loadingId = "loading-" + Date.now();
+        
+        const loadingWrapper = document.createElement("div");
+        loadingWrapper.classList.add("message-wrapper", "ai");
+        loadingWrapper.id = loadingId;
+
         const loadingDiv = document.createElement("div");
-        loadingDiv.classList.add("message", "ai");
-        loadingDiv.id = loadingId;
+        loadingDiv.classList.add("message");
         loadingDiv.innerHTML = `<span style="display: inline-flex; gap: 4px; align-items: center;">Nag-iisip<span style="animation: blink 1.4s infinite both;">.</span><span style="animation: blink 1.4s infinite both .2s;">.</span><span style="animation: blink 1.4s infinite both .4s;">.</span></span>`;
-        chatMessages.appendChild(loadingDiv);
+        
+        loadingWrapper.appendChild(loadingDiv);
+        chatMessages.appendChild(loadingWrapper);
         chatMessages.scrollTop = chatMessages.scrollHeight;
+
         const systemInstruction = `You are Smart Vet Care AI, a specialized veterinary assistant for Furry Friends Animal Clinic. Answer in polite Tagalog or Taglish regarding pets and vet care.`;
         const fullPrompt = `${systemInstruction}\n\nTanong ng pet owner: "${promptText}"`;
         let aiResponseText = null;
@@ -491,7 +530,6 @@ if (session_status() === PHP_SESSION_NONE) {
     document.addEventListener("DOMContentLoaded", () => {
         loadChatHistory();
         
-        // Eksaktong Burger Button Handler mula sa Dashboard
         const mobileBtn = document.getElementById('mobileMenuBtn');
         const sidebar = document.querySelector('.sidebar'); 
         const overlay = document.getElementById('sidebarOverlay');
@@ -506,7 +544,6 @@ if (session_status() === PHP_SESSION_NONE) {
                 overlay.classList.remove('active');
             });
         }
-
         const sendBtn = document.getElementById("sendBtn");
         const userInput = document.getElementById("userInput");
         if (sendBtn) {

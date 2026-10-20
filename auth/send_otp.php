@@ -1,38 +1,57 @@
 <?php
-header('Content-Type: application/json');
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-// Kung mayroon ka nang PHPMailer library sa iyong project, i-include mo ito rito:
-// require '../assets/vendor/PHPMailer/src/Exception.php';
-// require '../assets/vendor/PHPMailer/src/PHPMailer.php';
-// require '../assets/vendor/PHPMailer/src/SMTP.php';
+require 'PHPMailer/Exception.php';
+require 'PHPMailer/PHPMailer.php';
+require 'PHPMailer/SMTP.php';
+
+header('Content-Type: application/json');
 
 $data = json_decode(file_get_contents("php://input"), true);
 $email = $data['email'] ?? '';
 $otp = $data['otp'] ?? '';
-$method = $data['method'] ?? 'Email';
 
 if (!$email || !$otp) {
     echo json_encode(["status" => "error", "message" => "Missing email or OTP."]);
     exit;
 }
 
-if ($method === 'Email') {
-    // Pwede mong gamitin ang native mail() function muna para sa XAMPP testing o PHPMailer
-    $subject = "Smart Vet Care - Two-Factor Authentication Code";
-    $message = "Hello,\n\nYour 6-digit verification code is: " . $otp . "\n\nPlease enter this code to complete your login.\n\nThank you,\nFurry Friends Animal Clinic";
-    $headers = "From: no-reply@furryfriends.com";
+$mail = new PHPMailer(true);
 
-    // Subukang mag-send gamit ang PHP mail function
-    if (mail($email, $subject, $message, $headers)) {
-        echo json_encode(["status" => "success", "message" => "OTP sent to email successfully."]);
-    } else {
-        // Fallback sakaling hindi pa naka-configure ang mail sa XAMPP
-        echo json_encode(["status" => "success", "message" => "OTP generated (XAMPP simulated send)."]);
-    }
-} else {
-    // Para sa SMS (Pwede mong i-integrate dito ang API tulad ng Semaphore o Twilio kung meron ka)
-    echo json_encode(["status" => "success", "message" => "OTP sent via SMS successfully."]);
+try {
+    // Server settings para sa Gmail SMTP
+    $mail->isSMTP();
+    $mail->Host       = 'smtp.gmail.com';
+    $mail->SMTPAuth   = true;
+    $mail->Username   = 'junexennea@gmail.com';
+    $mail->Password   = 'iwgpqcfehinvbmia';
+   $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+    $mail->Port       = 587;
+
+    // Recipients
+    $mail->setFrom('junexennea@gmail.com', 'Furry Friends Animal Clinic');
+    $mail->addAddress($email);
+
+    // Content
+    $mail->isHTML(true);
+    $mail->Subject = 'Smart Vet Care - Two-Factor Authentication Code';
+    $mail->Body    = "
+        <div style='font-family: Arial, sans-serif; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px;'>
+            <h2 style='color: #173F81;'>Smart Vet Care - 2FA Verification</h2>
+            <p>Hello,</p>
+            <p>Your 6-digit verification code for login is:</p>
+            <div style='font-size: 28px; font-weight: bold; color: #5142f5; letter-spacing: 5px; padding: 10px; background: #f1f5f9; text-align: center; border-radius: 8px; width: 200px; margin: 15px 0;'>
+                {$otp}
+            </div>
+            <p style='color: #64748b; font-size: 12px;'>If you did not request this, please ignore this email.</p>
+        </div>
+    ";
+    $mail->AltText = "Your 6-digit verification code is: " . $otp;
+
+    $mail->send();
+    echo json_encode(["status" => "success", "message" => "OTP sent successfully via Gmail SMTP."]);
+} catch (Exception $e) {
+    echo json_encode(["status" => "error", "message" => "Message could not be sent. Mailer Error: {$mail->ErrorInfo}"]);
 }
 ?>
