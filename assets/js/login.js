@@ -1,219 +1,183 @@
 import { auth, db } from "./firebase-config.js";
 import {
-    signInWithEmailAndPassword,
-    setPersistence,
-    browserLocalPersistence,
-    browserSessionPersistence,
-    signOut,
-    sendEmailVerification
+  signInWithEmailAndPassword, setPersistence, browserLocalPersistence,
+  browserSessionPersistence, signOut, multiFactor, TotpMultiFactorGenerator,
+  getMultiFactorResolver, sendEmailVerification
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
-import {
-    collection,
-    query,
-    where,
-    getDocs
-} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
-const loginForm = document.getElementById("loginForm");
-const emailInput = document.getElementById("email");
-const rememberMeCheckbox = document.getElementById("rememberMe");
-
-let otpModal = document.getElementById("otpModal");
-if (!otpModal) {
-    otpModal = document.createElement("div");
-    otpModal.id = "otpModal";
-    otpModal.style.cssText = "display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; font-family: 'Poppins', sans-serif;";
-    otpModal.innerHTML = `
-        <div style="background: #fff; padding: 30px; border-radius: 16px; width: 380px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); text-align: center;">
-            <div style="font-size: 32px; color: #5142f5; margin-bottom: 12px;"><i class="fa-solid fa-shield-halved"></i></div>
-            <h3 style="color: #1e1b4b; margin-bottom: 8px; font-size: 18px; font-weight: 700;">Two-Factor Verification</h3>
-            <p id="otpSubtitle" style="color: #64748b; font-size: 13px; margin-bottom: 20px; line-height: 1.4;">We have sent an email verification link to your address.</p>
-            
-            <div id="otpDestinationContainer" style="margin-bottom: 20px;">
-                <p style="font-size: 13px; color: #334155; margin-bottom: 15px;">Please check your inbox and click the verification link sent by Firebase to proceed.</p>
-                <button type="button" id="checkVerificationBtn" style="width: 100%; padding: 12px; background: #5142f5; color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 14px; margin-bottom: 10px;">I Have Verified My Email</button>
-                <button type="button" id="resendEmailBtn" style="width: 100%; padding: 10px; background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 13px;">Resend Verification Email</button>
-            </div>
-
-            <button type="button" id="closeOtpModalBtn" style="background: none; border: none; color: #94a3b8; font-size: 12px; cursor: pointer; text-decoration: underline;">Cancel / Back to Login</button>
-        </div>
-    `;
-    document.body.appendChild(otpModal);
+const $ = id => document.getElementById(id);
+let resolver = null;
+let enrollmentSecret = null;
+let busy = false;
+const modal = document.createElement('div');
+modal.id = 'totpModal';
+modal.setAttribute('role', 'dialog');
+modal.setAttribute('aria-modal', 'true');
+modal.setAttribute('aria-label', 'Authenticator verification');
+modal.style.cssText = 'display:none;position:fixed;inset:0;z-index:2000;background:rgba(10,25,52,.72);align-items:center;justify-content:center;padding:16px;font-family:Poppins,Arial,sans-serif';
+modal.innerHTML = `
+ <section style="width:100%;max-width:420px;max-height:90vh;overflow-y:auto;background:white;padding:28px;border-radius:16px;text-align:center;box-shadow:0 12px 40px #0003">
+   <div style="font-size:30px;color:#173F81">🔐</div>
+   <h2 id="totpHeading" style="color:#173F81;font-size:21px;margin:10px 0">Authenticator verification</h2>
+   <p id="totpMessage" style="color:#53627a;font-size:13px;line-height:1.6"></p>
+   <div id="totpSetup" hidden>
+      <div id="totpQR" style="display:flex;justify-content:center;margin:14px auto"></div>
+      <p style="font-size:12px;color:#566">Can't scan? Add this key manually:</p>
+      <code id="totpKey" style="display:block;padding:12px;background:#edf3fa;border-radius:8px;font-size:12px;overflow-wrap:anywhere;user-select:all"></code>
+   </div>
+   <form id="totpForm">
+      <label for="totpCode" style="display:block;text-align:left;font-weight:600;font-size:13px;margin:14px 0 5px">6-digit authenticator code</label>
+      <input id="totpCode" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" required placeholder="000000" style="width:100%;padding:13px;border-radius:8px;border:1px solid #aebbd0;text-align:center;font-size:22px;letter-spacing:6px;box-sizing:border-box" />
+      <button id="totpVerify" type="submit" style="width:100%;background:#173F81;color:#fff;padding:13px;border:0;border-radius:8px;margin-top:14px;font-weight:600;cursor:pointer">Verify & continue</button>
+   </form>
+   <p id="totpError" role="alert" style="color:#b42318;font-size:12px;min-height:18px"></p>
+   <button id="totpCancel" type="button" style="border:0;background:none;color:#57677b;text-decoration:underline;cursor:pointer">Cancel / Back to Login</button>
+ </section>`;
+document.body.appendChild(modal);
+function toast(title, message, type='error') {
+  if (typeof window.showToast === 'function') window.showToast(title, message, type);
+  else alert(`${title}: ${message}`);
 }
-
-let tempUserData = null;
-let tempUserObject = null;
-
-document.addEventListener("DOMContentLoaded", () => {
-    const savedEmail = localStorage.getItem("savedUserEmail");
-    if (savedEmail && emailInput) {
-        emailInput.value = savedEmail;
-        if (rememberMeCheckbox) rememberMeCheckbox.checked = true;
+function display(mode, message) {
+  $('totpHeading').textContent = mode === 'enroll' ? 'Set up two-factor authentication' : 'Two-factor authentication';
+  $('totpMessage').textContent = message;
+  $('totpSetup').hidden = mode !== 'enroll';
+  $('totpCode').value = '';
+  $('totpError').textContent = '';
+  modal.dataset.mode = mode;
+  modal.style.display = 'flex';
+  $('totpCode').focus();
+}
+async function accountFromFirestore(user) {
+  const q = query(collection(db, 'users'), where('email', '==', user.email));
+  const snapshot = await getDocs(q);
+  if (snapshot.empty) throw new Error('User record not found.');
+  const data = snapshot.docs[0].data();
+  if (data.status !== 'active') throw new Error('Account is not active. Please contact the clinic.');
+  return { ...data, userDocId: snapshot.docs[0].id };
+}
+async function finishLogin(user) {
+  const data = await accountFromFirestore(user);
+  const activeUserId = data.ownerId || data.userDocId;
+  const idToken = await user.getIdToken(true);
+  // Session endpoint MUST verify the token. Do not set a PHP session using user-provided identifiers alone.
+  const response = await fetch('../auth/session_handler.php', {
+    method: 'POST', credentials:'same-origin', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ idToken, user_id: activeUserId, email: user.email, role: data.role })
+  });
+  if (!response.ok) {
+  const result = await response.json().catch(() => ({}));
+  throw new Error(
+    result.error || `Session failed (HTTP ${response.status})`
+  );
+}
+  localStorage.setItem('isLoggedIn', 'true');
+  localStorage.setItem('userUID', user.uid);
+  localStorage.setItem('userEmail', user.email || '');
+  localStorage.setItem('ownerId', activeUserId);
+  localStorage.setItem('fullName', data.fullName || '');
+  localStorage.setItem('phone', data.phone || '');
+  localStorage.setItem('address', data.address || '');
+  localStorage.setItem('role', data.role || '');
+  modal.style.display = 'none';
+  window.location.href = '../pages/dashboard.php';
+}
+async function beginEnrollment(user) {
+  if (!user.emailVerified) {
+    await sendEmailVerification(user);
+    await signOut(auth);
+    throw new Error('Verify your email first. We sent you a verification email. After verifying, log in again to set up your authenticator.');
+  }
+  display('enroll', 'Scan the QR code with Google Authenticator or Microsoft Authenticator, then enter the 6-digit code to finish setup.');
+  const session = await multiFactor(user).getSession();
+  enrollmentSecret = await TotpMultiFactorGenerator.generateSecret(session);
+  $('totpKey').textContent = enrollmentSecret.secretKey;
+  $('totpQR').replaceChildren();
+  // Local QR rendering; the secret is never sent to a QR-code API.
+  if (window.QRCode) {
+    new window.QRCode($('totpQR'), { text: enrollmentSecret.generateQrCodeUrl(user.email || user.uid, 'Smart Vet Care'), width: 180, height: 180 });
+  } else {
+    $('totpQR').textContent = 'Use the manual setup key below (QR library unavailable).';
+  }
+}
+async function login(event) {
+  event.preventDefault();
+  if (busy) return;
+  busy = true;
+  const email = $('email').value.trim(), password = $('password').value;
+  try {
+    if (!email || !password) throw new Error('Enter your email and password.');
+    await setPersistence(auth, $('rememberMe').checked ? browserLocalPersistence : browserSessionPersistence);
+    if ($('rememberMe').checked) localStorage.setItem('savedUserEmail', email);
+    else localStorage.removeItem('savedUserEmail');
+    resolver = null;
+    enrollmentSecret = null;
+    let credential;
+    try {
+      credential = await signInWithEmailAndPassword(auth, email, password);
+    } catch (err) {
+      if (err.code === 'auth/multi-factor-auth-required') {
+        resolver = getMultiFactorResolver(auth, err);
+        if (!resolver.hints.some(hint => hint.factorId === TotpMultiFactorGenerator.FACTOR_ID)) {
+          throw new Error('This account uses another second-factor method, which this page cannot verify.');
+        }
+        display('challenge', 'Enter the current 6-digit code from your authenticator app.');
+        return;
+      }
+      throw err;
     }
-
-    const closeBtn = document.getElementById("closeOtpModalBtn");
-    if (closeBtn) {
-        closeBtn.addEventListener("click", () => {
-            otpModal.style.display = "none";
-            if (auth.currentUser) signOut(auth);
-        });
+    // First-time users must enroll; after enrollment Firebase enforces MFA on their subsequent sign-ins.
+    if (multiFactor(credential.user).enrolledFactors.some(f => f.factorId === TotpMultiFactorGenerator.FACTOR_ID)) {
+      await finishLogin(credential.user);
+    } else {
+      await accountFromFirestore(credential.user); // verify user status before enrollment
+      await beginEnrollment(credential.user);
     }
-
-    const checkVerificationBtn = document.getElementById("checkVerificationBtn");
-    if (checkVerificationBtn) {
-        checkVerificationBtn.addEventListener("click", async () => {
-            if (tempUserObject) {
-                await tempUserObject.reload();
-                if (tempUserObject.emailVerified) {
-                    finalizeSuccessfulLogin();
-                } else {
-                    triggerToast("Not Verified Yet", "Please click the verification link in your email first.", "error");
-                }
-            }
-        });
+  } catch (err) {
+    console.error('Sign-in error', err);
+    toast('Login unsuccessful', err.code === 'auth/invalid-credential' ? 'Invalid email or password.' : err.message);
+    if (auth.currentUser) await signOut(auth);
+    modal.style.display = 'none';
+  } finally { busy = false; }
+}
+$('totpForm').addEventListener('submit', async event => {
+  event.preventDefault();
+  if (busy) return;
+  const otp = $('totpCode').value.trim();
+  if (!/^\d{6}$/.test(otp)) { $('totpError').textContent = 'Enter exactly 6 digits.'; return; }
+  busy = true;
+  $('totpVerify').disabled = true;
+  $('totpError').textContent = '';
+  try {
+    if (modal.dataset.mode === 'challenge') {
+      if (!resolver) throw new Error('Session expired. Please sign in again.');
+      const hint = resolver.hints.find(h => h.factorId === TotpMultiFactorGenerator.FACTOR_ID);
+      const assertion = TotpMultiFactorGenerator.assertionForSignIn(hint.uid, otp);
+      const result = await resolver.resolveSignIn(assertion);
+      await finishLogin(result.user);
+    } else {
+      if (!auth.currentUser || !enrollmentSecret) throw new Error('Setup expired. Sign in again.');
+      const assertion = TotpMultiFactorGenerator.assertionForEnrollment(enrollmentSecret, otp);
+      await multiFactor(auth.currentUser).enroll(assertion, 'Authenticator app');
+      // First enrollment may revoke sessions, so require fresh sign-in to establish an MFA-authenticated session.
+      await signOut(auth);
+      resolver = null;
+      enrollmentSecret = null;
+      modal.style.display = 'none';
+      toast('Authenticator enabled', 'Setup complete. Please log in again and enter your authenticator code.', 'success');
     }
-
-    const resendEmailBtn = document.getElementById("resendEmailBtn");
-    if (resendEmailBtn) {
-        resendEmailBtn.addEventListener("click", async () => {
-            if (tempUserObject) {
-                try {
-                    const actionCodeSettings = {
-                        url: 'http://localhost/SmartVetCare/auth/login-user.php?verified=true',
-                        handleCodeInApp: true
-                    };
-                    await sendEmailVerification(tempUserObject, actionCodeSettings);
-                    triggerToast("Email Sent", "Verification email sent successfully!", "success");
-                } catch (err) {
-                    triggerToast("Error", "Too many requests. Please try again later.", "error");
-                }
-            }
-        });
-    }
+  } catch (err) {
+    console.error('TOTP error', err);
+    $('totpError').textContent = err.message || 'Verification failed. Try the newest code.';
+  } finally { busy = false; $('totpVerify').disabled = false; }
 });
-
-function triggerToast(title, message, type) {
-    if (typeof showToast === "function") {
-        showToast(title, message, type);
-    } else {
-        alert(`${title}: ${message}`);
-    }
-}
-
-async function handleLogin() {
-    const email = emailInput.value.trim();
-    const password = document.getElementById("password").value;
-    const rememberMe = rememberMeCheckbox ? rememberMeCheckbox.checked : false;
-
-    if (!email || !password) {
-        triggerToast("Validation Error", "Please fill in all fields.", "error");
-        return;
-    }
-
-    try {
-        const persistenceType = rememberMe ? browserLocalPersistence : browserSessionPersistence;
-        await setPersistence(auth, persistenceType);
-        
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        proceedAfterAuth(userCredential.user, rememberMe, email);
-
-    } catch (error) {
-        console.error("Login process error:", error);
-        let errorMessage = error.message;
-        if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
-            errorMessage = "Invalid email or password.";
-        }
-        triggerToast("Login Failed", errorMessage, "error");
-    }
-}
-
-async function proceedAfterAuth(user, rememberMe, email) {
-    const usersRef = collection(db, "users");
-    let q = query(usersRef, where("email", "==", user.email));
-    let snapshot = await getDocs(q);
-    if (snapshot.empty) {
-        q = query(usersRef, where("personalEmail", "==", user.email));
-        snapshot = await getDocs(q);
-    }
-    if (snapshot.empty) {
-        triggerToast("Login Failed", "User record not found.", "error");
-        await signOut(auth);
-        return;
-    }
-    const userData = snapshot.docs[0].data();
-    const userDocId = snapshot.docs[0].id;
-
-    if (userData.status !== "active") {
-        triggerToast("Account Disabled", "Please contact the clinic.", "error");
-        await signOut(auth);
-        return;
-    }
-
-    if (rememberMe) {
-        localStorage.setItem("savedUserEmail", email);
-    } else {
-        localStorage.removeItem("savedUserEmail");
-    }
-
-    tempUserData = { userDocId, ...userData };
-    tempUserObject = user;
-
-    try {
-        if (!user.emailVerified) {
-            const actionCodeSettings = {
-                url: 'http://localhost/SmartVetCare/auth/login-user.php?verified=true',
-                handleCodeInApp: true
-            };
-            await sendEmailVerification(user, actionCodeSettings);
-        }
-    } catch (err) {
-        console.log("Email verification already sent or rate limited.");
-    }
-
-    const subTitleElement = document.getElementById("otpSubtitle");
-    if (subTitleElement) {
-        subTitleElement.innerHTML = `Verification link sent to <b>${user.email}</b>.`;
-    }
-    
-    otpModal.style.display = "flex";
-}
-
-async function finalizeSuccessfulLogin() {
-    otpModal.style.display = "none";
-    triggerToast("Verification Successful", "Access granted!", "success");
-    
-    const activeUserId = tempUserData.ownerId || tempUserData.userDocId;
-    localStorage.setItem("isLoggedIn", "true");
-    localStorage.setItem("userUID", tempUserObject.uid);
-    localStorage.setItem("userEmail", tempUserObject.email);
-    localStorage.setItem("ownerId", activeUserId);
-    localStorage.setItem("fullName", tempUserData.fullName || "");
-    localStorage.setItem("phone", tempUserData.phone || "");
-    localStorage.setItem("address", tempUserData.address || "");
-    localStorage.setItem("role", tempUserData.role || "");
-
-    try {
-        await fetch('../auth/session_handler.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                user_id: activeUserId,
-                email: tempUserObject.email,
-                role: tempUserData.role
-            })
-        });
-    } catch (err) {
-        console.error("Failed to set session handler:", err);
-    }
-
-    setTimeout(() => {
-        window.location.href = "../pages/dashboard.php";
-    }, 1200);
-}
-
-if (loginForm) {
-    loginForm.addEventListener("submit", async (e) => {
-        e.preventDefault();
-        await handleLogin();
-    });
-}
+$('totpCancel').addEventListener('click', async () => {
+  if (busy) return;
+  resolver = null; enrollmentSecret = null;
+  modal.style.display = 'none';
+  await signOut(auth);
+});
+const savedEmail = localStorage.getItem('savedUserEmail');
+if (savedEmail && $('email') && $('rememberMe')) { $('email').value = savedEmail; $('rememberMe').checked = true; }
+$('loginForm')?.addEventListener('submit', login);
