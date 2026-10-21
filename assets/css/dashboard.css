@@ -1999,19 +1999,23 @@ AI Chat Support Styles (Compact Header & Fixed Input)
 .chat-container {
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 100px);
-    max-width: 100%;
-    background: #ffffff;
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    flex: 1;
+    min-height: 0;
     overflow: hidden;
-    margin: 20px 30px;
-    border: 1px solid #e2e8f0;
+    box-sizing: border-box;
+    background: #ffffff;
+    margin: 15px;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    position: relative;
+    padding: 10px 18px 12px 18px;
+    gap: 8px;
 }
 
 /* Mas maliit at compact na Header Area */
 .chat-header-area {
-    padding: 14px 20px; /* Pinaikling padding para mas manipis */
+    padding: 14px 20px;
     background: linear-gradient(135deg, #173F81 0%, #4338ca 100%);
     border-bottom: none;
     border-top-left-radius: 19px;
@@ -2022,7 +2026,7 @@ AI Chat Support Styles (Compact Header & Fixed Input)
 .chat-header-area h2 {
     color: #ffffff !important;
     margin: 0 0 2px 0;
-    font-size: 1.15rem; /* Mas maliit na font size */
+    font-size: 1.15rem;
     font-weight: 600;
     display: flex;
     align-items: center;
@@ -2032,7 +2036,7 @@ AI Chat Support Styles (Compact Header & Fixed Input)
 .chat-header-area h2 i {
     color: #ffffff !important;
     background: rgba(255, 255, 255, 0.15) !important;
-    padding: 7px; /* Mas maliit na padding sa icon */
+    padding: 7px;
     border-radius: 10px;
     font-size: 1rem;
 }
@@ -2040,19 +2044,20 @@ AI Chat Support Styles (Compact Header & Fixed Input)
 .chat-header-area p {
     color: #cbd5e1 !important;
     margin: 0;
-    font-size: 0.8rem; /* Mas compact na sub-text */
+    font-size: 0.8rem;
 }
 
 /* Chat Messages Box */
 .chat-messages {
     flex: 1;
-    padding: 24px;
+    padding: 20px 12px;
     overflow-y: auto;
     background: #f8fafc; 
     display: flex;
     flex-direction: column;
     gap: 16px;
     scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
 }
 
 /* Custom Scrollbar */
@@ -2066,8 +2071,25 @@ AI Chat Support Styles (Compact Header & Fixed Input)
 }
 
 /* Chat Bubbles */
+/* [BINAGO]: Pinalaki ang max-width mula 70% patungong 92% para mas lumawak ang chat boxes */
+.message-wrapper {
+    display: flex;
+    flex-direction: column;
+    max-width: 92%; 
+}
+
+.message-wrapper.user {
+    align-self: flex-end;
+    align-items: flex-end;
+}
+
+.message-wrapper.ai {
+    align-self: flex-start;
+    align-items: flex-start;
+}
+
 .message {
-    max-width: 70%;
+    max-width: 100%;
     padding: 14px 18px;
     border-radius: 16px;
     font-size: 0.95rem;
@@ -2075,6 +2097,7 @@ AI Chat Support Styles (Compact Header & Fixed Input)
     word-wrap: break-word;
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.03);
     animation: fadeInMessage 0.3s ease-in-out;
+    display: inline-block;
 }
 
 @keyframes fadeInMessage {
@@ -2082,17 +2105,15 @@ AI Chat Support Styles (Compact Header & Fixed Input)
     to { opacity: 1; transform: translateY(0); }
 }
 
-.message.user {
+.message-wrapper.user .message {
     background: #173F81;
     color: #ffffff;
-    align-self: flex-end;
     border-bottom-right-radius: 4px;
 }
 
-.message.ai {
+.message-wrapper.ai .message {
     background: #ffffff;
     color: #1e293b;
-    align-self: flex-start;
     border-bottom-left-radius: 4px;
     border: 1px solid #e2e8f0;
     box-shadow: 0 4px 15px rgba(23, 63, 129, 0.04);
@@ -2100,28 +2121,25 @@ AI Chat Support Styles (Compact Header & Fixed Input)
 
 /* Input Area Wrapper */
 .chat-input-area-wrapper {
-    padding: 18px 28px;
+    padding: 12px 16px;
     background: #ffffff;
     border-top: 1px solid #edf2f7;
 }
 
 .chat-input-area {
-    display: flex !important;
-    align-items: center !important;
-    gap: 10px !important;
-    background: #f8fafc;
-    border-radius: 14px;
-    padding: 6px 10px 6px 18px;
-    border: 2px solid #cbd5e1;
-    transition: all 0.25s ease;
-    width: 100% !important;
-    box-sizing: border-box !important;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
+    gap: 8px;
+    background: transparent;
+    border: none;
+    padding: 0;
 }
 
 .chat-input-area:focus-within {
     border-color: #173F81;
     background: #ffffff;
-    box-shadow: 0 0 0 4px rgba(23, 63, 129, 0.12);
 }
 
 .chat-input-area input {
@@ -2164,9 +2182,32 @@ AI Chat Support Styles (Compact Header & Fixed Input)
     font-size: 0.75rem;
     color: #94a3b8;
     text-align: center;
-    margin-top: 12px;
+    margin-top: 8px;
 }
 
+/* Mobile Responsiveness (Full-width & Expanded Chat Container) */
+@media (max-width: 768px) {
+    /* [IDINAGDAG]: Ginawang 0 ang padding para mawalan ng space sa gilid ng main content */
+    .main-content {
+        padding: 0 !important;
+        width: 100vw !important;
+    }
+    
+    /* [BINAGO]: Tinanggal ang margin at ginawang full-width ang chat container sa mobile */
+    .chat-container {
+        margin: 0 !important;
+        width: 100% !important;
+        border-radius: 0 !important;
+        border: none !important;
+        height: 100% !important;
+        padding: 8px 10px calc(75px + env(safe-area-inset-bottom, 30px)) 10px !important;
+    }
+    
+    /* [BINAGO]: Sinagad pa lalo ang max-width sa mobile para sa mga chat bubbles */
+    .message-wrapper {
+        max-width: 95% !important;
+    }
+}
 /*=====================================
 MESSAGES PAGE UI REDESIGN (MODERN CHAT)
 ======================================*/

@@ -45,12 +45,17 @@ if (session_status() === PHP_SESSION_NONE) {
             background: #f8faff;
             height: 100vh;
             height: 100dvh;
-            padding: 10px 20px;
             display: flex;
             flex-direction: column;
-            box-sizing: border-box;
             overflow: hidden;
+            box-sizing: border-box;
             min-width: 0;
+            padding: 10px 20px 20px 20px !important;
+            gap: 6px !important;
+        }
+        .topbar, header, .top-navbar {
+            margin-bottom: 5px !important;
+            flex-shrink: 0;
         }
         .chat-container {
             display: flex;
@@ -60,12 +65,12 @@ if (session_status() === PHP_SESSION_NONE) {
             overflow: hidden;
             box-sizing: border-box;
             background: #ffffff;
-            margin: 15px;
+            margin: 0 !important;
             border-radius: 20px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
             border: 1px solid rgba(226, 232, 240, 0.8);
             position: relative;
-            padding: 10px 18px 12px 18px;
+            padding: 12px 18px;
             gap: 8px;
         }
         .chat-ai-header {
@@ -112,7 +117,7 @@ if (session_status() === PHP_SESSION_NONE) {
         .message-wrapper {
             display: flex;
             flex-direction: column;
-            max-width: 75%;
+            max-width: 95%; 
         }
         .message-wrapper.user {
             align-self: flex-end;
@@ -188,17 +193,19 @@ if (session_status() === PHP_SESSION_NONE) {
             display: flex;
             flex-direction: column;
             gap: 6px;
-            background: #ffffff;
-            border-top: 1px solid #f1f5f9;
-            padding-top: 8px;
+            background: transparent;
+            border: none;
+            padding: 4px 0 0 0;
         }
         .chat-input-area {
             display: flex;
             align-items: center;
             width: 100%;
             box-sizing: border-box;
-            gap: 12px;
-            padding: 4px 0;
+            gap: 8px;
+            background: transparent;
+            border: none;
+            padding: 0;
         }
         .chat-input-area input {
             flex: 1;
@@ -223,7 +230,7 @@ if (session_status() === PHP_SESSION_NONE) {
             border: none;
             width: 38px;
             height: 38px;
-            border-radius: 50%;
+            border-radius: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -278,8 +285,6 @@ if (session_status() === PHP_SESSION_NONE) {
             .main-content {
                 padding: 0 !important;
                 width: 100vw !important;
-                height: calc(100vh - 110px) !important;
-                height: calc(100dvh - 110px) !important;
             }
             .chat-container {
                 margin: 0 !important;
@@ -287,11 +292,10 @@ if (session_status() === PHP_SESSION_NONE) {
                 border-radius: 0 !important;
                 border: none !important;
                 height: 100% !important;
-                padding: 8px 10px calc(45px + env(safe-area-inset-bottom, 24px)) 10px !important;
-                box-sizing: border-box !important;
+                padding: 8px 12px calc(75px + env(safe-area-inset-bottom, 30px)) 12px !important;
             }
             .message-wrapper {
-                max-width: 100%;
+                max-width: 95%;
             }
         }
         @keyframes blink {
@@ -362,205 +366,6 @@ if (session_status() === PHP_SESSION_NONE) {
     </div>
 </div>
 <!-- Integrated Script para sa AI at Firestore Database -->
-<script type="module">
-    import { GoogleGenAI } from "https://esm.run/@google/genai";
-    import { db } from "../assets/js/firebase-config.js";
-    import { 
-        doc, 
-        getDoc, 
-        setDoc, 
-        updateDoc, 
-        arrayUnion, 
-        serverTimestamp 
-    } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
-    const apiKey = window.GEMINI_API_KEY || "AIzaSyBwHmTjg_rT-bU0NL1c71f5qkonf7H7eNM";
-    const ai = new GoogleGenAI({ apiKey: apiKey });
-    const currentOwnerId = localStorage.getItem("ownerId") || "OWN-00004";
-    const modelCandidates = [
-        'gemini-2.5-flash',
-        'gemini-2.0-flash',
-        'gemini-1.5-flash-latest',
-        'gemini-1.5-pro-latest',
-        'gemini-1.5-flash'
-    ];
-    async function loadChatHistory() {
-        const chatMessages = document.getElementById("chatMessages");
-        if (!chatMessages) return;
-        try {
-            const docRef = doc(db, "ai_chats", currentOwnerId);
-            const docSnap = await getDoc(docRef);
-            
-            chatMessages.innerHTML = ""; 
-            
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                const messageList = data.messages || [];
-                
-                messageList.forEach((msg) => {
-                    appendMessageUI(msg.sender, msg.text, false);
-                });
-            } else {
-                appendMessageUI('ai', '<i class="fa-solid fa-sparkles" style="color: #2563EB; margin-right: 6px;"></i> Hello, Smart Vet Fam! How can I help you today with your pets or booking an appointment?', false);
-            }
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        } catch (error) {
-            console.error("Error loading chat history:", error);
-        }
-    }
-    function appendMessageUI(sender, text, scroll = true) {
-        const chatMessages = document.getElementById("chatMessages");
-        if (!chatMessages) return;
-        
-        const wrapperDiv = document.createElement("div");
-        wrapperDiv.classList.add("message-wrapper", sender === 'ai' ? 'ai' : 'user');
-
-        const msgDiv = document.createElement("div");
-        msgDiv.classList.add("message");
-        msgDiv.style.whiteSpace = "pre-wrap";
-        
-        if (sender === 'ai' && text.includes('Hello, Smart Vet Fam')) {
-            msgDiv.innerHTML = text;
-        } else {
-            msgDiv.textContent = text;
-        }
-        
-        wrapperDiv.appendChild(msgDiv);
-        chatMessages.appendChild(wrapperDiv);
-        
-        if (scroll) {
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-    }
-    async function saveMessageToFirestore(sender, text) {
-        try {
-            const docRef = doc(db, "ai_chats", currentOwnerId);
-            const docSnap = await getDoc(docRef);
-            const newMessage = {
-                sender: sender,
-                text: text,
-                timestamp: new Date().toISOString()
-            };
-            if (!docSnap.exists()) {
-                await setDoc(docRef, {
-                    userId: currentOwnerId,
-                    messages: [newMessage],
-                    updatedAt: serverTimestamp()
-                });
-            } else {
-                await updateDoc(docRef, {
-                    messages: arrayUnion(newMessage),
-                    updatedAt: serverTimestamp()
-                });
-            }
-        } catch (error) {
-            console.error("Error saving message to Firestore:", error);
-        }
-    }
-    function generateSmartVetResponse(query) {
-        const q = query.toLowerCase();
-        if ((q.includes('pakain') || q.includes('pagkain') || q.includes('food') || q.includes('diet') || q.includes('eat') || q.includes('kain')) && !q.includes('bawal') && !q.includes('toxic') && !q.includes('walang gana')) {
-            if (q.includes('pusa') || q.includes('cat') || q.includes('kuting')) {
-                return 'Para sa malusog na pusa, narito ang mga ligtas at masustansyang pagkain:\n\n1. High-Quality Cat Food (Wet & Dry): Pumili ng may mataas na taurine at protein content.\n2. Nilagang Manok o Isda: Lutuin nang walang asin, sibuyas, o bawang.\n3. Kalabasa: Maganda ihalo nang kaunti para sa panunaw.';
-            }
-            return 'Para sa malusog na aso, narito ang mga ligtas na pagkain:\n\n1. Complete Dog Food (Kibble o Wet Food).\n2. Nilagang Karne (Lean Meats) na walang asin.\n3. Ligtas na Gulay at Prutas: Kalabasa, carrots, sayote, saging, at mansanas.\n4. Kanin (Plain White/Brown Rice).\n\n⚠️ Iwasan: Tsokolate, sibuyas, bawang, ubas, at lutong buto.';
-        }
-        if (q.includes('bawal') || q.includes('toxic') || q.includes('lason') || q.includes('chocolate')) {
-            return '⚠️ Mga Pagkaing BAWAL at Nakalalason sa Aso at Pusa:\n\n• Tsokolate at Kape\n• Sibuyas at Bawang\n• Ubas at Pasas\n• Xylitol\n• Lutong Buto\n\nDalhin agad sa Furry Friends Animal Clinic kung nakakain nito ang alaga!';
-        }
-        if (q.includes('bakuna') || q.includes('vaccine') || q.includes('rabies') || q.includes('deworm')) {
-            return '💉 Recommended Vaccination & Deworming Schedule:\n\n• 2 Weeks Old: Simula ng Deworming\n• 6–8 Weeks Old: 1st Dose ng 5-in-1 Vaccine\n• 9–11 Weeks Old: 2nd Dose ng Booster\n• 12–16 Weeks Old: Final Booster + Anti-Rabies\n• Yearly: Annual Booster shots';
-        }
-        if (q.includes('suka') || q.includes('tae') || q.includes('vomit') || q.includes('diarrhea') || q.includes('matamlay') || q.includes('sakit')) {
-            return '🩺 Clinical Triage Advice:\n\n1. Hydration: Bigyan ng tubig na may pet electrolytes.\n2. Bland Diet: Malambot na lugaw at nilagang manok.\n3. Obserbahan ang dumi at gilagid.\n\n🚨 Magpatingin agad sa clinic kung mahigit 2 beses nang nagsuka o may dugo.';
-        }
-        return 'Kumusta! Ako ang iyong Smart Vet Care AI Assistant mula sa Furry Friends Animal Clinic. 🐾\n\nPaano ko matutulungan ang iyong alaga ngayon? Maaari kang magtanong tungkol sa kalusugan, pagkain, o mag-book ng appointment.';
-    }
-    async function handleSendMessage(messageText) {
-        const userInput = document.getElementById("userInput");
-        const chatMessages = document.getElementById("chatMessages");
-        const promptText = messageText || (userInput ? userInput.value.trim() : "");
-        if (!promptText) return;
-        appendMessageUI("user", promptText);
-        await saveMessageToFirestore("user", promptText);
-        if (userInput) userInput.value = "";
-        const loadingId = "loading-" + Date.now();
-        
-        const loadingWrapper = document.createElement("div");
-        loadingWrapper.classList.add("message-wrapper", "ai");
-        loadingWrapper.id = loadingId;
-
-        const loadingDiv = document.createElement("div");
-        loadingDiv.classList.add("message");
-        loadingDiv.innerHTML = `<span style="display: inline-flex; gap: 4px; align-items: center;">Nag-iisip<span style="animation: blink 1.4s infinite both;">.</span><span style="animation: blink 1.4s infinite both .2s;">.</span><span style="animation: blink 1.4s infinite both .4s;">.</span></span>`;
-        
-        loadingWrapper.appendChild(loadingDiv);
-        chatMessages.appendChild(loadingWrapper);
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-
-        const systemInstruction = `You are Smart Vet Care AI, a specialized veterinary assistant for Furry Friends Animal Clinic. Answer in polite Tagalog or Taglish regarding pets and vet care.`;
-        const fullPrompt = `${systemInstruction}\n\nTanong ng pet owner: "${promptText}"`;
-        let aiResponseText = null;
-        for (const modelName of modelCandidates) {
-            try {
-                const response = await ai.models.generateContent({
-                    model: modelName,
-                    contents: fullPrompt
-                });
-                if (response && response.text && response.text.trim().length > 0) {
-                    aiResponseText = response.text.trim();
-                    break;
-                }
-            } catch (err) {
-                console.warn(`Nabigo ang ${modelName}, sinusubukan ang susunod...`, err);
-            }
-        }
-        if (!aiResponseText) {
-            await new Promise(resolve => setTimeout(resolve, 800));
-            aiResponseText = generateSmartVetResponse(promptText);
-        }
-        const loadElem = document.getElementById(loadingId);
-        if (loadElem) loadElem.remove();
-        
-        appendMessageUI("ai", aiResponseText);
-        await saveMessageToFirestore("ai", aiResponseText);
-    }
-    window.sendSuggestion = function(text) {
-        handleSendMessage(text);
-    };
-    document.addEventListener("DOMContentLoaded", () => {
-        loadChatHistory();
-        
-        const mobileBtn = document.getElementById('mobileMenuBtn');
-        const sidebar = document.querySelector('.sidebar'); 
-        const overlay = document.getElementById('sidebarOverlay');
-        if (mobileBtn && sidebar && overlay) {
-            mobileBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                sidebar.classList.toggle('active');
-                overlay.classList.toggle('active');
-            });
-            overlay.addEventListener('click', () => {
-                sidebar.classList.remove('active');
-                overlay.classList.remove('active');
-            });
-        }
-        const sendBtn = document.getElementById("sendBtn");
-        const userInput = document.getElementById("userInput");
-        if (sendBtn) {
-            sendBtn.addEventListener("click", (e) => {
-                e.preventDefault();
-                handleSendMessage();
-            });
-        }
-        if (userInput) {
-            userInput.addEventListener("keypress", (e) => {
-                if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleSendMessage();
-                }
-            });
-        }
-    });
-</script>
+<script type="module" src="../assets/js/ai-chat.js"></script>
 </body>
 </html>

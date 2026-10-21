@@ -35,6 +35,7 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
         }
         .main-content {
             flex: 1;
+            background: #f8faff;
             height: 100vh;
             height: 100dvh;
             display: flex;
@@ -42,6 +43,13 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
             overflow: hidden;
             box-sizing: border-box;
             min-width: 0;
+            padding: 10px 20px 20px 20px !important;
+            gap: 6px !important;
+        }
+        /* I-override ang topbar margin kung may nakalagay sa dashboard.css */
+        .topbar, header, .top-navbar {
+            margin-bottom: 5px !important;
+            flex-shrink: 0;
         }
         .chat-container {
             display: flex;
@@ -51,12 +59,12 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
             overflow: hidden;
             box-sizing: border-box;
             background: #ffffff;
-            margin: 15px;
+            margin: 0 !important;
             border-radius: 20px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
             border: 1px solid rgba(226, 232, 240, 0.8);
             position: relative;
-            padding: 10px 18px 12px 18px;
+            padding: 12px 18px;
             gap: 8px;
         }
         /* Gradient AI Header Style */
@@ -251,15 +259,24 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
             border-color: #cbd5e1;
             transform: translateY(-1px);
         }
-        .chat-input-area {
+        .chat-input-area-wrapper {
             flex-shrink: 0;
+            width: 100%;
+            box-sizing: border-box;
             display: flex;
-            align-items: center;
-            padding: 10px 0;
+            flex-direction: column;
+            gap: 6px;
             background: #ffffff;
             border-top: 1px solid #f1f5f9;
-            gap: 12px;
+            padding-top: 8px;
+        }
+        .chat-input-area {
+            display: flex;
+            align-items: center;
+            width: 100%;
             box-sizing: border-box;
+            padding: 4px 0;
+            gap: 12px;
         }
         .chat-tools {
             display: flex;
@@ -308,6 +325,24 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
         }
         .chat-input-area button.send-btn:hover {
             opacity: 0.9;
+        }
+        /* INAYOS NA DISCLAIMER CSS PARA HINDI SABOG SA MOBILE */
+        .chat-disclaimer {
+            font-size: 10px;
+            color: #94a3b8;
+            line-height: 1.4;
+            text-align: center;
+            margin-top: 4px;
+            padding: 0 4px;
+            word-break: normal;
+            overflow-wrap: break-word;
+        }
+        .chat-disclaimer i {
+            margin-right: 3px;
+        }
+        .chat-disclaimer b {
+            color: #64748b;
+            white-space: nowrap; /* Tinitiyak na buo ang phone number at hindi mapuputol */
         }
         /* Sidebar Overlay & Z-Index Fix */
         .sidebar {
@@ -387,6 +422,10 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
                 width: 34px;
                 height: 34px;
             }
+            .chat-disclaimer {
+                font-size: 9.5px;
+                line-height: 1.35;
+            }
         }
     </style>
 </head>
@@ -423,40 +462,45 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
                 <div id="chatMessages" class="chat-messages">
                     <!-- Dynamic Messages dito -->
                 </div>
-
                 <!-- Suggested Chips Container -->
                 <div class="suggested-chips-container">
-                    <button type="button" class="chip-btn" data-text="Inquire about billing">
-                        💳 Inquire about billing
-                    </button>
-                    <button type="button" class="chip-btn" data-text="Prescription refill">
-                        💊 Prescription refill
-                    </button>
-                    <button type="button" class="chip-btn" data-text="Book appointment schedule">
+                    <button type="button" class="chip-btn" data-text="Book an appointment schedule">
                         📅 Book schedule
                     </button>
-                    <button type="button" class="chip-btn" data-text="Emergency assistance">
-                        🚨 Emergency assistance
+                    <button type="button" class="chip-btn" data-text="Vaccination and deworming inquiry">
+                        💉 Vaccination inquiry
+                    </button>
+                    <button type="button" class="chip-btn" data-text="Request for pet medical records">
+                        🩺 Request medical record
+                    </button>
+                    <button type="button" class="chip-btn" data-text="Check confinement status of my pet">
+                        🐾 Pet status update
+                    </button>
+                    <button type="button" class="chip-btn" data-text="Ask about clinic operating hours and location">
+                        📍 Clinic hours & location
                     </button>
                 </div>
-
-                <form id="chatForm" class="chat-input-area">
-                    <div class="chat-tools">
-                        <label for="attachFileInput" style="cursor: pointer;">
-                            <i class="fa-solid fa-paperclip" title="Attach File"></i>
-                        </label>
-                        <input type="file" id="attachFileInput" style="display: none;">
+                <div class="chat-input-area-wrapper">
+                    <form id="chatForm" class="chat-input-area">
+                        <div class="chat-tools">
+                            <label for="attachFileInput" style="cursor: pointer;">
+                                <i class="fa-solid fa-paperclip" title="Attach File"></i>
+                            </label>
+                            <input type="file" id="attachFileInput" style="display: none;">
+                        </div>
+                        <input type="text" id="messageInput" placeholder="Message clinic admin..." autocomplete="off" required>
+                        
+                        <button type="submit" class="send-btn">
+                            <i class="fa-solid fa-paper-plane" style="pointer-events: none;"></i>
+                        </button>
+                    </form>
+                    <div class="chat-disclaimer">
+                        <i class="fa-solid fa-clock"></i> Response times may vary as staff assist patients. For immediate emergency care, do not wait for a reply — call us directly at <b>0925-8897-811</b>.
                     </div>
-                    <input type="text" id="messageInput" placeholder="Message clinic admin..." autocomplete="off" required>
-                    
-                    <button type="submit" class="send-btn">
-                        <i class="fa-solid fa-paper-plane" style="pointer-events: none;"></i>
-                    </button>
-                </form>
+                </div>
             </div>
         </div> 
     </div> 
-
     <!-- Firebase v8 SDK Scripts -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
@@ -478,9 +522,7 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
             firebase.initializeApp(firebaseConfig);
         }
         const db = firebase.firestore();
-
         let activeConvId = null;
-
         document.addEventListener('DOMContentLoaded', () => {
             const sidebar = document.querySelector('.sidebar');
             const sidebarOverlay = document.getElementById('sidebarOverlay');
@@ -499,7 +541,6 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
                     sidebarOverlay.classList.remove('active');
                 });
             }
-
             const chipButtons = document.querySelectorAll('.chip-btn');
             const messageInput = document.getElementById('messageInput');
             const chatForm = document.getElementById('chatForm');
@@ -517,15 +558,12 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
                 });
             });
         });
-
         // Hanapin o i-initialize ang conversation document ID base sa ownerId (hal. CONV-00001)
         async function getOrCreateConversationDoc() {
             if (activeConvId) return activeConvId;
-
             try {
                 const convQuery = db.collection("conversations").where("ownerId", "==", currentUserId);
                 const snapshot = await convQuery.get();
-
                 if (!snapshot.empty) {
                     activeConvId = snapshot.docs[0].id;
                     return activeConvId;
@@ -549,7 +587,6 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
                 return "CONV-00001"; // Fallback ID
             }
         }
-
         // 1. Real-time Messages Loading galing sa sub-collection na `messages`
         async function loadMessages() {
             const chatMessagesContainer = document.getElementById('chatMessages');
@@ -557,7 +594,7 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
             
             const convId = await getOrCreateConversationDoc();
             
-            // Makinig sa sub-collection na `messages` sa loob ng conversation document, naka-order by createdAt asc[cite: 21]
+            // Makinig sa sub-collection na `messages` sa loob ng conversation document, naka-order by createdAt asc
             db.collection("conversations")
               .doc(convId)
               .collection("messages")
@@ -605,7 +642,6 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
                   console.error("Error loading messages: ", error);
               });
         }
-
         // 2. Send Message papunta sa sub-collection na `messages` at i-update ang parent document
         const chatForm = document.getElementById('chatForm');
         if (chatForm) {
@@ -620,7 +656,7 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
                     const messagesRef = db.collection("conversations").doc(convId).collection("messages");
                     const convDocRef = db.collection("conversations").doc(convId);
                     
-                    // Magdagdag ng bagong document sa sub-collection na `messages`[cite: 21]
+                    // Magdagdag ng bagong document sa sub-collection na `messages`
                     await messagesRef.add({
                         text: messageText,
                         senderId: currentUserId,
@@ -629,15 +665,13 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
                         isRead: false,
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
-
-                    // I-update din ang parent document para sa last message info ng admin[cite: 21]
+                    // I-update din ang parent document para sa last message info ng admin
                     await convDocRef.set({
                         lastMessage: messageText,
                         lastSenderId: currentUserId,
                         lastMessageAt: firebase.firestore.FieldValue.serverTimestamp(),
                         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                     }, { merge: true });
-
                     inputField.value = "";
                 } catch (error) {
                     console.error("Error sending message: ", error);
@@ -653,7 +687,6 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
                 }
             });
         }
-
         // 3. Dropdown Menu Toggle
         const menuToggleBtn = document.getElementById('menuToggleBtn');
         const chatDropdownMenu = document.getElementById('chatDropdownMenu');
@@ -666,7 +699,6 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
                 chatDropdownMenu.classList.remove('active');
             });
         }
-
         // 4. Clinic Info Modal
         const btnClinicInfo = document.getElementById('btnClinicInfo');
         if (btnClinicInfo) {
@@ -691,7 +723,6 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
                 });
             });
         }
-
         // 5. Clear Chat Modal (Burahin ang mga messages sa sub-collection)
         const btnClearChat = document.getElementById('btnClearChat');
         if (btnClearChat) {
@@ -722,7 +753,6 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
                                 batch.delete(doc.ref);
                             });
                             await batch.commit();
-
                             await db.collection("conversations").doc(convId).set({
                                 lastMessage: "",
                                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -753,7 +783,6 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
                 });
             });
         }
-
         // 6. Attachment Input Handler
         const attachFileInput = document.getElementById('attachFileInput');
         if (attachFileInput) {
@@ -765,7 +794,6 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
                 messageInput.focus();
             });
         }
-
         // Simulan ang Real-time Messages Listener
         loadMessages();
     </script>
