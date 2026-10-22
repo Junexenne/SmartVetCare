@@ -482,12 +482,6 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
                 </div>
                 <div class="chat-input-area-wrapper">
                     <form id="chatForm" class="chat-input-area">
-                        <div class="chat-tools">
-                            <label for="attachFileInput" style="cursor: pointer;">
-                                <i class="fa-solid fa-paperclip" title="Attach File"></i>
-                            </label>
-                            <input type="file" id="attachFileInput" style="display: none;">
-                        </div>
                         <input type="text" id="messageInput" placeholder="Message clinic admin..." autocomplete="off" required>
                         
                         <button type="submit" class="send-btn">

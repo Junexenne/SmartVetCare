@@ -38,17 +38,7 @@ function getVitalBoxStyle(type, value) {
     }
     const num = parseFloat(value);
     
-    if (type === "heartRate") {
-        // Normal HR: ~60 - 140 bpm
-        if (num < 60) return { bg: "#eff6ff", text: "#1e40af", border: "#bfdbfe" }; // Low - Blue
-        if (num > 140) return { bg: "#fef2f2", text: "#991b1b", border: "#fecaca" }; // High - Red
-        return { bg: "#f0fdf4", text: "#166534", border: "#bbf7d0" }; // Normal - Green
-    } else if (type === "respiratoryRate") {
-        // Normal RR: ~10 - 30 breaths/min
-        if (num < 10) return { bg: "#eff6ff", text: "#1e40af", border: "#bfdbfe" }; // Low - Blue
-        if (num > 30) return { bg: "#fef2f2", text: "#991b1b", border: "#fecaca" }; // High - Red
-        return { bg: "#f0fdf4", text: "#166534", border: "#bbf7d0" }; // Normal - Green
-    } else if (type === "temperature") {
+    if (type === "temperature") {
         // Normal Temp: ~37.5°C - 39.2°C
         if (num < 37.5) return { bg: "#eff6ff", text: "#1e40af", border: "#bfdbfe" }; // Low - Blue
         if (num > 39.2) return { bg: "#fef2f2", text: "#991b1b", border: "#fecaca" }; // High - Red
@@ -83,13 +73,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
             
             const lastUpdatedText = formatTimestamp(data.updatedAt || data.createdAt);
-
-            // Kunin ang kulay para sa buong box base sa ranges
-            const hrStyle = getVitalBoxStyle("heartRate", vitals.heartRate);
-            const rrStyle = getVitalBoxStyle("respiratoryRate", vitals.respiratoryRate);
+            
+            // Kulay para sa Temperature lamang ang natira
             const tempStyle = getVitalBoxStyle("temperature", vitals.temperature);
-
-           htmlContent += `
+            
+            htmlContent += `
     <div class="record-card">
         <div class="pet-title-area" style="display: flex; justify-content: space-between; align-items: flex-start;">
             <div>
@@ -108,16 +96,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         
         <div class="vitals-section-title" style="margin-top: 15px;"><i class="fa-solid fa-heart-pulse"></i> Real-Time Vital Signs</div>
         <div class="vitals-grid">
-            <div class="vital-box" style="background-color: ${hrStyle.bg}; border-color: ${hrStyle.border};">
-                <h4 style="color: ${hrStyle.text};">Heart Rate</h4>
-                <p style="color: ${hrStyle.text};">${vitals.heartRate || "--"} <span style="font-size: 13px; font-weight: 500; opacity: 0.8;">bpm</span></p>
-                <i class="fa-solid fa-heart-pulse" style="position: absolute; right: 15px; bottom: 15px; color: ${hrStyle.text}; opacity: 0.3; font-size: 18px;"></i>
-            </div>
-            <div class="vital-box" style="background-color: ${rrStyle.bg}; border-color: ${rrStyle.border};">
-                <h4 style="color: ${rrStyle.text};">Respiratory Rate</h4>
-                <p style="color: ${rrStyle.text};">${vitals.respiratoryRate || "--"} <span style="font-size: 13px; font-weight: 500; opacity: 0.8;">breaths/min</span></p>
-                <i class="fa-solid fa-lungs" style="position: absolute; right: 15px; bottom: 15px; color: ${rrStyle.text}; opacity: 0.3; font-size: 18px;"></i>
-            </div>
             <div class="vital-box" style="background-color: ${tempStyle.bg}; border-color: ${tempStyle.border};">
                 <h4 style="color: ${tempStyle.text};">Temperature</h4>
                 <p style="color: ${tempStyle.text};">${vitals.temperature || "--"} <span style="font-size: 13px; font-weight: 500; opacity: 0.8;">°C</span></p>

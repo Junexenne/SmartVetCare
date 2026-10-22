@@ -10,12 +10,15 @@ error_reporting(E_ALL);
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Smart Vet Care | User Dashboard</title>
     <link rel="stylesheet" href="../assets/css/dashboard.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <style>
+        body {
+            background-color: #f4f7fe;
+        }
         /* Sidebar Overlay para sa Mobile */
         .sidebar-overlay {
             display: none;
@@ -26,6 +29,21 @@ error_reporting(E_ALL);
             height: 100%;
             background: rgba(0, 0, 0, 0.4);
             z-index: 1000;
+        }
+        .main-content {
+            padding: 16px !important;
+            box-sizing: border-box !important;
+            background: #f4f7fe;
+            min-height: 100vh;
+        }
+        .health-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
         /* Delivery-Style Progress Tracker Styles */
         .progress-tracker-container {
@@ -96,6 +114,9 @@ error_reporting(E_ALL);
         }
         /* Responsive Breakpoint para sa Phones */
         @media (max-width: 768px) {
+            .main-content {
+                padding: 12px !important;
+            }
             .sidebar {
                 position: fixed !important;
                 top: 0;
@@ -110,10 +131,6 @@ error_reporting(E_ALL);
             }
             .sidebar-overlay.active {
                 display: block;
-            }
-            .main-content {
-                padding: 12px !important;
-                width: 100% !important;
             }
             div.dashboard-cards,
             .dashboard-cards {
@@ -191,7 +208,7 @@ error_reporting(E_ALL);
                 width: 100% !important;
                 display: block !important;
                 float: none !important;
-                margin-bottom: 12px !important;
+                margin-bottom: 8px !important;
                 box-sizing: border-box !important;
             }
         }
@@ -225,97 +242,100 @@ error_reporting(E_ALL);
             include "../includes/topbar.php"; 
         }
         ?>
-        <section class="dashboard-content">
-            <!-- Welcome Section -->
-            <div class="welcome-card" style="background: linear-gradient(135deg, #163B7A 0%, #2563EB 50%, #38BDF8 100%); margin-bottom: 10px; color: #ffffff; display: flex; align-items: center; justify-content: space-between; border-radius: 16px; padding: 25px 30px; box-shadow: 0 4px 15px rgba(23,63,129,0.2);">
-                <div>
-                    <h1 id="greeting" style="color: #ffffff; margin: 0 0 8px 0; font-size: 22px;">Good Morning! </h1>
-                    <p style="color: rgba(255,255,255,0.9); margin: 0; font-size: 13.5px;">Welcome back to Smart Vet Care. Manage your pets, appointments, health records, and stay connected with your veterinarian.</p>
-                </div>
-                <div style="background: rgba(255, 255, 255, 0.15); width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #ffffff; flex-shrink: 0;">
-                    <i class="fa-solid fa-paw"></i>
-                </div>
-            </div>
-            <!-- Compact Clinic Operating Hours Widget -->
-            <div style="background: #ffffff; border-radius: 14px; padding: 12px 16px; margin-bottom: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between; border-left: 5px solid #5b21b6;">
-                <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
-                    <div style="background: #ede9fe; color: #5b21b6; width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;">
-                        <i class="fa-solid fa-kit-medical"></i>
+        
+        <div class="health-container">
+            <section class="dashboard-content" style="padding: 0; margin: 0; width: 100%;">
+                <!-- Welcome Section -->
+                <div class="welcome-card" style="background: linear-gradient(135deg, #163B7A 0%, #2563EB 50%, #38BDF8 100%); margin-bottom: 12px; color: #ffffff; display: flex; align-items: center; justify-content: space-between; border-radius: 16px; padding: 25px 30px; box-shadow: 0 4px 15px rgba(23,63,129,0.2);">
+                    <div>
+                        <h1 id="greeting" style="color: #ffffff; margin: 0 0 8px 0; font-size: 22px;">Good Morning! </h1>
+                        <p style="color: rgba(255,255,255,0.9); margin: 0; font-size: 13.5px;">Welcome back to Smart Vet Care. Manage your pets, appointments, health records, and stay connected with your veterinarian.</p>
                     </div>
-                    <div style="flex-grow: 1;">
-                        <h4 style="margin: 0; font-size: 13px; color: #1e293b; font-weight: 600;">Furry Friends Animal Clinic</h4>
-                        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-top: 2px;">
-                            <p style="margin: 0; font-size: 11px; color: #64748b;">Monday - Sunday: 10:00 AM - 07:00 PM</p>
-                            <span id="clinicStatusBadge" style="background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0;">
-                                <span style="width: 6px; height: 6px; background: #22c55e; border-radius: 50%; display: inline-block;"></span> Open
-                            </span>
+                    <div style="background: rgba(255, 255, 255, 0.15); width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #ffffff; flex-shrink: 0;">
+                        <i class="fa-solid fa-paw"></i>
+                    </div>
+                </div>
+                <!-- Compact Clinic Operating Hours Widget -->
+                <div style="background: #ffffff; border-radius: 14px; padding: 12px 16px; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between; border-left: 5px solid #5b21b6;">
+                    <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
+                        <div style="background: #ede9fe; color: #5b21b6; width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;">
+                            <i class="fa-solid fa-kit-medical"></i>
+                        </div>
+                        <div style="flex-grow: 1;">
+                            <h4 style="margin: 0; font-size: 13px; color: #1e293b; font-weight: 600;">Furry Friends Animal Clinic</h4>
+                            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-top: 2px;">
+                                <p style="margin: 0; font-size: 11px; color: #64748b;">Monday - Sunday: 10:00 AM - 07:00 PM</p>
+                                <span id="clinicStatusBadge" style="background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0;">
+                                    <span style="width: 6px; height: 6px; background: #22c55e; border-radius: 50%; display: inline-block;"></span> Open
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <!-- Seasonal Health Reminder Widget -->
-            <div class="vet-reminder-card" id="seasonalReminderCard" style="margin-bottom: 10px;">
-                <div class="vet-reminder-icon">
-                    <i class="fa-solid fa-triangle-exclamation" id="reminderIcon"></i>
-                </div>
-                <div class="vet-reminder-content">
-                    <h4 id="reminderTitle">Seasonal Pet Health Alert</h4>
-                    <p id="reminderText">Loading health tips for your pet...</p>
-                </div>
-            </div>
-            <!-- Statistics Grid -->
-            <div class="dashboard-cards" style="margin-bottom: 10px;">
-                <div class="stat-card">
-                    <div class="icon-box icon-pets"><i class="fa-solid fa-paw"></i></div>
-                    <div class="card-info">
-                        <h3>My Pets</h3>
-                        <h2 id="totalPets">0</h2>
-                        <span>Registered Pets</span>
+                <!-- Seasonal Health Reminder Widget -->
+                <div class="vet-reminder-card" id="seasonalReminderCard" style="margin-bottom: 12px;">
+                    <div class="vet-reminder-icon">
+                        <i class="fa-solid fa-triangle-exclamation" id="reminderIcon"></i>
+                    </div>
+                    <div class="vet-reminder-content">
+                        <h4 id="reminderTitle">Seasonal Pet Health Alert</h4>
+                        <p id="reminderText">Loading health tips for your pet...</p>
                     </div>
                 </div>
-                <div class="stat-card">
-                    <div class="icon-box icon-appts"><i class="fa-solid fa-calendar-days"></i></div>
-                    <div class="card-info">
-                        <h3>Appointments</h3>
-                        <h2 id="appointmentCount">0</h2>
-                        <span>Upcoming Schedule</span>
+                <!-- Statistics Grid -->
+                <div class="dashboard-cards" style="margin-bottom: 12px;">
+                    <div class="stat-card">
+                        <div class="icon-box icon-pets"><i class="fa-solid fa-paw"></i></div>
+                        <div class="card-info">
+                            <h3>My Pets</h3>
+                            <h2 id="totalPets">0</h2>
+                            <span>Registered Pets</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="icon-box icon-appts"><i class="fa-solid fa-calendar-days"></i></div>
+                        <div class="card-info">
+                            <h3>Appointments</h3>
+                            <h2 id="appointmentCount">0</h2>
+                            <span>Upcoming Schedule</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="icon-box icon-msgs"><i class="fa-solid fa-envelope"></i></div>
+                        <div class="card-info">
+                            <h3>Messages</h3>
+                            <h2 id="messageCount">0</h2>
+                            <span>Unread Messages</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="icon-box icon-ai">
+                            <svg style="width: 18px; height: 18px; fill: currentColor;" viewBox="0 0 24 24">
+                                <path d="M12 2c1.8 5.7 4.3 8.2 10 10-5.7 1.8-8.2 4.3-10 10-1.8-5.7-4.3-8.2-10-10 5.7-1.8 8.2-4.3 10-10z"/>
+                            </svg>
+                        </div>
+                        <div class="card-info">
+                            <h3>AI ASSISTANT</h3>
+                            <h2>Ready</h2>
+                            <span>Ask anything about pets</span>
+                        </div>
                     </div>
                 </div>
-                <div class="stat-card">
-                    <div class="icon-box icon-msgs"><i class="fa-solid fa-envelope"></i></div>
-                    <div class="card-info">
-                        <h3>Messages</h3>
-                        <h2 id="messageCount">0</h2>
-                        <span>Unread Messages</span>
+                <!-- Bottom Sections -->
+                <div class="upcoming-appointment-section" style="margin-bottom: 12px;">
+                    <h3><i class="fa-solid fa-calendar-check"></i> Upcoming Appointment</h3>
+                    <div id="upcomingAppointmentContainer">
+                        <p class="empty-state">You don't have any upcoming appointments.</p>
                     </div>
                 </div>
-                <div class="stat-card">
-                    <div class="icon-box icon-ai">
-                        <svg style="width: 18px; height: 18px; fill: currentColor;" viewBox="0 0 24 24">
-                            <path d="M12 2c1.8 5.7 4.3 8.2 10 10-5.7 1.8-8.2 4.3-10 10-1.8-5.7-4.3-8.2-10-10 5.7-1.8 8.2-4.3 10-10z"/>
-                        </svg>
-                    </div>
-                    <div class="card-info">
-                        <h3>AI ASSISTANT</h3>
-                        <h2>Ready</h2>
-                        <span>Ask anything about pets</span>
+                <div class="recent-activities-section" style="margin-bottom: 0;">
+                    <h3><i class="fa-solid fa-clock-rotate-left"></i> Recent Activities</h3>
+                    <div id="recentActivitiesContainer">
+                        <p class="empty-state">No recent activities yet.</p>
                     </div>
                 </div>
-            </div>
-            <!-- Bottom Sections -->
-            <div class="upcoming-appointment-section" style="margin-bottom: 10px;">
-                <h3><i class="fa-solid fa-calendar-check"></i> Upcoming Appointment</h3>
-                <div id="upcomingAppointmentContainer">
-                    <p class="empty-state">You don't have any upcoming appointments.</p>
-                </div>
-            </div>
-            <div class="recent-activities-section">
-                <h3><i class="fa-solid fa-clock-rotate-left"></i> Recent Activities</h3>
-                <div id="recentActivitiesContainer">
-                    <p class="empty-state">No recent activities yet.</p>
-                </div>
-            </div>
-        </section>
+            </section>
+        </div>
     </div>
 </div>
 <!-- FLOATING CHATBOT WIDGET -->
@@ -383,7 +403,6 @@ error_reporting(E_ALL);
         
         const badge = document.getElementById('clinicStatusBadge');
         let isClinicOpen = true; 
-
         if (badge) {
             const options = { timeZone: 'Asia/Manila', hour: 'numeric', minute: 'numeric', hour12: false };
             const formatter = new Intl.DateTimeFormat([], options);
@@ -409,7 +428,6 @@ error_reporting(E_ALL);
                 badge.innerHTML = '<span style="width: 6px; height: 6px; background: #ef4444; border-radius: 50%; display: inline-block;"></span> Closed';
             }
         }
-
         // Floating Chatbot Logic
         const toggleBtn = document.getElementById("chatToggleBtn");
         const chatWindow = document.getElementById("chatWindow");
@@ -418,7 +436,6 @@ error_reporting(E_ALL);
         const chatInput = document.getElementById("chatInput");
         const chatMessages = document.getElementById("chatMessages");
         const faqChips = document.querySelectorAll(".faq-chip");
-
         toggleBtn.addEventListener("click", () => {
             const isOpen = chatWindow.style.display === "flex";
             chatWindow.style.display = isOpen ? "none" : "flex";
@@ -442,8 +459,6 @@ error_reporting(E_ALL);
         function handleBotResponse(question) {
             let reply = "";
             const q = question.toLowerCase();
-
-            // Unang susuriin ang mga keyword kung may tumugma (para gumana pa rin ang time, book, records, etc. kahit offline)
             if (q.includes("book") || q.includes("appointment")) {
                 reply = "To book an appointment, simply go to 'Book Appointment' in the left menu, then select the date, time, and service for your pet.";
             } else if (q.includes("oras") || q.includes("time") || q.includes("clinic") || q.includes("hours")) {
@@ -455,14 +470,12 @@ error_reporting(E_ALL);
             } else if (q.includes("walk-in") || q.includes("fee") || q.includes("price") || q.includes("magkano")|| q.includes("bayad"))  {
                 reply = "Yes, walk-ins are accepted, but scheduled appointments are prioritized for regular checkups. Standard consultation fees range from ₱300 to ₱500.";
             } else {
-                // Kung walang natagpuang keyword at naka-close ang klinika, saka lang lalabas ang offline/emergency notice
                 if (!isClinicOpen) {
                     reply = "We are currently offline and attending to a patient. If beyond clinic hours and it is a medical emergency, please don't wait for our response instead bring your Pet to the nearest 24 hr animal Clinic.\n\nFor immediate response (during clinic hours) kindly call or text us at:\n0925-8897811 (sun)\nLocation: Bagong Barrio Caloocan\n(Infront of 711, beside Lourdes Church)\n\nWe are OPEN everyday 10am - 7pm";
                 } else {
                     reply = "I'm sorry, but you can refer to our Help & Support page for more details or message the clinic directly.";
                 }
             }
-
             setTimeout(() => {
                 appendMessage('bot', reply);
             }, 500);

@@ -11,7 +11,7 @@ if (session_status() === PHP_SESSION_NONE) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Records & History | Smart Vet Care</title>
     <link rel="stylesheet" href="../assets/css/dashboard.css">
     <!-- Google Fonts -->
@@ -22,26 +22,57 @@ if (session_status() === PHP_SESSION_NONE) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     
     <style>
-        .settings-wrapper {
+        body {
+            background-color: #f4f7fe;
+        }
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 1000;
+        }
+        .main-content {
+            padding: 16px !important;
+            box-sizing: border-box !important;
+            background: #f4f7fe;
+            min-height: 100vh;
+        }
+        .health-container {
+            max-width: 1200px;
+            margin: 0 auto;
             width: 100%;
             box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
-        .page-header-custom {
-            margin-bottom: 24px;
+        /* Puti at bilugang Card gaya ng sa health.php */
+        .profile-style-card {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+            border: 1px solid #edf2f7;
+            box-sizing: border-box;
         }
         .page-header-custom h1 {
-            font-size: 24px;
+            font-size: 22px;
             color: #1e1b4b;
-            font-weight: 600;
+            font-weight: 700;
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 6px;
+            margin: 0 0 6px 0;
         }
         .page-header-custom p {
             color: #64748b;
-            font-size: 14px;
+            font-size: 13px;
             margin: 0;
+            line-height: 1.4;
         }
         .tabs-container { 
             display: flex; 
@@ -140,30 +171,16 @@ if (session_status() === PHP_SESSION_NONE) {
         }
         .toast-success { background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; }
         .toast-error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
-        .sidebar-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.4);
-            z-index: 1000;
-        }
         @media (max-width: 768px) {
             .main-content {
-                padding: 10px !important;
-                box-sizing: border-box;
-                overflow-x: hidden;
-                width: 100%;
+                padding: 12px !important;
             }
-            .settings-wrapper {
-                padding: 0 5px;
-                box-sizing: border-box;
-                max-width: 100%;
+            .profile-style-card {
+                padding: 18px;
+                border-radius: 18px;
             }
             .page-header-custom h1 {
-                font-size: 20px;
+                font-size: 18px !important;
             }
             .tabs-container, .pet-tabs-container {
                 gap: 6px;
@@ -184,6 +201,17 @@ if (session_status() === PHP_SESSION_NONE) {
                 bottom: 20px;
                 justify-content: center;
             }
+            .sidebar {
+                position: fixed !important;
+                top: 0;
+                left: -270px;
+                height: 100% !important;
+                transition: left 0.3s ease;
+                z-index: 1001;
+                box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+            }
+            .sidebar.active { left: 0 !important; }
+            .sidebar-overlay.active { display: block !important; }
         }
     </style>
 </head>
@@ -191,18 +219,21 @@ if (session_status() === PHP_SESSION_NONE) {
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 <div class="dashboard">
     <?php include("../includes/sidebar.php"); ?>
-    <div class="main-content" style="background: #f4f7fe; min-height: 100vh; padding: 20px;">
+    <div class="main-content">
         <?php include("../includes/topbar.php"); ?>
-        <section class="dashboard-content">
-            <div class="settings-wrapper">
-                <!-- Page Header -->
-                <div class="page-header-custom">
-                    <h1>
-                        <i class="fa-solid fa-folder-open" style="background: #eef4ff; padding: 10px; border-radius: 12px; color: #5142f5;"></i>
-                        Records & History
-                    </h1>
-                    <p>Manage archived appointments, archived pet profiles, cancelled bookings, completed transaction histories, and trash items.</p>
-                </div>
+        
+        <div class="health-container">
+            <!-- Header Card (May puting box na katulad ng sa health.php) -->
+            <div class="profile-style-card page-header-custom">
+                <h1>
+                    <i class="fa-solid fa-folder-open" style="background: #eef4ff; padding: 10px; border-radius: 12px; color: #5142f5;"></i>
+                    Records & History
+                </h1>
+                <p>Manage archived appointments, archived pet profiles, cancelled bookings, completed transaction histories, and trash items.</p>
+            </div>
+
+            <!-- Content Card (Naka-box din para sa mismong records tabs at listahan) -->
+            <div class="profile-style-card">
                 <!-- Tabs Navigation -->
                 <div class="tabs-container">
                     <button class="tab-btn active" onclick="switchTab('archived', event)">
@@ -296,7 +327,7 @@ if (session_status() === PHP_SESSION_NONE) {
                     </div>
                 </div>
             </div>
-        </section>
+        </div>
     </div>
 </div>
 <!-- Modern Floating Toast Container -->

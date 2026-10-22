@@ -110,41 +110,45 @@ if (session_status() === PHP_SESSION_NONE) {
             padding: 10px 6px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
             background: #fdfcff;
             -webkit-overflow-scrolling: touch;
         }
         .message-wrapper {
-            display: flex;
-            flex-direction: column;
-            max-width: 95%; 
+            display: flex !important;
+            flex-direction: column !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
         }
         .message-wrapper.user {
-            align-self: flex-end;
-            align-items: flex-end;
+            align-items: flex-end !important;
         }
         .message-wrapper.ai {
-            align-self: flex-start;
-            align-items: flex-start;
+            align-items: flex-start !important;
         }
         .message {
-            padding: 12px 16px;
-            border-radius: 14px;
-            font-size: 13px;
-            line-height: 1.4;
-            max-width: 100%;
-            box-sizing: border-box;
-            display: inline-block;
+            padding: 12px 16px !important;
+            border-radius: 18px !important;
+            font-size: 13px !important;
+            line-height: 1.5 !important;
+            max-width: 80% !important;
+            width: fit-content !important;
+            box-sizing: border-box !important;
+            display: inline-block !important;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04) !important;
+            word-break: break-word !important;
         }
         .message-wrapper.user .message {
-            background: #2563EB;
-            color: #ffffff;
-            border-bottom-right-radius: 4px;
+            background: linear-gradient(135deg, #2563EB, #1d4ed8) !important;
+            color: #ffffff !important;
+            border-bottom-right-radius: 4px !important;
         }
         .message-wrapper.ai .message {
-            background: #f1f5f9;
-            color: #1e293b;
-            border-bottom-left-radius: 4px;
+            background: #ffffff !important;
+            color: #1e293b !important;
+            border: 1px solid #e2e8f0 !important;
+            border-bottom-left-radius: 4px !important;
         }
         .chat-suggestions-wrapper {
             flex-shrink: 0;
@@ -294,8 +298,8 @@ if (session_status() === PHP_SESSION_NONE) {
                 height: 100% !important;
                 padding: 8px 12px calc(75px + env(safe-area-inset-bottom, 30px)) 12px !important;
             }
-            .message-wrapper {
-                max-width: 95%;
+            .message {
+                max-width: 85% !important;
             }
         }
         @keyframes blink {

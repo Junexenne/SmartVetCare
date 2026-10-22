@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>My Pets | Smart Vet Care</title>
     <link rel="stylesheet" href="../assets/css/dashboard.css">
     <!-- Google Fonts -->
@@ -12,6 +12,49 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <style>
+        body {
+            background-color: #f4f7fe;
+        }
+        .main-content {
+            padding: 16px !important;
+            box-sizing: border-box !important;
+            background: #f4f7fe;
+            min-height: 100vh;
+        }
+        .health-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        /* Puti at bilugang Card gaya ng sa health.php at records.php */
+        .profile-style-card {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+            border: 1px solid #edf2f7;
+            box-sizing: border-box;
+        }
+        .page-header-custom h1 {
+            font-size: 22px;
+            color: #1e1b4b;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0 0 6px 0;
+        }
+        .page-header-custom h2 {
+            color: #64748b;
+            font-size: 13px;
+            margin: 0;
+            font-weight: 400;
+            line-height: 1.4;
+        }
         .modal {
             overflow-y: auto !important;
             padding: 15px !important;
@@ -185,6 +228,16 @@
             z-index: 1000;
         }
         @media (max-width: 768px) {
+            .main-content {
+                padding: 12px !important;
+            }
+            .profile-style-card {
+                padding: 18px;
+                border-radius: 18px;
+            }
+            .page-header-custom h1 {
+                font-size: 18px !important;
+            }
             #viewPetModal .modal-content.view-modal {
                 max-width: 96vw !important;
                 width: 96vw !important;
@@ -325,28 +378,32 @@
     <?php include "../includes/sidebar.php"; ?>
     <div class="main-content">
         <?php include "../includes/topbar.php"; ?>
-        <section class="dashboard-content">
-            <div class="page-header">
+        
+        <div class="health-container">
+            <!-- Header Card (Puti at bilugang box para sa My Pets header) -->
+            <div class="profile-style-card page-header-custom">
                 <h1>
                     <i class="fa-solid fa-paw" style="background: #eef4ff; padding: 10px; border-radius: 12px; color: #5142f5;"></i>
                     My Pets
                 </h1>
                 <h2>View, add, and manage your registered pet profiles.</h2>
             </div>
-            <div class="pets-container" id="petsContainer">
-                <div class="empty-state" id="emptyState" style="display: none;">
-                    <i class="fa-solid fa-paw"></i>
-                    <h2>No Pets Yet</h2>
-                    <p>
-                        Register your first pet by clicking
-                        <strong>Add New Pet</strong>
-                    </p>
+            
+            <div class="profile-style-card" style="padding: 0; background: transparent; border: none; box-shadow: none;">
+                <div class="pets-container" id="petsContainer">
+                    <div class="empty-state" id="emptyState" style="display: none;">
+                        <i class="fa-solid fa-paw"></i>
+                        <h2>No Pets Yet</h2>
+                        <p>
+                            Register your first pet by clicking
+                            <strong>Add New Pet</strong>
+                        </p>
+                    </div>
                 </div>
             </div>
-        </section>
+        </div>
     </div>
 </div>
-
 <!-- EDIT PET MODAL -->
 <div class="modal" id="petModal">
     <div class="modal-content" style="padding: 25px;">
@@ -415,7 +472,6 @@
         </form>
     </div>
 </div>
-
 <!-- VIEW PET MODAL -->
 <div class="modal" id="viewPetModal">
     <div class="modal-content view-modal">
@@ -511,7 +567,6 @@
         </div>
     </div>
 </div>
-
 <div id="toast" class="toast">
     <i id="toastIcon" class="fa-solid fa-circle-check"></i>
     <div>
@@ -519,7 +574,6 @@
         <p id="toastMessage" style="margin:0; font-size:12px; opacity:0.9;">Action completed successfully.</p>
     </div>
 </div>
-
 <script>
     document.addEventListener("DOMContentLoaded", () => {
         const mobileBtn = document.getElementById('mobileMenuBtn');
