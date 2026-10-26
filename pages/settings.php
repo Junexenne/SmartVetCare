@@ -362,6 +362,7 @@ if (session_status() === PHP_SESSION_NONE) {
     <i id="toastIcon" class="fa-solid"></i>
     <span id="toastMessage"></span>
 </div>
+<?php include("../includes/bottom-nav.php"); ?>
 <script>
     document.addEventListener("DOMContentLoaded", () => {
         const mobileBtn = document.getElementById('mobileMenuBtn');

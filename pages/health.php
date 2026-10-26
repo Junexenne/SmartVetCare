@@ -146,15 +146,16 @@ if (session_status() === PHP_SESSION_NONE) {
                 <p>Medical status and updates recorded during your clinic visits at Furry Friends Animal Clinic</p>
             </div>
 
-            <!-- Content Card -->
+        
             <div class="profile-style-card">
                 <div id="healthRecordsContainer">
-                    <!-- Dito magloload ang dynamic health records mo -->
+                    
                 </div>
             </div>
         </div>
     </div>
 </div>
+<?php include("../includes/bottom-nav.php"); ?>
 
 <!-- Toast Container -->
 <div id="toast-container"></div>

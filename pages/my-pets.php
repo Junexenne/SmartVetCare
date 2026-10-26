@@ -628,6 +628,7 @@
         <p id="toastMessage" style="margin:0; font-size:12px; opacity:0.9;">Action completed successfully.</p>
     </div>
 </div>
+<?php include("../includes/bottom-nav.php"); ?>
 <script>
     document.addEventListener("DOMContentLoaded", () => {
         const mobileBtn = document.getElementById('mobileMenuBtn');

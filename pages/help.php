@@ -440,7 +440,6 @@ if (session_status() === PHP_SESSION_NONE) {
                     </div>
                 </div>
             </div>
-
             <!-- Legal & Policy Documents Section -->
             <div class="profile-style-card">
                 <div class="section-title" style="margin-top: 0;">Legal & Policies</div>
@@ -500,7 +499,6 @@ if (session_status() === PHP_SESSION_NONE) {
                     </div>
                 </div>
             </div>
-
             <!-- Send Feedback Section -->
             <div class="profile-style-card" id="send-feedback-section">
                 <div class="feedback-header">
@@ -534,6 +532,7 @@ if (session_status() === PHP_SESSION_NONE) {
         </div>
     </div>
 </div>
+<?php include("../includes/bottom-nav.php"); ?>
 <!-- Firebase SDK Imports & App Initialization -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
@@ -575,14 +574,16 @@ if (session_status() === PHP_SESSION_NONE) {
         const helpItems = document.querySelectorAll('.help-item');
         helpItems.forEach(item => {
             item.addEventListener('click', () => {
-                const parentCard = item.parentElement;
+                const parentCard = item.closest('.help-card');
                 
                 document.querySelectorAll('.help-card').forEach(card => {
                     if (card !== parentCard) {
                         card.classList.remove('active');
                     }
                 });
-                parentCard.classList.toggle('active');
+                if (parentCard) {
+                    parentCard.classList.toggle('active');
+                }
             });
         });
     });
@@ -613,13 +614,11 @@ if (session_status() === PHP_SESSION_NONE) {
             submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Send Feedback';
         }
     });
-    <!-- Dedicated Mobile Sidebar Direct Fix Script -->
     
     document.addEventListener("DOMContentLoaded", function() {
         const menuBtn = document.getElementById("mobileMenuBtn");
         const sidebar = document.querySelector(".sidebar");
         const overlay = document.getElementById("sidebarOverlay");
-
         if (menuBtn && sidebar) {
             menuBtn.addEventListener("click", function(e) {
                 e.stopPropagation();
@@ -633,7 +632,6 @@ if (session_status() === PHP_SESSION_NONE) {
                 }
             });
         }
-
         if (overlay && sidebar) {
             overlay.addEventListener("click", function() {
                 sidebar.classList.remove("active");

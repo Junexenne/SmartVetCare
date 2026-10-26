@@ -209,7 +209,7 @@ if (session_status() === PHP_SESSION_NONE) {
         </div>
     </div>
 </div>
-
+<?php include("../includes/bottom-nav.php"); ?>
 <script>
     // Script for Mobile Sidebar Toggle
     document.addEventListener("DOMContentLoaded", () => {

@@ -369,6 +369,7 @@ if (session_status() === PHP_SESSION_NONE) {
         </div>
     </div>
 </div>
+<?php include("../includes/bottom-nav.php"); ?>
 <!-- Integrated Script para sa AI at Firestore Database -->
 <script type="module" src="../assets/js/ai-chat.js"></script>
 

@@ -3,13 +3,12 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 ?>
 <div class="sidebar" id="appSidebar">
     <!-- Logo at Text Section -->
-    <div style="text-align: center; margin-bottom: 20px;">
-        <img src="../assets/images/logo-transparent.png" alt="Clinic Logo" style="width: 50px; height: 50px; object-fit: contain; filter: brightness(0) invert(1);">
+    <div style="text-align: center; margin-bottom: 10px; flex-shrink: 0;">
+        <img src="../assets/images/logo-transparent.png" alt="Clinic Logo" style="width: 42px; height: 42px; object-fit: contain; filter: brightness(0) invert(1);">
         
-        <!-- Wrapper para sa text na kusang mawawala kapag nag-auto-collapse ang sidebar -->
         <div class="sidebar-brand-text">
-            <h3 style="color: #ffffff; font-size: 12px; margin-top: 4px; margin-bottom: 2px;">Smart Vet Care</h3>
-            <p style="color: #cbd5e1; font-size: 9.5px; margin: 0;">Pet Owner Portal</p>
+            <h3 style="color: #ffffff; font-size: 11.5px; margin-top: 3px; margin-bottom: 1px;">Smart Vet Care</h3>
+            <p style="color: #cbd5e1; font-size: 9px; margin: 0;">Pet Owner Portal</p>
         </div>
     </div>
     <ul class="menu">
@@ -73,7 +72,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
                 <span>Records & History</span>
             </a>
         </li>
-        <!-- Help & Feedback Tab sa Pinakababa na may Divider -->
+        <!-- Help & Support Tab sa Pinakababa na may Divider -->
         <li class="sidebar-help-item <?= ($currentPage == 'help.php') ? 'active' : '' ?>">
             <a href="help.php">
                 <i class="fa-solid fa-circle-question"></i>
@@ -85,42 +84,45 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 
 <style>
     .sidebar {
-        overflow: hidden !important;
+        overflow-y: auto !important; /* Ginawang scrollable para hindi maputol kapag maliit ang screen */
+        overflow-x: hidden !important;
         display: flex;
         flex-direction: column;
         height: 100vh;
         box-sizing: border-box;
-        padding: 10px 8px !important;
+        padding: 8px 6px !important;
         transition: width 0.3s ease;
         z-index: 1050;
+        scrollbar-width: none; /* Tinanggal ang scrollbar para malinis tingnan sa mobile */
+    }
+    .sidebar::-webkit-scrollbar {
+        display: none;
     }
     .sidebar .logo {
-        padding: 4px 4px 6px 4px !important;
+        padding: 2px !important;
         margin-bottom: 2px !important;
         display: flex;
         flex-direction: column;
         align-items: center;
         text-align: center;
-        gap: 4px;
+        gap: 2px;
     }
     .sidebar .logo img {
-        width: 40px !important;
-        height: 40px !important;
+        width: 36px !important;
+        height: 36px !important;
         object-fit: contain;
     }
     .sidebar .logo-text h2 {
-        font-size: 13px !important;
+        font-size: 12px !important;
         margin: 0 !important;
         font-weight: 600;
         white-space: nowrap;
-        transition: opacity 0.2s ease;
     }
     .sidebar .logo-text p {
         font-size: 11px !important;
         margin: 0 !important;
         opacity: 0.8;
         white-space: nowrap;
-        transition: opacity 0.2s ease;
     }
     .sidebar .menu {
         margin: 0 !important;
@@ -129,11 +131,10 @@ $currentPage = basename($_SERVER['PHP_SELF']);
         display: flex;
         flex-direction: column;
         flex-grow: 1;
-        justify-content: space-between; 
     }
     .sidebar .menu li a {
-        padding: 8px 10px !important; /* Binawasan ang padding para compact */
-        font-size: 14px !important; /* Dito pinaliit ang font size ng menu */
+        padding: 6px 8px !important; /* Mas compact padding para magkasya lahat */
+        font-size: 13px !important; 
         display: flex;
         align-items: center;
         text-decoration: none;
@@ -147,12 +148,11 @@ $currentPage = basename($_SERVER['PHP_SELF']);
         visibility: visible !important;
         display: inline-block !important;
         color: inherit !important;
-        transition: opacity 0.2s ease;
     }
     .sidebar .menu li a i {
-        font-size: 12.5px !important; /* Pinaliit din nang konti ang icon para timbang */
-        margin-right: 10px !important;
-        width: 16px;
+        font-size: 11.5px !important;
+        margin-right: 8px !important;
+        width: 14px;
         text-align: center;
         flex-shrink: 0;
     }
@@ -167,9 +167,9 @@ $currentPage = basename($_SERVER['PHP_SELF']);
         color: #ffffff !important;
     }
     .sidebar-help-item {
-        margin-top: auto !important;
+        margin-top: auto !important; /* Sinisigurong laging nakadikit sa pinakababa */
         border-top: 1px solid rgba(255, 255, 255, 0.15);
-        padding-top: 6px;
+        padding-top: 4px;
     }
     .sidebar.auto-collapsed {
         overflow: hidden !important;

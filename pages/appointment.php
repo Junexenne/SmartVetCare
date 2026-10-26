@@ -512,6 +512,7 @@
         </div>
     </div>
 </div>
+<?php include("../includes/bottom-nav.php"); ?>
 <script>
     document.addEventListener("DOMContentLoaded", () => {
         const mobileBtn = document.getElementById('mobileMenuBtn');

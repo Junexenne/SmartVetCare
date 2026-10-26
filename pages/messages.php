@@ -487,6 +487,7 @@ $userId = $_SESSION['user_id'] ?? 'OWN-00004';
             </div>
         </div> 
     </div> 
+    <?php include("../includes/bottom-nav.php"); ?>
     <!-- Firebase v8 SDK Scripts -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>

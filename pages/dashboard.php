@@ -421,6 +421,7 @@ error_reporting(E_ALL);
         </div>
     </div>
 </div>
+<?php include("../includes/bottom-nav.php"); ?>
 <!-- Universal Mobile Sidebar Script Fix -->
 <script>
     document.addEventListener("DOMContentLoaded", function() {

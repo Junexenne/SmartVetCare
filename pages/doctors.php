@@ -224,6 +224,7 @@ if (session_status() === PHP_SESSION_NONE) {
         </div>
     </div>
 </div>
+<?php include("../includes/bottom-nav.php"); ?>
 
 <!-- ROBUST EVENT DELEGATION SCRIPT PARA SA BURGER BUTTON -->
 <script>
