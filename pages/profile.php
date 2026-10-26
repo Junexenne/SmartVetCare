@@ -11,6 +11,7 @@ if (session_status() === PHP_SESSION_NONE) {
     <title>My Profile - Smart Vet Care</title>
     <link rel="stylesheet" href="../assets/css/dashboard.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="../assets/images/logo-transparent.png">
     <style>
         /* Mobile spacing and alignment fix */
         .main-content {

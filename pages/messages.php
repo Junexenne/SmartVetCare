@@ -14,6 +14,7 @@ $userId = $_SESSION['user_id'] ?? 'OWN-00004';
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <!-- SweetAlert2 CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link rel="icon" type="image/png" href="../assets/images/logo-transparent.png">
     <style>
         html, body {
             height: 100%;

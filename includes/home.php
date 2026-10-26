@@ -1032,7 +1032,7 @@
 <!-- =====================================
     FOOTER SECTION
 ===================================== -->
-<footer class="footer" style="background: #1e1b4b;">
+<footer class="footer" style="background: #173F81;">
     <div class="footer-container">
         <div class="footer-left">
             <p>&copy; 2026, Smart Vet Care</p>
