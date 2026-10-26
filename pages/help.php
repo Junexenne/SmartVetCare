@@ -446,6 +446,48 @@ if (session_status() === PHP_SESSION_NONE) {
                 <div class="section-title" style="margin-top: 0;">Legal & Policies</div>
                 <div class="help-list" style="margin-bottom: 0;">
                     
+                    <!-- About Furry Friends & Mission Card -->
+                    <div class="help-card">
+                        <div class="help-item">
+                            <div class="help-item-left">
+                                <i class="fa-solid fa-paw"></i>
+                                <span>About Furry Friends Animal Clinic & Mission</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-down chevron-icon"></i>
+                        </div>
+                        <div class="help-answer">
+                            <h4>ABOUT FURRY FRIENDS ANIMAL CLINIC</h4>
+                            <p>Furry Friends Animal Clinic is dedicated to providing exceptional veterinary care and compassionate services for your beloved pets. Powered by the Smart Vet Care platform, we bridge the gap between pet owners and professional veterinary services, ensuring seamless clinic appointments, health record tracking, and reliable consultations.</p>
+                            
+                            <h4>OUR MISSION</h4>
+                            <p>To promote animal health and welfare by delivering top-quality, accessible, and reliable veterinary medical services while fostering a community of responsible and loving pet owners.</p>
+                            
+                            <h4>OUR VISION</h4>
+                            <p>To be a leading veterinary care provider recognized for compassionate service, digital innovation in pet health monitoring, and excellence in animal welfare.</p>
+                        </div>
+                    </div>
+
+                    <!-- Privacy Notice Card -->
+                    <div class="help-card">
+                        <div class="help-item">
+                            <div class="help-item-left">
+                                <i class="fa-solid fa-shield-halved"></i>
+                                <span>Privacy Notice</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-down chevron-icon"></i>
+                        </div>
+                        <div class="help-answer">
+                            <h4>YOUR PRIVACY MATTERS</h4>
+                            <p>At Furry Friends Animal Clinic and Smart Vet Care, we respect and protect the privacy of our users and clients. This Privacy Notice highlights our commitment to safeguarding your personal information and your pets' medical records.</p>
+                            
+                            <h4>COLLECTION & USAGE OF DATA</h4>
+                            <p>All data collected through our platform including user registration details, pet profiles, and appointment history is used strictly for veterinary operational purposes, health tracking, and improving our clinic services. We do not sell or share your personal data with unauthorized third parties.</p>
+                            
+                            <h4>SECURITY COMMITMENT</h4>
+                            <p>We implement secure database storage protocols (via Firebase security rules and encryption) to ensure that your information remains confidential and accessible only to authorized clinic personnel.</p>
+                        </div>
+                    </div>
+
                     <!-- Privacy Policy Card -->
                     <div class="help-card">
                         <div class="help-item">
