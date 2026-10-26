@@ -310,7 +310,7 @@ if (session_status() === PHP_SESSION_NONE) {
     </style>
 </head>
 <body>
-<?php include("pages-header.php"); ?>
+<?php if (file_exists("pages-header.php")) { include("pages-header.php"); } ?>
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 <div class="dashboard">
     <?php include("../includes/sidebar.php"); ?>
@@ -371,5 +371,36 @@ if (session_status() === PHP_SESSION_NONE) {
 </div>
 <!-- Integrated Script para sa AI at Firestore Database -->
 <script type="module" src="../assets/js/ai-chat.js"></script>
+
+<!-- Dedicated Mobile Sidebar Direct Fix Script -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const menuBtn = document.getElementById("mobileMenuBtn");
+        const sidebar = document.querySelector(".sidebar");
+        const overlay = document.getElementById("sidebarOverlay");
+
+        if (menuBtn && sidebar) {
+            menuBtn.addEventListener("click", function(e) {
+                e.stopPropagation();
+                sidebar.classList.toggle("active");
+                if (sidebar.classList.contains("active")) {
+                    sidebar.style.left = "0px";
+                    if (overlay) overlay.style.display = "block";
+                } else {
+                    sidebar.style.left = "-270px";
+                    if (overlay) overlay.style.display = "none";
+                }
+            });
+        }
+
+        if (overlay && sidebar) {
+            overlay.addEventListener("click", function() {
+                sidebar.classList.remove("active");
+                sidebar.style.left = "-270px";
+                overlay.style.display = "none";
+            });
+        }
+    });
+</script>
 </body>
 </html>

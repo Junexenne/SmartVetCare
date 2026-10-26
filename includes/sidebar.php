@@ -4,12 +4,12 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 <div class="sidebar" id="appSidebar">
     <!-- Logo at Text Section -->
     <div style="text-align: center; margin-bottom: 20px;">
-        <img src="../assets/images/logo-transparent.png" alt="Clinic Logo" style="width: 60px; height: 60px; object-fit: contain; filter: brightness(0) invert(1);">
+        <img src="../assets/images/logo-transparent.png" alt="Clinic Logo" style="width: 50px; height: 50px; object-fit: contain; filter: brightness(0) invert(1);">
         
         <!-- Wrapper para sa text na kusang mawawala kapag nag-auto-collapse ang sidebar -->
         <div class="sidebar-brand-text">
-            <h3 style="color: #ffffff; font-size: 13px; margin-top: 4px; margin-bottom: 2px;">Smart Vet Care</h3>
-            <p style="color: #cbd5e1; font-size: 10px; margin: 0;">Pet Owner Portal</p>
+            <h3 style="color: #ffffff; font-size: 12px; margin-top: 4px; margin-bottom: 2px;">Smart Vet Care</h3>
+            <p style="color: #cbd5e1; font-size: 9.5px; margin: 0;">Pet Owner Portal</p>
         </div>
     </div>
     <ul class="menu">
@@ -38,13 +38,13 @@ $currentPage = basename($_SERVER['PHP_SELF']);
             </a>
         </li>
         <li class="<?= ($currentPage == 'ai-chat.php') ? 'active' : '' ?>">
-    <a href="ai-chat.php">
-        <svg style="width: 15px; height: 15px; margin-right: 12px; fill: currentColor; flex-shrink: 0;" viewBox="0 0 24 24">
-            <path d="M12 2c1.8 5.7 4.3 8.2 10 10-5.7 1.8-8.2 4.3-10 10-1.8-5.7-4.3-8.2-10-10 5.7-1.8 8.2-4.3 10-10z"/>
-        </svg>
-        <span>AI Assistant</span>
-    </a>
-</li>
+            <a href="ai-chat.php">
+                <svg style="width: 14px; height: 14px; margin-right: 10px; fill: currentColor; flex-shrink: 0;" viewBox="0 0 24 24">
+                    <path d="M12 2c1.8 5.7 4.3 8.2 10 10-5.7 1.8-8.2 4.3-10 10-1.8-5.7-4.3-8.2-10-10 5.7-1.8 8.2-4.3 10-10z"/>
+                </svg>
+                <span>AI Assistant</span>
+            </a>
+        </li>
         <li class="<?= ($currentPage == 'messages.php') ? 'active' : '' ?>">
             <a href="messages.php">
                 <i class="fa-solid fa-comments"></i>
@@ -57,6 +57,13 @@ $currentPage = basename($_SERVER['PHP_SELF']);
             <a href="doctors.php">
                 <i class="fa-solid fa-user-doctor"></i>
                 <span>Our Doctors</span>
+            </a>
+        </li>
+        <!-- Notification -->
+        <li class="<?= ($currentPage == 'notifications.php') ? 'active' : ''; ?>">
+            <a href="notifications.php">
+                <i class="fa-solid fa-bell"></i>
+                <span>Notifications</span>
             </a>
         </li>
         <!-- Records & History Link -->
@@ -75,6 +82,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
         </li>
     </ul>
 </div>
+
 <style>
     .sidebar {
         overflow: hidden !important;
@@ -96,19 +104,19 @@ $currentPage = basename($_SERVER['PHP_SELF']);
         gap: 4px;
     }
     .sidebar .logo img {
-        width: 44px !important;
-        height: 44px !important;
+        width: 40px !important;
+        height: 40px !important;
         object-fit: contain;
     }
     .sidebar .logo-text h2 {
-        font-size: 13.5px !important;
+        font-size: 13px !important;
         margin: 0 !important;
         font-weight: 600;
         white-space: nowrap;
         transition: opacity 0.2s ease;
     }
     .sidebar .logo-text p {
-        font-size: 10.5px !important;
+        font-size: 11px !important;
         margin: 0 !important;
         opacity: 0.8;
         white-space: nowrap;
@@ -124,8 +132,8 @@ $currentPage = basename($_SERVER['PHP_SELF']);
         justify-content: space-between; 
     }
     .sidebar .menu li a {
-        padding: 10px 12px !important;
-        font-size: 13px !important;
+        padding: 8px 10px !important; /* Binawasan ang padding para compact */
+        font-size: 14px !important; /* Dito pinaliit ang font size ng menu */
         display: flex;
         align-items: center;
         text-decoration: none;
@@ -142,9 +150,9 @@ $currentPage = basename($_SERVER['PHP_SELF']);
         transition: opacity 0.2s ease;
     }
     .sidebar .menu li a i {
-        font-size: 14px !important;
-        margin-right: 12px !important;
-        width: 18px;
+        font-size: 12.5px !important; /* Pinaliit din nang konti ang icon para timbang */
+        margin-right: 10px !important;
+        width: 16px;
         text-align: center;
         flex-shrink: 0;
     }
@@ -194,6 +202,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
         }
     }
 </style>
+
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     const sidebar = document.getElementById("appSidebar");

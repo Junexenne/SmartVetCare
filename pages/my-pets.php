@@ -217,6 +217,46 @@
             font-weight: 600;
             word-break: break-word;
         }
+        /* COLLAPSIBLE DROPDOWN STYLES FOR CLINICAL/VACCINE RECORDS */
+        .collapsible-record-card {
+            background: #fffbf5;
+            border: 1px solid #feebc8;
+            border-radius: 10px;
+            padding: 12px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+            transition: all 0.2s ease;
+        }
+        .collapsible-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            width: 100%;
+        }
+        .collapsible-content {
+            display: none;
+            font-size: 12px;
+            color: #475569;
+            margin-top: 8px;
+            padding-left: 46px;
+            border-top: 1px dashed #feebc8;
+            padding-top: 8px;
+        }
+        .collapsible-record-card.open .collapsible-content {
+            display: block;
+        }
+        .collapsible-arrow {
+            color: #d97706;
+            font-size: 14px;
+            transition: transform 0.2s ease;
+        }
+        .collapsible-record-card.open .collapsible-arrow {
+            transform: rotate(180deg);
+        }
+
         .sidebar-overlay {
             display: none;
             position: fixed;
@@ -474,7 +514,7 @@
 </div>
 <!-- VIEW PET MODAL -->
 <div class="modal" id="viewPetModal">
-    <div class="modal-content view-modal">
+    <div class="modal-content view-modal" style="max-width: 860px !important; width: 95vw !important;">
         <span class="close-view-modal">&times;</span>
         <div class="view-modal-body">
             <div class="view-top">
@@ -547,19 +587,33 @@
                         <h4 id="viewColor"></h4>
                     </div>
                 </div>
-                <div class="view-item" style="grid-column: span 2;">
-                    <i class="fa-solid fa-triangle-exclamation"></i>
-                    <div>
-                        <small>Allergies / Medical Notes</small>
-                        <h4 id="viewAllergies" style="color: #c0392b;">-</h4>
+                
+                <!-- ALLERGIES SECTION -->
+                <div class="view-item" style="grid-column: span 2; background: #fff5f5; border: 1px solid #fed7d7; border-radius: 12px; padding: 14px 16px; align-items: flex-start; justify-content: space-between;">
+                    <div style="display: flex; gap: 12px; align-items: center; width: 100%;">
+                        <i class="fa-solid fa-triangle-exclamation" style="background: #ffe3e3 !important; color: #e53e3e !important; width: 36px !important; height: 36px !important; border-radius: 10px !important;"></i>
+                        <div style="flex: 1;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                                <small style="font-size: 11px; font-weight: 700; color: #c53030; text-transform: uppercase;">Allergies</small>
+                                <span id="allergyNotesCountBadge" style="background: #fed7d7; color: #9b2c2c; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 12px;">0 Notes</span>
+                            </div>
+                            <h4 id="viewAllergies" style="font-size: 13.5px; color: #2d3748; margin-top: 4px; font-weight: 600;">-</h4>
+                        </div>
                     </div>
                 </div>
-                <div class="view-item" style="grid-column: span 2; align-items: flex-start;">
-                    <i class="fa-solid fa-syringe" style="margin-top: 2px;"></i>
-                    <div style="width: 100%;">
-                        <small>Vaccination & Immunization Record</small>
-                        <div id="vaccinationListContainer" style="margin-top: 6px;">
-                            <h4 style="color: #7f8c8d; font-weight: normal; font-size: 11.5px;">No vaccination records found yet.</h4>
+                <!-- MEDICAL HISTORY & CLINICAL FINDINGS SECTION -->
+                <div class="view-item" style="grid-column: span 2; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; align-items: flex-start; flex-direction: column; gap: 10px;">
+                    <div style="display: flex; gap: 12px; align-items: center; width: 100%;">
+                        <i class="fa-solid fa-notes-medical" style="background: #eef2ff !important; color: #4f46e5 !important; width: 38px !important; height: 38px !important; border-radius: 10px !important;"></i>
+                        <div style="flex: 1;">
+                            <small style="font-size: 11px; font-weight: 700; color: #4f46e5; text-transform: uppercase;">Medical History & Clinical Findings</small>
+                            <h4 style="font-size: 13px; color: #64748b; margin-top: 2px; font-weight: 400;">Clinical findings, vaccinations and follow-ups (read-only)</h4>
+                        </div>
+                    </div>
+                    <div style="width: 100%; border-top: 1px solid #f1f5f9; padding-top: 10px;">
+                        <span id="clinicalRecordsCountBadge" style="display: block; font-size: 11.5px; font-weight: 600; color: #64748b; margin-bottom: 8px;">0 clinical records</span>
+                        <div id="vaccinationListContainer" style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
+                            <h4 style="color: #7f8c8d; font-weight: normal; font-size: 11.5px; font-style: italic;">No clinical records found yet.</h4>
                         </div>
                     </div>
                 </div>
@@ -588,6 +642,35 @@
             overlay.addEventListener('click', () => {
                 sidebar.classList.remove('active');
                 overlay.classList.remove('active');
+            });
+        }
+    });
+    <!-- Dedicated Mobile Sidebar Direct Fix Script -->
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const menuBtn = document.getElementById("mobileMenuBtn");
+        const sidebar = document.querySelector(".sidebar");
+        const overlay = document.getElementById("sidebarOverlay");
+
+        if (menuBtn && sidebar) {
+            menuBtn.addEventListener("click", function(e) {
+                e.stopPropagation();
+                sidebar.classList.toggle("active");
+                if (sidebar.classList.contains("active")) {
+                    sidebar.style.left = "0px";
+                    if (overlay) overlay.style.display = "block";
+                } else {
+                    sidebar.style.left = "-270px";
+                    if (overlay) overlay.style.display = "none";
+                }
+            });
+        }
+
+        if (overlay && sidebar) {
+            overlay.addEventListener("click", function() {
+                sidebar.classList.remove("active");
+                sidebar.style.left = "-270px";
+                overlay.style.display = "none";
             });
         }
     });

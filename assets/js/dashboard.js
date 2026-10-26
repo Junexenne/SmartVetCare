@@ -38,7 +38,6 @@ if (greeting) {
     const hour = new Date().getHours();
     greeting.textContent = hour >= 5 && hour < 12 ? "Good Morning, Furry Friends!" : hour < 18 ? "Good Afternoon, Furry Friends!" : "Good Evening, Furry Friends!";
 }
-
 function loadSeasonalReminder() {
     const month = new Date().getMonth();
     const titleEl = document.getElementById('reminderTitle');
@@ -92,82 +91,169 @@ async function loadTopbarAppointments(ownerId) {
     }
 }
 
-// --- 3. Main Dashboard Data Loader (appointments_v2) ---
-function loadDashboardData(ownerId) {
-    const upcomingContainer = document.getElementById("upcomingAppointmentContainer");
-    const apptQuery = query(collection(db, "appointments_v2"), where("ownerId", "==", ownerId));
-    
-    onSnapshot(apptQuery, (snapshot) => {
-        if (!upcomingContainer) return;
-        const todayStr = new Date().toISOString().split('T')[0];
-        let todaysAppointments = [];
-        snapshot.forEach((docSnap) => {
-            const data = docSnap.data();
-            const statusLower = (data.status || "").toLowerCase().trim();
-            // Ipakita ang active appointments para sa petsa ngayon
-            if (data.isArchived !== true && statusLower !== "trash" && statusLower !== "cancelled" && data.date === todayStr) {
-                todaysAppointments.push(data);
-            }
-        });
+// --- 2.3 Appointment Status Tracking with Faded Green Completed/Passed Steps ---
+function loadDashboardAppointmentTracker(ownerId) {
+    const trackerContainer = document.getElementById("dashboardAppointmentTrackerContainer");
+    if (!trackerContainer) return;
 
-        if (todaysAppointments.length === 0) {
-            upcomingContainer.innerHTML = `<p class="empty-state" style="text-align: center; color: #64748b; padding: 20px; font-size: 13px;">You don't have any appointments scheduled for today.</p>`;
+    const apptQuery = query(collection(db, "appointments_v2"), where("ownerId", "==", ownerId));
+    onSnapshot(apptQuery, (snapshot) => {
+        if (snapshot.empty) {
+            trackerContainer.innerHTML = `<p class="empty-state" style="text-align: center; color: #64748b; padding: 15px; font-size: 13px;">No appointment tracking records found.</p>`;
             return;
         }
 
-        let containerHtml = '<div style="display: flex; flex-direction: column; gap: 16px;">';
-        todaysAppointments.forEach((nextAppt) => {
-            let currentStatus = nextAppt.status || 'Pending';
-            let step1Class = 'step active';
-            let step2Class = 'step';
-            let step3Class = 'step';
-            
-            const sLower = currentStatus.toLowerCase();
-            if (sLower === 'confirmed' || sLower === 'approved' || sLower === 'in progress') {
-                step1Class = 'step completed';
-                step2Class = 'step active';
-            } else if (sLower === 'completed') {
-                step1Class = 'step completed';
-                step2Class = 'step completed';
-                step3Class = 'step active completed';
+        let trackerHtml = '';
+        snapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            const status = (data.status || "pending").toLowerCase().trim();
+
+            // Default classes para sa Stepper (Pending pa lang)
+            let step1Class = 'step active';     // Pending (Active)
+            let step2Class = 'step';           // Approved
+            let step3Class = 'step';           // Completed
+            let lineActive1 = '';
+            let lineActive2 = '';
+            let statusBadgeBg = "#fef9c3";
+            let statusBadgeColor = "#854d0e";
+            let statusBadgeText = "Pending";
+
+            if (status === "approved" || status === "confirmed") {
+                step1Class = 'step completed'; // Tapos na ang pending, magiging faded/completed green tone
+                step2Class = 'step active';    // Kasalukuyang hakbang
+                lineActive1 = 'active';
+                statusBadgeBg = "#dcfce7";
+                statusBadgeColor = "#166534";
+                statusBadgeText = "Approved";
+            } else if (status === "completed") {
+                step1Class = 'step completed'; // Faded green tone
+                step2Class = 'step completed'; // Faded green tone
+                step3Class = 'step completed'; // Tapos na lahat
+                lineActive1 = 'active';
+                lineActive2 = 'active';
+                statusBadgeBg = "#e0e7ff";
+                statusBadgeColor = "#3730a3";
+                statusBadgeText = "Completed";
+            } else if (status === "cancelled") {
+                statusBadgeBg = "#fee2e2";
+                statusBadgeColor = "#991b1b";
+                statusBadgeText = "Cancelled";
             }
 
-            containerHtml += `
-                <div style="background: #ffffff; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 20px rgba(81, 66, 245, 0.04); border-left: 5px solid #5142f5;">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+            trackerHtml += `
+                <div style="background: #ffffff; padding: 15px; border-radius: 14px; border: 1px solid #e2e8f0; margin-bottom: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
                         <div>
-                            <h4 style="margin: 0 0 4px 0; color: #1e1b4b; font-size: 16px; font-weight: 600;">${nextAppt.service || 'Vet Consultation'} - <span style="color: #5142f5;">${nextAppt.petName || 'Pet'}</span></h4>
-                            <p style="margin: 0; color: #64748b; font-size: 13px; display: flex; align-items: center; gap: 6px;"><i class="fa-regular fa-calendar" style="color: #5142f5;"></i> ${nextAppt.date} (${nextAppt.timeSlot || nextAppt.time || '10:00 AM - 7:00 PM'})</p>
+                            <h4 style="margin: 0 0 2px 0; color: #1e1b4b; font-size: 15px; font-weight: 600;"><i class="fa-solid fa-calendar-day" style="color: #5142f5; margin-right: 5px;"></i>${data.service || "Consultation"}</h4>
+                            <div style="font-size: 12px; color: #64748b;">Pet: <strong>${data.petName || "N/A"}</strong> &bull; Date: <strong>${data.date || "N/A"} (${data.timeSlot || data.time || "N/A"})</strong></div>
                         </div>
-                        <span style="background: #eef2ff; color: #5142f5; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1px solid #c7d2fe;">${currentStatus}</span>
+                        <span style="background: ${statusBadgeBg}; color: ${statusBadgeColor}; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;">${statusBadgeText}</span>
                     </div>
-                    <!-- Delivery-Style Progress Tracker Stepper -->
-                    <div class="progress-tracker-container" style="background: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid #f1f5f9;">
+                    <!-- Delivery-Style Progress Tracker Stepper for Appointments -->
+                    <div class="progress-tracker-container" style="background: #f8fafc; padding: 12px; border-radius: 10px; border: 1px solid #f1f5f9; margin-top: 10px;">
                         <div class="stepper">
                             <div class="${step1Class}" data-step="1">
-                                <div class="step-circle"><i class="fa-solid fa-clipboard-list"></i></div>
+                                <div class="step-circle"><i class="fa-solid fa-clock"></i></div>
                                 <div class="step-text">Pending</div>
                             </div>
+                            <div class="step-line ${lineActive1}"></div>
                             <div class="${step2Class}" data-step="2">
-                                <div class="step-circle"><i class="fa-solid fa-stethoscope"></i></div>
-                                <div class="step-text">In Progress</div>
-                            </div>
-                            <div class="${step3Class}" data-step="3">
                                 <div class="step-circle"><i class="fa-solid fa-check"></i></div>
+                                <div class="step-text">Approved</div>
+                            </div>
+                            <div class="step-line ${lineActive2}"></div>
+                            <div class="${step3Class}" data-step="3">
+                                <div class="step-circle"><i class="fa-solid fa-circle-check"></i></div>
                                 <div class="step-text">Completed</div>
                             </div>
                         </div>
                     </div>
+                    <div style="margin-top: 10px; font-size: 12px; color: #475569; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 5px;">
+                        <span><strong>Notes:</strong> ${data.notes || data.reason || "None"}</span>
+                        <a href="../pages/appointment.php" style="color: #5142f5; text-decoration: none; font-weight: 600;">View Details &rarr;</a>
+                    </div>
                 </div>
             `;
         });
-        containerHtml += '</div>';
-        upcomingContainer.innerHTML = containerHtml;
+        trackerContainer.innerHTML = trackerHtml;
     }, (error) => {
-        console.error("Appointments snapshot error:", error);
+        console.error("Appointment tracking snapshot error:", error);
+    });
+}
+
+// --- 3. Main Dashboard Health Monitoring Data Loader ---
+function loadDashboardHealthData(ownerId) {
+    const healthContainer = document.getElementById("dashboardHealthContainer");
+    if (!healthContainer) return;
+    const healthQuery = query(collection(db, "health_monitoring"), where("ownerId", "==", ownerId));
+    
+    onSnapshot(healthQuery, (snapshot) => {
+        if (snapshot.empty) {
+            healthContainer.innerHTML = `<p class="empty-state" style="text-align: center; color: #64748b; padding: 15px; font-size: 13px;">No active health monitoring records found for your pets.</p>`;
+            return;
+        }
+        
+        let containerHtml = '';
+        snapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            const vitals = data.vitals || {};
+            
+            let admittedDate = "N/A";
+            if (data.admittedAt && typeof data.admittedAt.toDate === "function") {
+                admittedDate = data.admittedAt.toDate().toLocaleString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit", hour12: true });
+            }
+            
+            let step1Class = 'step completed';
+            let step2Class = 'step active';
+            let step3Class = 'step';
+            let lineActive = '';
+            const sUpper = (data.status || "").toUpperCase();
+            if (sUpper === 'DISCHARGED' || sUpper === 'COMPLETED') {
+                step1Class = 'step completed';
+                step2Class = 'step completed';
+                step3Class = 'step completed';
+                lineActive = 'active';
+            }
+            containerHtml += `
+                <div style="background: #ffffff; padding: 15px; border-radius: 14px; border: 1px solid #e2e8f0; margin-bottom: 10px;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                        <div>
+                            <h4 style="margin: 0 0 2px 0; color: #1e1b4b; font-size: 15px; font-weight: 600;"><i class="fa-solid fa-paw" style="color: #5142f5; margin-right: 5px;"></i>${data.petName || "Unknown Pet"}</h4>
+                            <div style="font-size: 12px; color: #64748b;">${data.petId || ""} &bull; Breed: <strong>${data.breed || "N/A"}</strong></div>
+                        </div>
+                        <span style="background: ${sUpper === 'STABLE' ? '#dcfce7' : '#fee2e2'}; color: ${sUpper === 'STABLE' ? '#166534' : '#991b1b'}; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;">${data.status || "UNKNOWN"}</span>
+                    </div>
+                    <div class="progress-tracker-container" style="background: #f8fafc; padding: 12px; border-radius: 10px; border: 1px solid #f1f5f9; margin-top: 10px;">
+                        <div class="stepper">
+                            <div class="${step1Class}" data-step="1">
+                                <div class="step-circle"><i class="fa-solid fa-clipboard-list"></i></div>
+                                <div class="step-text">Admitted</div>
+                            </div>
+                            <div class="step-line ${lineActive}"></div>
+                            <div class="${step2Class}" data-step="2">
+                                <div class="step-circle"><i class="fa-solid fa-stethoscope"></i></div>
+                                <div class="step-text">Monitoring</div>
+                            </div>
+                            <div class="step-line ${lineActive}"></div>
+                            <div class="${step3Class}" data-step="3">
+                                <div class="step-circle"><i class="fa-solid fa-check"></i></div>
+                                <div class="step-text">Discharged</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 10px; font-size: 12px; color: #475569; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 5px;">
+                        <span><strong>Temp:</strong> ${vitals.temperature || "--"} °C &bull; <strong>Weight:</strong> ${vitals.weight || "--"} kg</span>
+                        <a href="../pages/health.php" style="color: #5142f5; text-decoration: none; font-weight: 600;">View Details &rarr;</a>
+                    </div>
+                </div>
+            `;
+        });
+        healthContainer.innerHTML = containerHtml;
+    }, (error) => {
+        console.error("Health monitoring snapshot error:", error);
     });
 
-    // Recent Activities Loader
+    // --- Naayos na Recent Activities Loader ---
     const activitiesContainer = document.getElementById("recentActivitiesContainer");
     const actQuery = query(
         collection(db, "activities"), 
@@ -231,14 +317,13 @@ onAuthStateChanged(auth, async (user) => {
             localStorage.setItem("fullName", userData.fullName);
         }
         loadTopbarAppointments(ownerId);
-        loadDashboardData(ownerId);
+        loadDashboardAppointmentTracker(ownerId); // Pagtawag sa Appointment Status Tracker na may faded completed styles
+        loadDashboardHealthData(ownerId);
         
         onSnapshot(query(collection(db, "pets"), where("ownerId", "==", ownerId)), (s) => {
             const el = document.getElementById("totalPets");
             if (el) el.innerText = s.size;
         });
-
-        // Bilangin ang active appointments sa appointments_v2 para sa counter badge
         onSnapshot(query(collection(db, "appointments_v2"), where("ownerId", "==", ownerId)), (s) => {
             let count = 0;
             const todayStr = new Date().toISOString().split('T')[0];

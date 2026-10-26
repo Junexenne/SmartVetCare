@@ -7,6 +7,7 @@ import {
     doc,
     getDoc,
     updateDoc,
+    addDoc,
     limit,
     serverTimestamp
 }
@@ -15,7 +16,6 @@ import {
     onAuthStateChanged
 }
 from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
-
 // =========================
 // VARIABLES
 // =========================
@@ -23,7 +23,6 @@ let currentUser = null;
 let ownerId = "";
 let ownerDocId = "";
 let editingPetId = null;
-
 // =========================
 // ELEMENTS
 // =========================
@@ -36,7 +35,6 @@ const cancelBtn = document.querySelector(".cancel");
 const petForm = document.getElementById("petForm");
 const savePetBtn = document.getElementById("savePetBtn");
 const archivePetBtn = document.getElementById("archivePetBtn"); 
-
 // =========================
 // LOGIN SESSION
 // =========================
@@ -61,7 +59,6 @@ onAuthStateChanged(auth, async (user) => {
     ownerId = owner.data().ownerId;
     await loadPets();
 });
-
 // =========================
 // HELPER: GET HARD-CODED ICON & MAPPING
 // =========================
@@ -78,12 +75,10 @@ function getPetDisplayDetails(species, rawImage) {
     } else if (rawImage && rawImage.trim() !== "") {
         img = rawImage;
     }
-    
     return { img, speciesText };
 }
-
 // =========================
-// LOAD PETS
+// LOAD PETS & SYNC APPOINTMENT NOTIFICATIONS
 // =========================
 async function loadPets() {
     if (!petsContainer) return;
@@ -107,12 +102,14 @@ async function loadPets() {
         return;
     }
     let hasActivePets = false;
+    let petList = [];
     snapshot.forEach((petDoc)=>{
         const pet = petDoc.data();
         if (pet.status === "Archived" || pet.status === "Deceased") {
             return;
         }
         hasActivePets = true;
+        petList.push({ docId: petDoc.id, ...pet });
         
         const details = getPetDisplayDetails(pet.species, pet.petImage);
         const lastUpdatedText = formatTimestamp(pet.updatedAt || pet.createdAt);
@@ -149,6 +146,10 @@ async function loadPets() {
         `;
         return;
     }
+    // Awtomatikong suriin ang appointments_v2 para sa notifications
+    for (const pet of petList) {
+        await checkAndCreateAppointmentNotifications(pet);
+    }
     document.querySelectorAll(".view-btn").forEach(btn=>{
         btn.onclick=()=>{
             openViewModal(btn.dataset.id);
@@ -160,13 +161,59 @@ async function loadPets() {
         }
     });
 }
-
+// =========================
+// CHECK & CREATE APPOINTMENT NOTIFICATIONS HELPER
+// =========================
+async function checkAndCreateAppointmentNotifications(pet) {
+    try {
+        const apptQuery = query(
+            collection(db, "appointments_v2"),
+            where("petId", "==", pet.petId),
+            where("ownerId", "==", ownerId)
+        );
+        const apptSnapshot = await getDocs(apptQuery);
+        
+        apptSnapshot.forEach(async (docSnap) => {
+            const a = docSnap.data();
+            if (a.status === "Completed" || a.status === "Confirmed" || a.status === "Approved") {
+                let serviceTitle = a.service || 'Appointment';
+                if (a.specificService && a.specificService.trim() !== "") {
+                    serviceTitle = a.specificService;
+                } else if (a.wellnessServices && a.wellnessServices.length > 0) {
+                    serviceTitle = a.wellnessServices.join(", ");
+                }
+                const msg = `Completed record for ${pet.petName}: ${serviceTitle} on ${a.date}.`;
+                
+                const notifCheckQuery = query(
+                    collection(db, "notifications"),
+                    where("ownerId", "==", ownerId),
+                    where("message", "==", msg)
+                );
+                const existingNotif = await getDocs(notifCheckQuery);
+                
+                if (existingNotif.empty) {
+                    await addDoc(collection(db, "notifications"), {
+                        ownerId: ownerId,
+                        title: "Medical & Vaccination Update",
+                        message: msg,
+                        sourceType: "appointment",
+                        type: "vaccination",
+                        read: false,
+                        createdAt: serverTimestamp(),
+                        link: "my-pet.php"
+                    });
+                }
+            }
+        });
+    } catch (err) {
+        console.error("Error generating automatic appointment notifications:", err);
+    }
+}
 // =========================
 // HELPER: FORMAT TIMESTAMP TO READABLE DATE
 // =========================
 function formatTimestamp(timestamp) {
     if (!timestamp) return "Not available";
-    
     let date;
     if (typeof timestamp.toDate === "function") {
         date = timestamp.toDate();
@@ -183,7 +230,6 @@ function formatTimestamp(timestamp) {
         hour12: true
     });
 }
-
 // =========================
 // POPULATE ALL VIEW / SCAN FIELDS HELPER
 // =========================
@@ -214,14 +260,20 @@ function fillPetDetailsToDOM(pet) {
             }
         });
     });
+    const badgeEl = document.getElementById("allergyNotesCountBadge");
+    if (badgeEl) {
+        if (pet.allergies && pet.allergies.trim() !== "" && pet.allergies !== "None recorded") {
+            badgeEl.textContent = "1 Notes";
+        } else {
+            badgeEl.textContent = "0 Notes";
+        }
+    }
 }
-
 // =========================
 // VIEW PET & GENERATE QR CODE (Connected to Database)
 // =========================
 async function openViewModal(id){
     let snap = await getDoc(doc(db,"pets",id));
-    
     if(!snap.exists()) {
         const qCheck = query(collection(db, "pets"), where("petId", "==", id), limit(1));
         const qSnap = await getDocs(qCheck);
@@ -248,85 +300,76 @@ async function openViewModal(id){
         }
     }
     
-    const vaccineContainers = [document.getElementById("vaccinationListContainer"), document.getElementById("scannedVaccinationListContainer")];
-    let vaccineHTML = `<p style="font-size: 13px; color: #7f8c8d; margin: 0;">Loading vaccination records...</p>`;
+    const vaccineContainer = document.getElementById("vaccinationListContainer");
+    const countBadge = document.getElementById("clinicalRecordsCountBadge");
+    let recordsHTML = `<p style="font-size: 13px; color: #7f8c8d; margin: 0; font-style: italic;">No clinical records found yet.</p>`;
     
-    vaccineContainers.forEach(container => {
-        if (container) container.innerHTML = vaccineHTML;
-    });
+    if (vaccineContainer) vaccineContainer.innerHTML = recordsHTML;
+    if (countBadge) countBadge.textContent = `0 clinical records`;
     
     try {
-        const vaccineQuery = query(
-            collection(db, "vaccination_records"),
-            where("petId", "==", pet.petId)
-        );
-        const vaccineSnapshot = await getDocs(vaccineQuery);
-        if (!vaccineSnapshot.empty) {
-            vaccineHTML = `<table style="width:100%; font-size:13px; border-collapse: collapse; margin-top: 5px;">
-                <thead>
-                    <tr style="border-bottom: 1px solid #ddd; text-align: left; color: #555;">
-                        <th style="padding: 6px;">Vaccine</th>
-                        <th style="padding: 6px;">Date Given</th>
-                        <th style="padding: 6px;">Next Due</th>
-                        <th style="padding: 6px;">Veterinarian</th>
-                        <th style="padding: 6px;">Status</th>
-                    </tr>
-                </thead>
-                <tbody>`;
-            
-            for (const docSnap of vaccineSnapshot.docs) {
-                const v = docSnap.data();
-                let vetName = 'Clinic Staff';
-                const targetDoctorId = v.doctorId || v.administeredBy || v.veterinarian;
-                
-                if (targetDoctorId) {
-                    try {
-                        const docQuery = query(
-                            collection(db, "doctors"),
-                            where("doctorId", "==", targetDoctorId),
-                            limit(1)
-                        );
-                        const docSnapShot = await getDocs(docQuery);
-                        
-                        if (!docSnapShot.empty) {
-                            const doctorData = docSnapShot.docs[0].data();
-                            vetName = doctorData.fullName || `${doctorData.firstName || ''} ${doctorData.lastName || ''}`.trim() || targetDoctorId;
-                        } else {
-                            vetName = targetDoctorId;
-                        }
-                    } catch (err) {
-                        console.error("Error fetching doctor:", err);
-                        vetName = targetDoctorId;
-                    }
-                }
-                
-                vaccineHTML += `
-                    <tr style="border-bottom: 1px solid #eee;">
-                        <td style="padding: 6px; font-weight: 500;">${v.vaccineName || 'N/A'} <br><small style="color:#888;">Man: ${v.manufacturer || '-'}</small></td>
-                        <td style="padding: 6px;">${v.dateAdministered || '-'}</td>
-                        <td style="padding: 6px; font-weight: 500; color: #e67e22;">${v.nextDueDate || '-'}</td>
-                        <td style="padding: 6px; font-style: italic; color: #475569;">${vetName}</td>
-                        <td style="padding: 6px;"><span style="background: #e8f8f5; color: #16a085; padding: 2px 6px; border-radius: 4px; font-size: 11px;">${v.status || 'Completed'}</span></td>
-                    </tr>`;
-            }
-            vaccineHTML += `</tbody></table>`;
-        } else {
-            vaccineHTML = `<p style="font-size: 13px; color: #7f8c8d; margin: 0; font-style: italic;">No vaccination records found yet.</p>`;
+        let allRecords = [];
+        // Kunin ang records mula sa clinical_records collection batay sa petId
+        if (pet.petId) {
+            const clinicalQuery = query(collection(db, "clinical_records"), where("petId", "==", pet.petId));
+            const clinicalSnap = await getDocs(clinicalQuery);
+            clinicalSnap.forEach(docSnap => {
+                const data = docSnap.data();
+                allRecords.push({
+                    title: data.serviceName || data.service || 'Consultation',
+                    category: data.category || 'Medical History',
+                    date: data.createdAt || data.date || 'N/A',
+                    notes: data.notes || 'No findings recorded.'
+                });
+            });
+            // Kunin din ang vaccination records kung mayroon man
+            const vacQuery = query(collection(db, "vaccination_records"), where("petId", "==", pet.petId));
+            const vacSnap = await getDocs(vacQuery);
+            vacSnap.forEach(docSnap => {
+                const data = docSnap.data();
+                allRecords.push({
+                    title: data.serviceName || data.service || 'Vaccination Record',
+                    category: 'Vaccination',
+                    date: data.createdAt || data.date || data.administeredDate || 'N/A',
+                    notes: data.notes || 'Vaccine administered.'
+                });
+            });
+        }
+        if (allRecords.length > 0) {
+            if (countBadge) countBadge.textContent = `${allRecords.length} clinical records`;
+            recordsHTML = "";
+            allRecords.forEach(rec => {
+                recordsHTML += `
+                    <div class="collapsible-record-card">
+                        <div class="collapsible-header" onclick="this.parentElement.classList.toggle('open')">
+                            <div style="display: flex; gap: 12px; align-items: center;">
+                                <div style="background: #fef3c7; color: #d97706; width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;">
+                                    <i class="fa-solid fa-file-medical"></i>
+                                </div>
+                                <div>
+                                    <h4 style="margin: 0; font-size: 13.5px; font-weight: 700; color: #b45309;">${rec.title}</h4>
+                                    <p style="margin: 2px 0 0 0; font-size: 11px; color: #64748b;">${rec.category} &bull; Date: ${rec.date}</p>
+                                </div>
+                            </div>
+                            <i class="fa-solid fa-chevron-down collapsible-arrow"></i>
+                        </div>
+                        <div class="collapsible-content">
+                            <strong>Findings/Notes:</strong> ${rec.notes}
+                        </div>
+                    </div>
+                `;
+            });
         }
     } catch (error) {
-        console.error("Error loading vaccinations:", error);
-        vaccineHTML = `<p style="font-size: 13px; color: #e74c3c; margin: 0;">Failed to load vaccination records.</p>`;
+        console.error("Error loading clinical records:", error);
+        recordsHTML = `<p style="font-size: 13px; color: #e74c3c; margin: 0;">Failed to load clinical records.</p>`;
     }
     
-    vaccineContainers.forEach(container => {
-        if (container) container.innerHTML = vaccineHTML;
-    });
-    
+    if (vaccineContainer) vaccineContainer.innerHTML = recordsHTML;
     if (viewModal) viewModal.style.display = "flex";
 }
-
 // =========================
-// QR CODE SCANNER HANDLER (Para sa Admin Scan)
+// QR CODE SCANNER HANDLER
 // =========================
 async function handleQRCodeScanned(scannedPetId) {
     if (!scannedPetId) return;
@@ -344,7 +387,6 @@ async function handleQRCodeScanned(scannedPetId) {
     }
 }
 window.handleQRCodeScanned = handleQRCodeScanned;
-
 // =========================
 // EDIT 
 // =========================
@@ -363,7 +405,6 @@ async function openEditModal(id){
     if (allergiesInput) allergiesInput.value = pet.allergies || ""; 
     if (modal) modal.style.display = "flex";
 }
-
 // =========================
 // UPDATE PET
 // =========================
@@ -398,7 +439,6 @@ if (petForm) {
         }
     });
 }
-
 // =========================
 // ARCHIVE / DECEASED PET
 // =========================
@@ -445,46 +485,20 @@ if (archivePetBtn) {
         }, 4000);
     });
 }
-
 // =========================
-// CLOSE EDIT MODAL
+// MODAL CLOSERS
 // =========================
 function closeEditModal() {
     if (modal) modal.style.display = "none";
     editingPetId = null;
 }
-if (closeBtn) {
-    closeBtn.addEventListener("click", closeEditModal);
-}
-if (cancelBtn) {
-    cancelBtn.addEventListener("click", closeEditModal);
-}
-
-// =========================
-// CLOSE VIEW MODAL
-// =========================
+if (closeBtn) closeBtn.addEventListener("click", closeEditModal);
+if (cancelBtn) cancelBtn.addEventListener("click", closeEditModal);
 function closePetViewModal() {
     if (viewModal) viewModal.style.display = "none";
 }
-if (closeViewModal) {
-    closeViewModal.addEventListener("click", closePetViewModal);
-}
-if (viewModal) {
-    viewModal.addEventListener("click", (e) => {
-        if (e.target.classList.contains("close-view-modal") || e.target.closest(".close-view-modal")) {
-            closePetViewModal();
-        }
-    });
-}
-
-// =========================
-// CLICK OUTSIDE MODAL
-// =========================
+if (closeViewModal) closeViewModal.addEventListener("click", closePetViewModal);
 window.addEventListener("click", (e) => {
-    if (modal && e.target === modal) {
-        closeEditModal();
-    }
-    if (viewModal && e.target === viewModal) {
-        closePetViewModal();
-    }
+    if (modal && e.target === modal) closeEditModal();
+    if (viewModal && e.target === viewModal) closePetViewModal();
 });

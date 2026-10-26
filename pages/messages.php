@@ -1,7 +1,7 @@
 <?php
 session_start();
 // Gamitin ang user_id galing sa session o ang default na OWN-00004
-$userId =$_SESSION['user_id'] ?? 'OWN-00004';
+$userId = $_SESSION['user_id'] ?? 'OWN-00004';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -46,7 +46,6 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
             padding: 10px 20px 20px 20px !important;
             gap: 6px !important;
         }
-        /* I-override ang topbar margin kung may nakalagay sa dashboard.css */
         .topbar, header, .top-navbar {
             margin-bottom: 5px !important;
             flex-shrink: 0;
@@ -67,7 +66,6 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
             padding: 12px 18px;
             gap: 8px;
         }
-        /* Gradient AI Header Style */
         .chat-header {
             flex-shrink: 0;
             background: linear-gradient(135deg, #163B7A 0%, #2563EB 50%, #38BDF8 100%);
@@ -223,7 +221,6 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
             margin-top: 4px;
             padding: 0 4px;
         }
-        /* Suggested Chips / Quick Prompts Style */
         .suggested-chips-container {
             display: flex;
             gap: 8px;
@@ -326,7 +323,6 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
         .chat-input-area button.send-btn:hover {
             opacity: 0.9;
         }
-        /* INAYOS NA DISCLAIMER CSS PARA HINDI SABOG SA MOBILE */
         .chat-disclaimer {
             font-size: 10px;
             color: #94a3b8;
@@ -342,9 +338,8 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
         }
         .chat-disclaimer b {
             color: #64748b;
-            white-space: nowrap; /* Tinitiyak na buo ang phone number at hindi mapuputol */
+            white-space: nowrap;
         }
-        /* Sidebar Overlay & Z-Index Fix */
         .sidebar {
             z-index: 1100 !important;
         }
@@ -361,7 +356,6 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
         .sidebar-overlay.active {
             display: block !important;
         }
-        /* Modern SweetAlert Styling */
         .custom-swal-popup {
             border-radius: 20px !important;
             padding: 24px !important;
@@ -376,7 +370,6 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
             font-weight: 500 !important;
             font-size: 13px !important;
         }
-        /* Fixed Mobile Responsiveness & iPhone Safe-Area Rules */
         @media (max-width: 768px) {
             .chat-container {
                 margin: 0;
@@ -483,7 +476,6 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
                 <div class="chat-input-area-wrapper">
                     <form id="chatForm" class="chat-input-area">
                         <input type="text" id="messageInput" placeholder="Message clinic admin..." autocomplete="off" required>
-                        
                         <button type="submit" class="send-btn">
                             <i class="fa-solid fa-paper-plane" style="pointer-events: none;"></i>
                         </button>
@@ -517,24 +509,8 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
         }
         const db = firebase.firestore();
         let activeConvId = null;
+
         document.addEventListener('DOMContentLoaded', () => {
-            const sidebar = document.querySelector('.sidebar');
-            const sidebarOverlay = document.getElementById('sidebarOverlay');
-            const sidebarToggle = document.querySelector('#sidebarToggle') || document.querySelector('.fa-bars')?.closest('button') || document.querySelector('.fa-bars');
-            
-            if (sidebarToggle) {
-                sidebarToggle.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    if (sidebar) sidebar.classList.toggle('active');
-                    if (sidebarOverlay) sidebarOverlay.classList.toggle('active');
-                });
-            }
-            if (sidebarOverlay) {
-                sidebarOverlay.addEventListener('click', () => {
-                    if (sidebar) sidebar.classList.remove('active');
-                    sidebarOverlay.classList.remove('active');
-                });
-            }
             const chipButtons = document.querySelectorAll('.chip-btn');
             const messageInput = document.getElementById('messageInput');
             const chatForm = document.getElementById('chatForm');
@@ -552,7 +528,43 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
                 });
             });
         });
-        // Hanapin o i-initialize ang conversation document ID base sa ownerId (hal. CONV-00001)
+
+        // Robust Event Delegation para sa Mobile Sidebar / Burger Button
+        document.addEventListener("click", function(e) {
+            const menuBtn = e.target.closest("#mobileMenuBtn, #menuBtn, .mobile-menu-btn, .burger-btn, .fa-bars");
+            const sidebar = document.querySelector(".sidebar") || document.getElementById("appSidebar");
+            const overlay = document.getElementById("sidebarOverlay") || document.querySelector(".sidebar-overlay");
+
+            if (menuBtn && sidebar) {
+                e.stopPropagation();
+                e.preventDefault();
+                sidebar.classList.toggle("active");
+                if (sidebar.classList.contains("active")) {
+                    sidebar.style.setProperty("left", "0px", "important");
+                    if (overlay) {
+                        overlay.classList.add("active");
+                        overlay.style.setProperty("display", "block", "important");
+                    }
+                } else {
+                    sidebar.style.setProperty("left", "-270px", "important");
+                    if (overlay) {
+                        overlay.classList.remove("active");
+                        overlay.style.setProperty("display", "none", "important");
+                    }
+                }
+                return;
+            }
+
+            if (overlay && overlay.contains(e.target)) {
+                if (sidebar) {
+                    sidebar.classList.remove("active");
+                    sidebar.style.setProperty("left", "-270px", "important");
+                }
+                overlay.classList.remove("active");
+                overlay.style.setProperty("display", "none", "important");
+            }
+        });
+
         async function getOrCreateConversationDoc() {
             if (activeConvId) return activeConvId;
             try {
@@ -578,17 +590,16 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
                 }
             } catch (err) {
                 console.error("Error getting/creating conversation doc: ", err);
-                return "CONV-00001"; // Fallback ID
+                return "CONV-00001";
             }
         }
-        // 1. Real-time Messages Loading galing sa sub-collection na `messages`
+
         async function loadMessages() {
             const chatMessagesContainer = document.getElementById('chatMessages');
             if (!chatMessagesContainer) return;
             
             const convId = await getOrCreateConversationDoc();
             
-            // Makinig sa sub-collection na `messages` sa loob ng conversation document, naka-order by createdAt asc
             db.collection("conversations")
               .doc(convId)
               .collection("messages")
@@ -636,7 +647,7 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
                   console.error("Error loading messages: ", error);
               });
         }
-        // 2. Send Message papunta sa sub-collection na `messages` at i-update ang parent document
+
         const chatForm = document.getElementById('chatForm');
         if (chatForm) {
             chatForm.addEventListener('submit', async (e) => {
@@ -650,7 +661,6 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
                     const messagesRef = db.collection("conversations").doc(convId).collection("messages");
                     const convDocRef = db.collection("conversations").doc(convId);
                     
-                    // Magdagdag ng bagong document sa sub-collection na `messages`
                     await messagesRef.add({
                         text: messageText,
                         senderId: currentUserId,
@@ -659,7 +669,6 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
                         isRead: false,
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
-                    // I-update din ang parent document para sa last message info ng admin
                     await convDocRef.set({
                         lastMessage: messageText,
                         lastSenderId: currentUserId,
@@ -681,7 +690,7 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
                 }
             });
         }
-        // 3. Dropdown Menu Toggle
+
         const menuToggleBtn = document.getElementById('menuToggleBtn');
         const chatDropdownMenu = document.getElementById('chatDropdownMenu');
         if (menuToggleBtn && chatDropdownMenu) {
@@ -693,7 +702,7 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
                 chatDropdownMenu.classList.remove('active');
             });
         }
-        // 4. Clinic Info Modal
+
         const btnClinicInfo = document.getElementById('btnClinicInfo');
         if (btnClinicInfo) {
             btnClinicInfo.addEventListener('click', () => {
@@ -717,7 +726,7 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
                 });
             });
         }
-        // 5. Clear Chat Modal (Burahin ang mga messages sa sub-collection)
+
         const btnClearChat = document.getElementById('btnClearChat');
         if (btnClearChat) {
             btnClearChat.addEventListener('click', async () => {
@@ -777,18 +786,7 @@ $userId =$_SESSION['user_id'] ?? 'OWN-00004';
                 });
             });
         }
-        // 6. Attachment Input Handler
-        const attachFileInput = document.getElementById('attachFileInput');
-        if (attachFileInput) {
-            attachFileInput.addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-                const messageInput = document.getElementById('messageInput');
-                messageInput.value = `[Attachment: ${file.name}]`;
-                messageInput.focus();
-            });
-        }
-        // Simulan ang Real-time Messages Listener
+
         loadMessages();
     </script>
 </body>

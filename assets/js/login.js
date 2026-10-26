@@ -5,7 +5,6 @@ import {
   getMultiFactorResolver, sendEmailVerification
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
-
 const $ = id => document.getElementById(id);
 let resolver = null;
 let enrollmentSecret = null;
@@ -35,6 +34,26 @@ modal.innerHTML = `
    <button id="totpCancel" type="button" style="border:0;background:none;color:#57677b;text-decoration:underline;cursor:pointer">Cancel / Back to Login</button>
  </section>`;
 document.body.appendChild(modal);
+
+// Strict Numeric restriction for OTP input field
+const totpCodeInput = $('totpCode');
+if (totpCodeInput) {
+  totpCodeInput.addEventListener('input', (e) => {
+    e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 6);
+  });
+  totpCodeInput.addEventListener('keypress', (e) => {
+    if (e.key < '0' || e.key > '9') {
+      e.preventDefault();
+    }
+  });
+  totpCodeInput.addEventListener('paste', (e) => {
+    e.preventDefault();
+    const pasteData = (e.clipboardData || window.clipboardData).getData('text');
+    const numericOnly = pasteData.replace(/[^0-9]/g, '').slice(0, 6);
+    document.execCommand ? document.execCommand('insertText', false, numericOnly) : (totpCodeInput.value = numericOnly);
+  });
+}
+
 function toast(title, message, type='error') {
   if (typeof window.showToast === 'function') window.showToast(title, message, type);
   else alert(`${title}: ${message}`);
@@ -61,7 +80,6 @@ async function finishLogin(user) {
   const data = await accountFromFirestore(user);
   const activeUserId = data.ownerId || data.userDocId;
   const idToken = await user.getIdToken(true);
-  // Session endpoint MUST verify the token. Do not set a PHP session using user-provided identifiers alone.
   const response = await fetch('../auth/session_handler.php', {
     method: 'POST', credentials:'same-origin', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ idToken, user_id: activeUserId, email: user.email, role: data.role })
@@ -94,7 +112,6 @@ async function beginEnrollment(user) {
   enrollmentSecret = await TotpMultiFactorGenerator.generateSecret(session);
   $('totpKey').textContent = enrollmentSecret.secretKey;
   $('totpQR').replaceChildren();
-  // Local QR rendering; the secret is never sent to a QR-code API.
   if (window.QRCode) {
     new window.QRCode($('totpQR'), { text: enrollmentSecret.generateQrCodeUrl(user.email || user.uid, 'Smart Vet Care'), width: 180, height: 180 });
   } else {
@@ -127,11 +144,10 @@ async function login(event) {
       }
       throw err;
     }
-    // First-time users must enroll; after enrollment Firebase enforces MFA on their subsequent sign-ins.
     if (multiFactor(credential.user).enrolledFactors.some(f => f.factorId === TotpMultiFactorGenerator.FACTOR_ID)) {
       await finishLogin(credential.user);
     } else {
-      await accountFromFirestore(credential.user); // verify user status before enrollment
+      await accountFromFirestore(credential.user);
       await beginEnrollment(credential.user);
     }
   } catch (err) {
@@ -160,7 +176,6 @@ $('totpForm').addEventListener('submit', async event => {
       if (!auth.currentUser || !enrollmentSecret) throw new Error('Setup expired. Sign in again.');
       const assertion = TotpMultiFactorGenerator.assertionForEnrollment(enrollmentSecret, otp);
       await multiFactor(auth.currentUser).enroll(assertion, 'Authenticator app');
-      // First enrollment may revoke sessions, so require fresh sign-in to establish an MFA-authenticated session.
       await signOut(auth);
       resolver = null;
       enrollmentSecret = null;

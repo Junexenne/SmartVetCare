@@ -613,6 +613,35 @@ if (session_status() === PHP_SESSION_NONE) {
             submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Send Feedback';
         }
     });
+    <!-- Dedicated Mobile Sidebar Direct Fix Script -->
+    
+    document.addEventListener("DOMContentLoaded", function() {
+        const menuBtn = document.getElementById("mobileMenuBtn");
+        const sidebar = document.querySelector(".sidebar");
+        const overlay = document.getElementById("sidebarOverlay");
+
+        if (menuBtn && sidebar) {
+            menuBtn.addEventListener("click", function(e) {
+                e.stopPropagation();
+                sidebar.classList.toggle("active");
+                if (sidebar.classList.contains("active")) {
+                    sidebar.style.left = "0px";
+                    if (overlay) overlay.style.display = "block";
+                } else {
+                    sidebar.style.left = "-270px";
+                    if (overlay) overlay.style.display = "none";
+                }
+            });
+        }
+
+        if (overlay && sidebar) {
+            overlay.addEventListener("click", function() {
+                sidebar.classList.remove("active");
+                sidebar.style.left = "-270px";
+                overlay.style.display = "none";
+            });
+        }
+    });
 </script>
 </body>
 </html>

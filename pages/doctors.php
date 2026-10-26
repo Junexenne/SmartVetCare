@@ -15,16 +15,22 @@ if (session_status() === PHP_SESSION_NONE) {
     <style>
         body {
             background-color: #f4f7fe;
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
         }
         .sidebar-overlay {
             display: none;
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             background: rgba(0, 0, 0, 0.4);
-            z-index: 1000;
+            z-index: 1050;
+        }
+        .sidebar-overlay.active {
+            display: block !important;
         }
         .main-content {
             padding: 16px !important;
@@ -32,16 +38,13 @@ if (session_status() === PHP_SESSION_NONE) {
             background: #f4f7fe;
             min-height: 100vh;
         }
-        .doctors-container {
+        .page-container {
             max-width: 1200px;
             margin: 0 auto;
-            width: 100%;
-            box-sizing: border-box;
             display: flex;
             flex-direction: column;
-            gap: 5px; /* Tamang espasyo o gap sa pagitan ng Header Box at Doctors Grid */
+            gap: 16px;
         }
-        /* Puti at bilugang Card para sa Header */
         .profile-style-card {
             background: #ffffff;
             border-radius: 20px;
@@ -68,9 +71,9 @@ if (session_status() === PHP_SESSION_NONE) {
         .doctors-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px; /* Gap sa pagitan ng mga doctor card */
+            gap: 20px;
+            margin-top: 16px;
         }
-        /* Individual White Card para sa bawat Doktor katulad ng sa larawan */
         .doctor-card {
             background: #ffffff;
             border-radius: 20px;
@@ -122,7 +125,6 @@ if (session_status() === PHP_SESSION_NONE) {
             font-weight: 500;
             display: inline-block;
         }
-        /* Responsive Fixes para Mobile */
         @media (max-width: 768px) {
             .main-content {
                 padding: 12px !important;
@@ -147,11 +149,12 @@ if (session_status() === PHP_SESSION_NONE) {
                 left: -270px;
                 height: 100% !important;
                 transition: left 0.3s ease;
-                z-index: 1001;
-                box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+                z-index: 1100 !important;
+                background: var(--sidebar-bg, #173F81) !important; 
             }
-            .sidebar.active { left: 0 !important; }
-            .sidebar-overlay.active { display: block !important; }
+            .sidebar.active {
+                left: 0 !important;
+            }
         }
     </style>
 </head>
@@ -161,89 +164,105 @@ if (session_status() === PHP_SESSION_NONE) {
     <?php include("../includes/sidebar.php"); ?>
     <div class="main-content">
         <?php include("../includes/topbar.php"); ?>
-        
-        <div class="doctors-container">
-            <!-- Header Card (Magkapareho ng margin sa health.php) -->
-            <div class="profile-style-card page-header">
-                <h1>
-                    <i class="fa-solid fa-user-doctor" style="background: #eef4ff; padding: 10px; border-radius: 12px;color: #5142f5;"></i>
-                    Our Veterinarians
-                </h1>
-                <p>Meet our resident veterinarians at Furry Friends Animal Clinic</p>
-            </div>
-
-            <!-- Doctors Grid Container (Naka-hiwalay ang bawat Doctor Card na may saktong Gap) -->
-            <div class="doctors-grid">
-                <!-- Doctor 1 -->
-                <div class="doctor-card">
-                    <div class="doctor-img-container">
-                        <img src="../assets/images/adminPicture.png" alt="Dr. Alfie G. Tamesis">
-                    </div>
-                    <div class="doctor-info">
-                        <h3>Dr. Alfie G. Tamesis</h3>
-                        <span class="role-badge">Resident Veterinarian</span>
-                    </div>
+        <div class="page-container">
+            <div class="doctors-container">
+                <div class="profile-style-card page-header">
+                    <h1>
+                        <i class="fa-solid fa-user-doctor" style="background: #eef4ff; padding: 10px; border-radius: 12px; color: #5142f5;"></i>
+                        Our Veterinarians
+                    </h1>
+                    <p>Meet our resident veterinarians at Furry Friends Animal Clinic</p>
                 </div>
-                <!-- Doctor 2 -->
-                <div class="doctor-card">
-                    <div class="doctor-img-container">
-                        <img src="../assets/images/adminPicture.png" alt="Dr. Edmond Batan">
+                <div class="doctors-grid">
+                    <div class="doctor-card">
+                        <div class="doctor-img-container">
+                            <img src="../assets/images/adminPicture.png" alt="Dr. Alfie G. Tamesis">
+                        </div>
+                        <div class="doctor-info">
+                            <h3>Dr. Alfie G. Tamesis</h3>
+                            <span class="role-badge">Resident Veterinarian</span>
+                        </div>
                     </div>
-                    <div class="doctor-info">
-                        <h3>Dr. Edmond Batan</h3>
-                        <span class="role-badge">Resident Veterinarian</span>
+                    <div class="doctor-card">
+                        <div class="doctor-img-container">
+                            <img src="../assets/images/adminPicture.png" alt="Dr. Edmond Batan">
+                        </div>
+                        <div class="doctor-info">
+                            <h3>Dr. Edmond Batan</h3>
+                            <span class="role-badge">Resident Veterinarian</span>
+                        </div>
                     </div>
-                </div>
-                <!-- Doctor 3 -->
-                <div class="doctor-card">
-                    <div class="doctor-img-container">
-                        <img src="../assets/images/adminPicture.png" alt="Dr. Jovanito Ellema">
+                    <div class="doctor-card">
+                        <div class="doctor-img-container">
+                            <img src="../assets/images/adminPicture.png" alt="Dr. Jovanito Ellema">
+                        </div>
+                        <div class="doctor-info">
+                            <h3>Dr. Jovanito Ellema</h3>
+                            <span class="role-badge">Resident Veterinarian</span>
+                        </div>
                     </div>
-                    <div class="doctor-info">
-                        <h3>Dr. Jovanito Ellema</h3>
-                        <span class="role-badge">Resident Veterinarian</span>
+                    <div class="doctor-card">
+                        <div class="doctor-img-container">
+                            <img src="../assets/images/adminPicture.png" alt="Dr. Jan Karlo Fanito">
+                        </div>
+                        <div class="doctor-info">
+                            <h3>Dr. Jan Karlo Fanito</h3>
+                            <span class="role-badge">Resident Veterinarian</span>
+                        </div>
                     </div>
-                </div>
-                <!-- Doctor 4 -->
-                <div class="doctor-card">
-                    <div class="doctor-img-container">
-                        <img src="../assets/images/adminPicture.png" alt="Dr. Jan Karlo Fanito">
-                    </div>
-                    <div class="doctor-info">
-                        <h3>Dr. Jan Karlo Fanito</h3>
-                        <span class="role-badge">Resident Veterinarian</span>
-                    </div>
-                </div>
-                <!-- Doctor 5 -->
-                <div class="doctor-card">
-                    <div class="doctor-img-container">
-                        <img src="../assets/images/adminPicture.png" alt="Dr. Senr Cruz">
-                    </div>
-                    <div class="doctor-info">
-                        <h3>Dr. Senr Cruz</h3>
-                        <span class="role-badge">Resident Veterinarian</span>
+                    <div class="doctor-card">
+                        <div class="doctor-img-container">
+                            <img src="../assets/images/adminPicture.png" alt="Dr. Senr Cruz">
+                        </div>
+                        <div class="doctor-info">
+                            <h3>Dr. Senr Cruz</h3>
+                            <span class="role-badge">Resident Veterinarian</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-<!-- Scripts -->
+
+<!-- ROBUST EVENT DELEGATION SCRIPT PARA SA BURGER BUTTON -->
 <script>
-    document.addEventListener("DOMContentLoaded", () => {
-        const mobileBtn = document.getElementById('mobileMenuBtn');
-        const sidebar = document.querySelector('.sidebar'); 
-        const overlay = document.getElementById('sidebarOverlay');
-        if (mobileBtn && sidebar && overlay) {
-            mobileBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                sidebar.classList.toggle('active');
-                overlay.classList.toggle('active');
-            });
-            overlay.addEventListener('click', () => {
-                sidebar.classList.remove('active');
-                overlay.classList.remove('active');
-            });
+    document.addEventListener("click", function(e) {
+        // Hanapin kung ang na-click ay ang burger button o alinman sa mga anak nito (icon)
+        const menuBtn = e.target.closest("#mobileMenuBtn, #menuBtn, .mobile-menu-btn, .burger-btn, .fa-bars");
+        const sidebar = document.querySelector(".sidebar") || document.getElementById("appSidebar");
+        const overlay = document.getElementById("sidebarOverlay") || document.querySelector(".sidebar-overlay");
+
+        if (menuBtn && sidebar) {
+            e.stopPropagation();
+            e.preventDefault();
+            
+            sidebar.classList.toggle("active");
+            
+            if (sidebar.classList.contains("active")) {
+                sidebar.style.setProperty("left", "0px", "important");
+                if (overlay) {
+                    overlay.classList.add("active");
+                    overlay.style.setProperty("display", "block", "important");
+                }
+            } else {
+                sidebar.style.setProperty("left", "-270px", "important");
+                if (overlay) {
+                    overlay.classList.remove("active");
+                    overlay.style.setProperty("display", "none", "important");
+                }
+            }
+            return;
+        }
+
+        // Pindutin ang overlay para magsara ang sidebar
+        if (overlay && overlay.contains(e.target)) {
+            if (sidebar) {
+                sidebar.classList.remove("active");
+                sidebar.style.setProperty("left", "-270px", "important");
+            }
+            overlay.classList.remove("active");
+            overlay.style.setProperty("display", "none", "important");
         }
     });
 </script>

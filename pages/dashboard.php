@@ -19,16 +19,18 @@ error_reporting(E_ALL);
         body {
             background-color: #f4f7fe;
         }
-        /* Sidebar Overlay para sa Mobile */
         .sidebar-overlay {
             display: none;
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             background: rgba(0, 0, 0, 0.4);
-            z-index: 1000;
+            z-index: 1050;
+        }
+        .sidebar-overlay.active {
+            display: block !important;
         }
         .main-content {
             padding: 16px !important;
@@ -45,10 +47,41 @@ error_reporting(E_ALL);
             flex-direction: column;
             gap: 12px;
         }
-        /* Delivery-Style Progress Tracker Styles */
+        .health-progress-card {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            border: 1px solid #edf2f7;
+            margin-bottom: 12px;
+        }
+        .health-progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .health-progress-header h3 {
+            margin: 0;
+            font-size: 16px;
+            color: #1e1b4b;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .health-progress-header a {
+            font-size: 13px;
+            color: #5142f5;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .health-progress-header a:hover {
+            text-decoration: underline;
+        }
         .progress-tracker-container {
             width: 100%;
-            padding: 15px 0 5px 0;
+            padding: 10px 0;
             font-family: 'Poppins', sans-serif;
         }
         .stepper {
@@ -67,10 +100,18 @@ error_reporting(E_ALL);
             display: flex;
             flex-direction: column;
             align-items: center;
+            padding: 6px 10px;
+            border-radius: 12px;
+            transition: background 0.3s ease;
+        }
+        .step.completed,
+        .step.active {
+            background: #dcfce7;
+            border: 1px solid #bbf7d0;
         }
         .step-circle {
-            width: 44px;
-            height: 44px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             background: #ffffff;
             border: 2px solid #e2e8f0;
@@ -78,16 +119,15 @@ error_reporting(E_ALL);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 8px;
-            font-size: 18px;
+            margin-bottom: 6px;
+            font-size: 14px;
             transition: all 0.3s ease;
         }
         .step-text {
-            font-size: 12px;
+            font-size: 11px;
             color: #94a3b8;
             font-weight: 500;
         }
-        /* Active / Completed Step Circles */
         .step.completed .step-circle,
         .step.active .step-circle {
             background: #2a1290;
@@ -96,23 +136,21 @@ error_reporting(E_ALL);
         }
         .step.completed .step-text,
         .step.active .step-text {
-            color: #2a1290;
+            color: #166534;
             font-weight: 700;
         }
-        /* Step Connecting Lines */
         .step-line {
             flex: 1;
             height: 3px;
             background: #e2e8f0;
-            margin: 0 10px;
-            margin-bottom: 22px;
+            margin: 0 8px;
+            margin-bottom: 18px;
             border-radius: 2px;
             transition: background 0.3s ease;
         }
         .step-line.active {
             background: #2a1290;
         }
-        /* Responsive Breakpoint para sa Phones */
         @media (max-width: 768px) {
             .main-content {
                 padding: 12px !important;
@@ -123,14 +161,14 @@ error_reporting(E_ALL);
                 left: -270px;
                 height: 100% !important;
                 transition: left 0.3s ease;
-                z-index: 1001;
-                box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+                z-index: 1100 !important;
+                background: var(--sidebar-bg, #173F81) !important; 
             }
             .sidebar.active {
-                left: 0;
+                left: 0 !important;
             }
             .sidebar-overlay.active {
-                display: block;
+                display: block !important;
             }
             div.dashboard-cards,
             .dashboard-cards {
@@ -203,7 +241,7 @@ error_reporting(E_ALL);
                 font-size: 11px !important;
                 line-height: 1.3 !important;
             }
-            .upcoming-appointment-section,
+            .health-progress-card,
             .recent-activities-section {
                 width: 100% !important;
                 display: block !important;
@@ -217,9 +255,9 @@ error_reporting(E_ALL);
                 grid-template-columns: 1fr !important;
             }
             .step-circle {
-                width: 34px;
-                height: 34px;
-                font-size: 14px;
+                width: 32px;
+                height: 32px;
+                font-size: 12px;
             }
             .step-text {
                 font-size: 10px;
@@ -236,7 +274,6 @@ error_reporting(E_ALL);
     }
     ?>
     <div class="main-content">
-        <!-- Topbar -->
         <?php 
         if (file_exists("../includes/topbar.php")) {
             include "../includes/topbar.php"; 
@@ -245,7 +282,6 @@ error_reporting(E_ALL);
         
         <div class="health-container">
             <section class="dashboard-content" style="padding: 0; margin: 0; width: 100%;">
-                <!-- Welcome Section -->
                 <div class="welcome-card" style="background: linear-gradient(135deg, #163B7A 0%, #2563EB 50%, #38BDF8 100%); margin-bottom: 12px; color: #ffffff; display: flex; align-items: center; justify-content: space-between; border-radius: 16px; padding: 25px 30px; box-shadow: 0 4px 15px rgba(23,63,129,0.2);">
                     <div>
                         <h1 id="greeting" style="color: #ffffff; margin: 0 0 8px 0; font-size: 22px;">Good Morning! </h1>
@@ -255,7 +291,6 @@ error_reporting(E_ALL);
                         <i class="fa-solid fa-paw"></i>
                     </div>
                 </div>
-                <!-- Compact Clinic Operating Hours Widget -->
                 <div style="background: #ffffff; border-radius: 14px; padding: 12px 16px; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between; border-left: 5px solid #5b21b6;">
                     <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
                         <div style="background: #ede9fe; color: #5b21b6; width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;">
@@ -272,7 +307,6 @@ error_reporting(E_ALL);
                         </div>
                     </div>
                 </div>
-                <!-- Seasonal Health Reminder Widget -->
                 <div class="vet-reminder-card" id="seasonalReminderCard" style="margin-bottom: 12px;">
                     <div class="vet-reminder-icon">
                         <i class="fa-solid fa-triangle-exclamation" id="reminderIcon"></i>
@@ -282,7 +316,6 @@ error_reporting(E_ALL);
                         <p id="reminderText">Loading health tips for your pet...</p>
                     </div>
                 </div>
-                <!-- Statistics Grid -->
                 <div class="dashboard-cards" style="margin-bottom: 12px;">
                     <div class="stat-card">
                         <div class="icon-box icon-pets"><i class="fa-solid fa-paw"></i></div>
@@ -321,11 +354,22 @@ error_reporting(E_ALL);
                         </div>
                     </div>
                 </div>
-                <!-- Bottom Sections -->
-                <div class="upcoming-appointment-section" style="margin-bottom: 12px;">
-                    <h3><i class="fa-solid fa-calendar-check"></i> Upcoming Appointment</h3>
-                    <div id="upcomingAppointmentContainer">
-                        <p class="empty-state">You don't have any upcoming appointments.</p>
+                <div class="health-progress-card" style="margin-bottom: 12px;">
+                    <div class="health-progress-header">
+                        <h3><i class="fa-solid fa-calendar-check" style="color: #5142f5;"></i> Appointment Status Tracking</h3>
+                        <a href="../pages/appointment.php">View Appointments</a>
+                    </div>
+                    <div id="dashboardAppointmentTrackerContainer">
+                        <p class="empty-state" style="text-align: center; color: #64748b; padding: 15px; font-size: 13px;">Loading appointment status tracking...</p>
+                    </div>
+                </div>
+                <div class="health-progress-card" style="margin-bottom: 12px;">
+                    <div class="health-progress-header">
+                        <h3><i class="fa-solid fa-kit-medical" style="color: #5142f5;"></i> Health Monitoring Progress Tracker</h3>
+                        <a href="../pages/health.php">View Health</a>
+                    </div>
+                    <div id="dashboardHealthContainer">
+                        <p class="empty-state" style="text-align: center; color: #64748b; padding: 15px; font-size: 13px;">Loading health monitoring records...</p>
                     </div>
                 </div>
                 <div class="recent-activities-section" style="margin-bottom: 0;">
@@ -338,15 +382,11 @@ error_reporting(E_ALL);
         </div>
     </div>
 </div>
-<!-- FLOATING CHATBOT WIDGET -->
 <div id="smartVetChatWidget" style="position: fixed; bottom: 25px; right: 25px; z-index: 9999; font-family: 'Poppins', sans-serif;">
-    <!-- Chat Toggle Button (Floating Icon) -->
     <button id="chatToggleBtn" style="background: linear-gradient(135deg, #5142f5, #173F81); color: #ffffff; border: none; width: 55px; height: 55px; border-radius: 50%; box-shadow: 0 6px 20px rgba(83, 66, 245, 0.4); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 22px; transition: transform 0.3s ease;">
        <i class="fa-solid fa-paw"></i>
     </button>
-    <!-- Chat Window Box -->
     <div id="chatWindow" style="display: none; position: absolute; bottom: 70px; right: 0; width: 340px; height: 450px; background: #ffffff; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); border: 1px solid #edf2f7; flex-direction: column; overflow: hidden;">
-        <!-- Chat Header -->
         <div style="background: linear-gradient(135deg, #173F81, #5142f5); color: #ffffff; padding: 15px; display: flex; align-items: center; justify-content: space-between;">
             <div style="display: flex; align-items: center; gap: 10px;">
                 <div style="background: rgba(255,255,255,0.2); width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
@@ -354,20 +394,18 @@ error_reporting(E_ALL);
                 </div>
                 <div>
                     <h4 style="margin: 0; font-size: 14px; font-weight: 600;">Smart Vet Assistant</h4>
-                    <span style="font-size: 10px; opacity: 0.8;">Online | FAQs & Support</span>
+                    <span style="font-size: 10px; opacity: 0.8;">Online | Powered by Gemini AI</span>
                 </div>
             </div>
             <button id="chatCloseBtn" style="background: transparent; border: none; color: #ffffff; font-size: 16px; cursor: pointer;">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
-        <!-- Chat Body / Messages Area -->
         <div id="chatMessages" style="flex: 1; padding: 15px; overflow-y: auto; background: #f8fafc; display: flex; flex-direction: column; gap: 10px;">
             <div style="background: #ffffff; padding: 10px 14px; border-radius: 12px; font-size: 12.5px; color: #1e293b; box-shadow: 0 2px 5px rgba(0,0,0,0.03); max-width: 85%; border: 1px solid #edf2f7;">
                 Hello, Smart Vet Fam! How can I help you today with your pets or booking an appointment?
             </div>
         </div>
-        <!-- Quick FAQ Buttons -->
         <div style="padding: 8px 12px; background: #ffffff; border-top: 1px solid #edf2f7; display: flex; gap: 6px; overflow-x: auto; white-space: nowrap;">
             <button class="faq-chip" data-question="How to book an appointment?" style="background: #e0f2fe; color: #0369a1; border: none; padding: 5px 10px; border-radius: 15px; font-size: 11px; cursor: pointer; font-weight: 500;">📅 How to Book?</button>
             <button class="faq-chip" data-question="What are the clinic hours?" style="background: #e0f2fe; color: #0369a1; border: none; padding: 5px 10px; border-radius: 15px; font-size: 11px; cursor: pointer; font-weight: 500;">⏰ Clinic Hours</button>
@@ -375,7 +413,6 @@ error_reporting(E_ALL);
             <button class="faq-chip" data-question="What to do during an emergency?" style="background: #fee2e2; color: #991b1b; border: none; padding: 5px 10px; border-radius: 15px; font-size: 11px; cursor: pointer; font-weight: 500;">🚨 Emergency</button>
             <button class="faq-chip" data-question="Do you accept walk-ins?" style="background: #e0f2fe; color: #0369a1; border: none; padding: 5px 10px; border-radius: 15px; font-size: 11px; cursor: pointer; font-weight: 500;">🚶 Walk-ins & Fees</button>
         </div>
-        <!-- Chat Input Footer -->
         <div style="padding: 10px; background: #ffffff; border-top: 1px solid #edf2f7; display: flex; gap: 8px;">
             <input type="text" id="chatInput" placeholder="Type your question..." style="flex: 1; padding: 8px 12px; border: 1.5px solid #e2e8f0; border-radius: 8px; outline: none; font-size: 12px; font-family: 'Poppins', sans-serif;">
             <button id="chatSendBtn" style="background: #173F81; color: #ffffff; border: none; width: 35px; height: 35px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
@@ -384,23 +421,57 @@ error_reporting(E_ALL);
         </div>
     </div>
 </div>
+<!-- Universal Mobile Sidebar Script Fix -->
 <script>
-    // Mobile Hamburger Menu Toggle & Clinic Status Checker (Philippine Standard Time: 10:00 AM - 07:00 PM)
     document.addEventListener("DOMContentLoaded", function() {
-        const mobileBtn = document.getElementById('mobileMenuBtn');
-        const sidebar = document.getElementById('appSidebar'); 
-        const overlay = document.getElementById('sidebarOverlay');
-        if (mobileBtn && sidebar && overlay) {
-            mobileBtn.addEventListener('click', () => {
-                sidebar.classList.toggle('active');
-                overlay.classList.toggle('active');
-            });
-            overlay.addEventListener('click', () => {
-                sidebar.classList.remove('active');
-                overlay.classList.remove('active');
+        const menuBtn = document.getElementById("mobileMenuBtn") || document.getElementById("menuBtn") || document.querySelector(".mobile-menu-btn") || document.querySelector(".burger-btn");
+        const sidebar = document.getElementById("appSidebar") || document.querySelector(".sidebar") || document.querySelector("aside");
+        const overlay = document.getElementById("sidebarOverlay") || document.querySelector(".sidebar-overlay");
+        if (menuBtn && sidebar) {
+            menuBtn.addEventListener("click", function(e) {
+                e.stopPropagation();
+                e.preventDefault();
+                sidebar.classList.toggle("active");
+                if (sidebar.classList.contains("active")) {
+                    sidebar.style.setProperty("left", "0px", "important");
+                    if (overlay) {
+                        overlay.classList.add("active");
+                        overlay.style.setProperty("display", "block", "important");
+                    }
+                } else {
+                    sidebar.style.setProperty("left", "-270px", "important");
+                    if (overlay) {
+                        overlay.classList.remove("active");
+                        overlay.style.setProperty("display", "none", "important");
+                    }
+                }
             });
         }
-        
+        if (overlay && sidebar) {
+            overlay.addEventListener("click", function() {
+                sidebar.classList.remove("active");
+                sidebar.style.setProperty("left", "-270px", "important");
+                overlay.classList.remove("active");
+                overlay.style.setProperty("display", "none", "important");
+            });
+        }
+    });
+</script>
+<script type="module">
+    import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
+    const GEMINI_API_KEY = "YOUR_GEMINI_API_KEY_HERE"; 
+    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ 
+        model: "gemini-1.5-flash",
+        systemInstruction: `You are the friendly AI Assistant for Furry Friends Animal Clinic in Smart Vet Care. 
+Clinic Details:
+- Hours: Mon-Sun 10:00 AM - 7:00 PM.
+- Location: Bagong Barrio, Caloocan (In front of 7-11, beside Lourdes Church).
+- Contact: 0925-889-7811 (Sun).
+- Features: Appointment booking via menu, viewing health records in sidebar, walk-ins accepted (₱300-₱500 consultation fee).
+Keep answers concise, helpful, and empathetic to pet owners. Always advise consulting a vet for serious medical emergencies.`
+    });
+    document.addEventListener("DOMContentLoaded", function() {
         const badge = document.getElementById('clinicStatusBadge');
         let isClinicOpen = true; 
         if (badge) {
@@ -412,7 +483,6 @@ error_reporting(E_ALL);
             const currentHour = parseInt(hourStr, 10);
             const currentMinute = parseInt(minuteStr, 10);
             const currentTimeDecimal = currentHour + (currentMinute / 60);
-            // Open from 10:00 AM (10.0) to 07:00 PM (19.0)
             const openingHour = 10.0;
             const closingHour = 19.0;
             
@@ -428,7 +498,6 @@ error_reporting(E_ALL);
                 badge.innerHTML = '<span style="width: 6px; height: 6px; background: #ef4444; border-radius: 50%; display: inline-block;"></span> Closed';
             }
         }
-        // Floating Chatbot Logic
         const toggleBtn = document.getElementById("chatToggleBtn");
         const chatWindow = document.getElementById("chatWindow");
         const closeBtn = document.getElementById("chatCloseBtn");
@@ -455,30 +524,37 @@ error_reporting(E_ALL);
             msgDiv.textContent = text;
             chatMessages.appendChild(msgDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
+            return msgDiv;
         }
-        function handleBotResponse(question) {
-            let reply = "";
-            const q = question.toLowerCase();
-            if (q.includes("book") || q.includes("appointment")) {
-                reply = "To book an appointment, simply go to 'Book Appointment' in the left menu, then select the date, time, and service for your pet.";
-            } else if (q.includes("oras") || q.includes("time") || q.includes("clinic") || q.includes("hours")) {
-                reply = "Furry Friends Animal Clinic is open from Monday to Sundays from 10:00 AM - 07:00 PM.";
-            } else if (q.includes("health") || q.includes("records") || q.includes("medikal")) {
-                reply = "You can view the complete medical records and history of your pets in the 'Health Records' or 'Records & History' section in the sidebar.";
-            } else if (q.includes("emergency")) {
-                reply = "For emergencies, no appointment is needed! Please proceed directly to the clinic or call us immediately at 0925-889-7811 so we can assist your pet right away.";
-            } else if (q.includes("walk-in") || q.includes("fee") || q.includes("price") || q.includes("magkano")|| q.includes("bayad"))  {
-                reply = "Yes, walk-ins are accepted, but scheduled appointments are prioritized for regular checkups. Standard consultation fees range from ₱300 to ₱500.";
-            } else {
-                if (!isClinicOpen) {
-                    reply = "We are currently offline and attending to a patient. If beyond clinic hours and it is a medical emergency, please don't wait for our response instead bring your Pet to the nearest 24 hr animal Clinic.\n\nFor immediate response (during clinic hours) kindly call or text us at:\n0925-8897811 (sun)\nLocation: Bagong Barrio Caloocan\n(Infront of 711, beside Lourdes Church)\n\nWe are OPEN everyday 10am - 7pm";
+        async function handleBotResponse(question) {
+            const loadingMsg = appendMessage('bot', "Thinking...");
+            try {
+                const result = await model.generateContent(question);
+                const response = await result.response;
+                loadingMsg.textContent = response.text();
+            } catch (error) {
+                console.error("Gemini API Error:", error);
+                let reply = "";
+                const q = question.toLowerCase();
+                if (q.includes("book") || q.includes("appointment")) {
+                    reply = "To book an appointment, simply go to 'Book Appointment' in the left menu, then select the date, time, and service for your pet.";
+                } else if (q.includes("oras") || q.includes("time") || q.includes("clinic") || q.includes("hours")) {
+                    reply = "Furry Friends Animal Clinic is open from Monday to Sundays from 10:00 AM - 07:00 PM.";
+                } else if (q.includes("health") || q.includes("records") || q.includes("medikal")) {
+                    reply = "You can view the complete medical records and history of your pets in the 'Health Records' or 'Records & History' section in the sidebar.";
+                } else if (q.includes("emergency")) {
+                    reply = "For emergencies, no appointment is needed! Please proceed directly to the clinic or call us immediately at 0925-889-7811 so we can assist your pet right away.";
+                } else if (q.includes("walk-in") || q.includes("fee") || q.includes("price") || q.includes("magkano")|| q.includes("bayad"))  {
+                    reply = "Yes, walk-ins are accepted, but scheduled appointments are prioritized for regular checkups. Standard consultation fees range from ₱300 to ₱500.";
                 } else {
-                    reply = "I'm sorry, but you can refer to our Help & Support page for more details or message the clinic directly.";
+                    if (!isClinicOpen) {
+                        reply = "We are currently offline and attending to a patient. If beyond clinic hours and it is a medical emergency, please don't wait for our response instead bring your Pet to the nearest 24 hr animal Clinic.\n\nFor immediate response (during clinic hours) kindly call or text us at:\n0925-8897811 (sun)\nLocation: Bagong Barrio Caloocan\n(Infront of 711, beside Lourdes Church)\n\nWe are OPEN everyday 10am - 7pm";
+                    } else {
+                        reply = "I'm sorry, but you can refer to our Help & Support page for more details or message the clinic directly.";
+                    }
                 }
+                loadingMsg.textContent = reply;
             }
-            setTimeout(() => {
-                appendMessage('bot', reply);
-            }, 500);
         }
         sendBtn.addEventListener("click", () => {
             const text = chatInput.value.trim();
@@ -500,6 +576,31 @@ error_reporting(E_ALL);
                 handleBotResponse(question);
             });
         });
+    });
+    document.addEventListener("DOMContentLoaded", function() {
+        const menuBtn = document.getElementById("mobileMenuBtn");
+        const sidebar = document.querySelector(".sidebar");
+        const overlay = document.getElementById("sidebarOverlay");
+        if (menuBtn && sidebar) {
+            menuBtn.addEventListener("click", function(e) {
+                e.stopPropagation();
+                sidebar.classList.toggle("active");
+                if (sidebar.classList.contains("active")) {
+                    sidebar.style.left = "0px";
+                    if (overlay) overlay.style.display = "block";
+                } else {
+                    sidebar.style.left = "-270px";
+                    if (overlay) overlay.style.display = "none";
+                }
+            });
+        }
+        if (overlay && sidebar) {
+            overlay.addEventListener("click", function() {
+                sidebar.classList.remove("active");
+                sidebar.style.left = "-270px";
+                overlay.style.display = "none";
+            });
+        }
     });
 </script>
 <script type="module" src="../assets/js/dashboard.js"></script>

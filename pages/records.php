@@ -223,20 +223,22 @@ if (session_status() === PHP_SESSION_NONE) {
         <?php include("../includes/topbar.php"); ?>
         
         <div class="health-container">
-            <!-- Header Card (May puting box na katulad ng sa health.php) -->
+            <!-- Header Card -->
             <div class="profile-style-card page-header-custom">
                 <h1>
                     <i class="fa-solid fa-folder-open" style="background: #eef4ff; padding: 10px; border-radius: 12px; color: #5142f5;"></i>
                     Records & History
                 </h1>
-                <p>Manage archived appointments, archived pet profiles, cancelled bookings, completed transaction histories, and trash items.</p>
+                <p>Manage clinical records, vaccination history, medical findings, archived appointments, and pet files.</p>
             </div>
-
-            <!-- Content Card (Naka-box din para sa mismong records tabs at listahan) -->
+            <!-- Content Card -->
             <div class="profile-style-card">
                 <!-- Tabs Navigation -->
                 <div class="tabs-container">
-                    <button class="tab-btn active" onclick="switchTab('archived', event)">
+                    <button class="tab-btn active" onclick="switchTab('clinical', event)">
+                        <i class="fa-solid fa-notes-medical"></i> Clinical Records
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('archived', event)">
                         <i class="fa-solid fa-box-archive"></i> Archived Appointments
                     </button>
                     <button class="tab-btn" onclick="switchTab('pets', event)">
@@ -252,8 +254,53 @@ if (session_status() === PHP_SESSION_NONE) {
                         <i class="fa-solid fa-trash-can"></i> Trash
                     </button>
                 </div>
+                <!-- Tab 0: Clinical Records -->
+                <div id="clinicalTab" class="tab-content active">
+                    <div style="font-size: 11px; text-transform: uppercase; color: #94a3b8; font-weight: 700; margin-bottom: 8px; letter-spacing: 0.5px;">History</div>
+                    <h3 style="font-size: 20px; color: #1e1b4b; font-weight: 700; margin-top: 0; margin-bottom: 15px;">Clinical Records</h3>
+                    
+                    <!-- Pet Selector Pills -->
+                    <div id="clinicalPetTabs" class="pet-tabs-container" style="margin-bottom: 16px;">
+                        <!-- Dynamic pet pills galing sa Firestore -->
+                    </div>
+                    <!-- Sub-tabs: Vaccinations vs Medical History -->
+                    <div style="display: flex; gap: 12px; margin-bottom: 20px;">
+                        <button id="subTabVaccination" onclick="switchClinicalSubTab('vaccination')" style="flex: 1; padding: 14px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; cursor: pointer; text-align: left; transition: all 0.2s;">
+                            <div style="font-size: 14px; font-weight: 700; color: #1e1b4b;">Vaccinations</div>
+                            <div id="vaccinationCountBadge" style="font-size: 12px; color: #64748b; margin-top: 2px;">0 records</div>
+                        </button>
+                        <button id="subTabMedical" onclick="switchClinicalSubTab('medical')" style="flex: 1; padding: 14px; background: #1e1b4b; border: 1px solid #1e1b4b; border-radius: 12px; cursor: pointer; text-align: left; transition: all 0.2s;">
+                            <div style="font-size: 14px; font-weight: 700; color: #ffffff;">Medical History</div>
+                            <div id="medicalCountBadge" style="font-size: 12px; color: #94a3b8; margin-top: 2px;">0 records</div>
+                        </button>
+                    </div>
+                    <!-- Section Header & Filter / Search Bar -->
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                        <div style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; color: #1e1b4b;">
+                            <i class="fa-solid fa-file-medical" style="color: #4f46e5;"></i> Medical History & Clinical Findings <i class="fa-solid fa-lock" style="font-size: 12px; color: #94a3b8;"></i>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+                        <div style="position: relative; flex: 1; min-width: 240px;">
+                            <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 14px;"></i>
+                            <input type="text" id="clinicalSearchInput" placeholder="Search procedures, notes, doctor..." style="width: 100%; padding: 11px 14px 11px 40px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 13px; outline: none; background: #fff; font-family: 'Poppins', sans-serif;" oninput="filterClinicalRecords()">
+                        </div>
+                        <select id="clinicalYearFilter" style="padding: 11px 14px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 13px; outline: none; background: #fff; color: #1e1b4b; font-weight: 600; font-family: 'Poppins', sans-serif;" onchange="filterClinicalRecords()">
+                            <option value="all">All Years</option>
+                            <option value="2026" selected>2026</option>
+                            <option value="2025">2025</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 12px; color: #64748b;">
+                        <span id="clinicalRecordsCountText">0 record(s) found</span>
+                    </div>
+                    <!-- Clinical Records List Container -->
+                    <div id="clinicalRecordsContainer" style="display: flex; flex-direction: column; gap: 15px;">
+                        <p style="color: #64748b; font-size: 13px; text-align: center; padding: 20px;">Loading clinical records...</p>
+                    </div>
+                </div>
                 <!-- Tab 1: Archived Appointments -->
-                <div id="archivedTab" class="tab-content active">
+                <div id="archivedTab" class="tab-content">
                     <div id="petSubTabsArchived" class="pet-tabs-container">
                         <button class="pet-tab-btn active" onclick="filterByPet('archived', 'All', event)">
                             <i class="fa-solid fa-layer-group"></i> All
@@ -381,6 +428,11 @@ if (session_status() === PHP_SESSION_NONE) {
     let allCancelledAppointments = [];
     let allHistoryAppointments = [];
     let allTrashAppointments = [];
+    let ownerPetsList = [];
+    let selectedClinicalPet = null;
+    let selectedClinicalSubTab = 'medical'; // 'vaccination' o 'medical'
+    let rawClinicalRecords = [];
+    let rawVaccinationRecords = [];
     let activePetFilters = {
         archived: "All",
         cancelled: "All",
@@ -391,7 +443,9 @@ if (session_status() === PHP_SESSION_NONE) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
         
-        if (tabName === 'archived') {
+        if (tabName === 'clinical') {
+            document.getElementById('clinicalTab').classList.add('active');
+        } else if (tabName === 'archived') {
             document.getElementById('archivedTab').classList.add('active');
         } else if (tabName === 'pets') {
             document.getElementById('petsTab').classList.add('active');
@@ -404,13 +458,52 @@ if (session_status() === PHP_SESSION_NONE) {
         }
         event.currentTarget.classList.add('active');
     };
+    window.switchClinicalSubTab = function(subTab) {
+        selectedClinicalSubTab = subTab;
+        const btnVac = document.getElementById('subTabVaccination');
+        const btnMed = document.getElementById('subTabMedical');
+        if (subTab === 'vaccination') {
+            btnVac.style.background = '#1e1b4b';
+            btnVac.style.borderColor = '#1e1b4b';
+            btnVac.querySelector('div:nth-child(1)').style.color = '#ffffff';
+            btnVac.querySelector('div:nth-child(2)').style.color = '#94a3b8';
+            btnMed.style.background = '#ffffff';
+            btnMed.style.borderColor = '#e2e8f0';
+            btnMed.querySelector('div:nth-child(1)').style.color = '#1e1b4b';
+            btnMed.querySelector('div:nth-child(2)').style.color = '#64748b';
+        } else {
+            btnMed.style.background = '#1e1b4b';
+            btnMed.style.borderColor = '#1e1b4b';
+            btnMed.querySelector('div:nth-child(1)').style.color = '#ffffff';
+            btnMed.querySelector('div:nth-child(2)').style.color = '#94a3b8';
+            btnVac.style.background = '#ffffff';
+            btnVac.style.borderColor = '#e2e8f0';
+            btnVac.querySelector('div:nth-child(1)').style.color = '#1e1b4b';
+            btnVac.querySelector('div:nth-child(2)').style.color = '#64748b';
+        }
+        filterClinicalRecords();
+    };
+    window.selectClinicalPet = function(petName, event) {
+        selectedClinicalPet = petName;
+        document.querySelectorAll('#clinicalPetTabs .pet-tab-btn').forEach(btn => {
+            btn.style.background = '#f1f5f9';
+            btn.style.color = '#475569';
+            btn.style.borderColor = '#e2e8f0';
+        });
+        if (event && event.currentTarget) {
+            event.currentTarget.style.background = '#1e1b4b';
+            event.currentTarget.style.color = '#fff';
+            event.currentTarget.style.borderColor = '#1e1b4b';
+        }
+        const foundPet = ownerPetsList.find(p => (p.petName || "").toLowerCase() === petName.toLowerCase());
+        const petId = foundPet ? foundPet.petId : null;
+        fetchClinicalRecordsForPet(petId, petName);
+    };
     window.filterByPet = function(tabType, petName, event) {
         activePetFilters[tabType] = petName;
-        
         const containerId = tabType === 'archived' ? 'petSubTabsArchived' :
                             tabType === 'cancelled' ? 'petSubTabsCancelled' :
                             tabType === 'history' ? 'petSubTabsHistory' : 'petSubTabsTrash';
-        
         const container = document.getElementById(containerId);
         if (container) {
             container.querySelectorAll('.pet-tab-btn').forEach(btn => btn.classList.remove('active'));
@@ -450,6 +543,32 @@ if (session_status() === PHP_SESSION_NONE) {
             const q = query(collection(db, "pets"), where("ownerId", "==", ownerId));
             const snapshot = await getDocs(q);
             
+            ownerPetsList = [];
+            snapshot.forEach(docSnap => {
+                ownerPetsList.push({ id: docSnap.id, ...docSnap.data() });
+            });
+            // Render Clinical Pet Selector Pills
+            const clinicalPetTabsContainer = document.getElementById('clinicalPetTabs');
+            if (clinicalPetTabsContainer) {
+                let pillsHtml = '';
+                ownerPetsList.forEach((pet, index) => {
+                    const petName = pet.petName || "Pet";
+                    if (index === 0 && !selectedClinicalPet) {
+                        selectedClinicalPet = petName;
+                    }
+                    const isSelected = selectedClinicalPet === petName;
+                    const bgStyle = isSelected ? 'background: #1e1b4b; color: #fff; border-color: #1e1b4b;' : 'background: #f1f5f9; color: #475569; border-color: #e2e8f0;';
+                    pillsHtml += `<button class="pet-tab-btn" style="padding: 8px 16px; border-radius: 20px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; ${bgStyle}" onclick="selectClinicalPet('${petName}', event)">
+                        <i class="fa-solid fa-paw"></i> ${petName}
+                    </button>`;
+                });
+                clinicalPetTabsContainer.innerHTML = pillsHtml;
+                if (selectedClinicalPet) {
+                    const found = ownerPetsList.find(p => (p.petName || "").toLowerCase() === selectedClinicalPet.toLowerCase());
+                    fetchClinicalRecordsForPet(found ? found.petId : null, selectedClinicalPet);
+                }
+            }
+            
             containers.forEach(contId => {
                 const subTabContainer = document.getElementById(contId);
                 if (!subTabContainer) return;
@@ -459,8 +578,7 @@ if (session_status() === PHP_SESSION_NONE) {
                 let tabsHTML = `<button class="pet-tab-btn ${currentFilter === 'All' ? 'active' : ''}" onclick="filterByPet('${tabType}', 'All', event)">
                     <i class="fa-solid fa-layer-group"></i> All
                 </button>`;
-                snapshot.forEach(docSnap => {
-                    const pet = docSnap.data();
+                ownerPetsList.forEach(pet => {
                     const petName = pet.petName || "Pet";
                     const isActive = currentFilter === petName ? 'active' : '';
                     tabsHTML += `<button class="pet-tab-btn ${isActive}" onclick="filterByPet('${tabType}', '${petName}', event)">
@@ -473,6 +591,100 @@ if (session_status() === PHP_SESSION_NONE) {
             console.error("Error loading owner pets for sub-tabs:", error);
         }
     }
+    async function fetchClinicalRecordsForPet(petId, petName) {
+        const container = document.getElementById('clinicalRecordsContainer');
+        container.innerHTML = `<p style="color: #64748b; font-size: 13px; text-align: center; padding: 20px;">Loading clinical records for ${petName}...</p>`;
+        try {
+            rawClinicalRecords = [];
+            rawVaccinationRecords = [];
+
+            if (petId) {
+                // Fetch from clinical_records collection (Medical history / findings)
+                const clinicalQuery = query(collection(db, "clinical_records"), where("petId", "==", petId));
+                const clinicalSnap = await getDocs(clinicalQuery);
+                clinicalSnap.forEach(docSnap => {
+                    rawClinicalRecords.push({ id: docSnap.id, ...docSnap.data() });
+                });
+
+                // Fetch from vaccination_records collection
+                const vacQuery = query(collection(db, "vaccination_records"), where("petId", "==", petId));
+                const vacSnap = await getDocs(vacQuery);
+                vacSnap.forEach(docSnap => {
+                    rawVaccinationRecords.push({ id: docSnap.id, ...docSnap.data() });
+                });
+            }
+
+            document.getElementById('vaccinationCountBadge').textContent = `${rawVaccinationRecords.length} record(s)`;
+            document.getElementById('medicalCountBadge').textContent = `${rawClinicalRecords.length} record(s)`;
+            filterClinicalRecords();
+        } catch (error) {
+            console.error("Error fetching clinical records:", error);
+            container.innerHTML = `<p style="color: #dc2626; font-size: 13px; text-align: center; padding: 20px;">Failed to load clinical records.</p>`;
+        }
+    }
+    window.filterClinicalRecords = function() {
+        const searchVal = (document.getElementById('clinicalSearchInput').value || "").toLowerCase();
+        const yearVal = document.getElementById('clinicalYearFilter').value;
+        const container = document.getElementById('clinicalRecordsContainer');
+        
+        let dataSource = selectedClinicalSubTab === 'vaccination' ? rawVaccinationRecords : rawClinicalRecords;
+
+        const filtered = dataSource.filter(item => {
+            const dateStr = item.createdAt || item.date || item.administeredDate || "";
+            if (yearVal !== 'all' && dateStr && !dateStr.includes(yearVal)) {
+                return false;
+            }
+            if (searchVal) {
+                const combined = `${item.serviceName || item.service || ''} ${item.doctorId || item.doctor || ''} ${item.notes || ''} ${dateStr}`.toLowerCase();
+                if (!combined.includes(searchVal)) return false;
+            }
+            return true;
+        });
+
+        document.getElementById('clinicalRecordsCountText').textContent = `${filtered.length} record(s) found`;
+        if (filtered.length === 0) {
+            container.innerHTML = `<p style="color: #64748b; font-size: 13px; text-align: center; padding: 30px;">No clinical records found matching your filter.</p>`;
+            return;
+        }
+        let html = '';
+        filtered.forEach(record => {
+            const title = record.serviceName || record.service || (selectedClinicalSubTab === 'vaccination' ? 'Vaccination Record' : 'General Consultation');
+            const dateVal = record.createdAt || record.date || record.administeredDate || 'N/A';
+            const statusVal = record.status || 'Completed';
+            const docVal = record.doctorId || record.doctor || 'Dr. Assigned';
+            const notesVal = record.notes || 'No clinical findings recorded by the clinic.';
+
+            html += `
+                <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 18px 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                        <div style="display: flex; gap: 12px; align-items: center;">
+                            <div style="background: #eef2ff; color: #4f46e5; width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                                <i class="fa-solid fa-file-medical"></i>
+                            </div>
+                            <div>
+                                <h4 style="margin: 0; font-size: 15px; font-weight: 700; color: #1e1b4b;">${title}</h4>
+                                <span style="font-size: 12px; color: #64748b;">${dateVal} &bull; <strong style="color: #16a34a;">${statusVal}</strong></span>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-up" style="color: #94a3b8; font-size: 12px;"></i>
+                    </div>
+                    <hr style="border: none; border-top: 1px solid #f1f5f9; margin: 12px 0;">
+                    <div style="font-size: 13px; color: #334155; display: flex; flex-direction: column; gap: 6px;">
+                        <div><strong>Specific Procedure:</strong> ${title}</div>
+                        <div><strong>Attending Veterinarian:</strong> ${docVal}</div>
+                        <div style="margin-top: 6px; background: #f8fafc; padding: 10px; border-radius: 8px; border: 1px solid #f1f5f9;">
+                            <strong style="font-size: 12px; color: #64748b; text-transform: uppercase; display: block; margin-bottom: 2px;">Clinical Findings & Results</strong>
+                            <span style="color: #475569; font-size: 12.5px;">${notesVal}</span>
+                        </div>
+                    </div>
+                    <div style="margin-top: 12px; font-size: 11px; color: #94a3b8; display: flex; align-items: center; gap: 4px;">
+                        <i class="fa-solid fa-lock" style="font-size: 10px;"></i> Read-only clinic record
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+    };
     async function loadSettingsData(ownerId) {
         try {
             const q = query(collection(db, "appointments"), where("ownerId", "==", ownerId));

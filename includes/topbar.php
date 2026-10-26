@@ -15,7 +15,6 @@
                 <div id="liveSearchResults" class="live-search-dropdown" style="display: none;"></div>
             </div>
         </div>
-
         <!-- Right: Real-time Clock, Calendar Dropdown, Report Flag, Bell & Profile Dropdown -->
         <div class="top-icons">
             
@@ -24,12 +23,10 @@
                 <i class="fa-regular fa-clock"></i>
                 <span id="clockText">Loading time...</span>
             </div>
-
             <!-- Report a Problem Flag Button -->
             <button class="topbar-icon-btn report-flag-btn" type="button" onclick="openReportProblemModal()" title="Report a Problem">
                 <i class="fa-solid fa-flag"></i>
             </button>
-
             <!-- Calendar Dropdown Wrapper -->
             <div class="calendar-dropdown-wrapper">
                 <button class="topbar-icon-btn" id="calendarBtn" type="button">
@@ -62,7 +59,6 @@
                     </div>
                 </div>
             </div>
-
             <!-- Notification Wrapper -->
             <div class="notification-dropdown-wrapper">
                 <button class="notification-btn" id="notifBellBtn" type="button">
@@ -85,12 +81,11 @@
                             <p>No notifications yet</p>
                        </div>
                     </div>
-                    <div class="dropdown-footer-text">
-                        <span>Smart Vet Care System</span>
+                    <div class="dropdown-footer-link">
+                        <a href="notifications.php">View All Notifications &rarr;</a>
                     </div>
                 </div>
             </div>
-
             <!-- User Profile Dropdown Menu -->
             <div class="profile-dropdown-container" id="profileDropdownContainer">
                 <div class="user-profile" id="profileTrigger">
@@ -118,11 +113,9 @@
                     </a>
                 </div>
             </div>
-
         </div>
     </div>
 </div>
-
 <!-- REPORT A PROBLEM MODAL (SMART VET CARE UI THEME) -->
 <div id="reportProblemModal" class="report-modal-overlay" style="display: none;">
     <div class="report-modal-card">
@@ -180,7 +173,6 @@
         </form>
     </div>
 </div>
-
 <!-- Custom Logout Confirmation Modal -->
 <div id="logoutModal" class="custom-modal-overlay" style="display: none;">
     <div class="custom-modal-box">
@@ -195,10 +187,8 @@
         </div>
     </div>
 </div>
-
 <!-- SweetAlert2 CDN for Modern UI Alerts -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <style>
     .topbar-wrapper-main {
         width: 100%;
@@ -440,6 +430,10 @@
         background: #dcfce7;
         color: #15803d;
     }
+    .notif-item.rejected .notif-icon-circle {
+        background: #fee2e2;
+        color: #dc2626;
+    }
     .notif-content {
         flex: 1;
     }
@@ -608,8 +602,7 @@
         font-size: 12px;
         font-weight: 500;
     }
-    .dropdown-footer-link,
-    .dropdown-footer-text {
+    .dropdown-footer-link {
         background: #f8f9fa;
         padding: 8px;
         text-align: center;
@@ -620,10 +613,6 @@
         font-size: 11px;
         font-weight: 600;
         text-decoration: none;
-    }
-    .dropdown-footer-text span {
-        font-size: 10px;
-        color: #a0aec0;
     }
     .user-profile {
         display: flex;
@@ -720,7 +709,6 @@
         background: #e53e3e;
         color: #fff;
     }
-    /* SMART VET CARE EXCLUSIVE LIGHT THEME FOR REPORT MODAL */
     .report-modal-overlay {
         position: fixed;
         top: 0;
@@ -972,7 +960,6 @@
         }
     }
 </style>
-
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { 
@@ -1000,13 +987,48 @@
     
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-
     window.openReportProblemModal = () => {
         const modal = document.getElementById("reportProblemModal");
         if (modal) modal.style.display = "flex";
     };
 
+    // UNIVERSAL SIDEBAR BURGER TOGGLE FUNCTION
+    function initSidebarToggle() {
+        const menuBtn = document.getElementById("mobileMenuBtn") || 
+                        document.getElementById("menuBtn") || 
+                        document.querySelector(".mobile-menu-btn") || 
+                        document.querySelector(".burger-btn") || 
+                        document.querySelector(".menu-toggle");
+        
+        const sidebar = document.querySelector(".sidebar") || 
+                        document.querySelector("aside") || 
+                        document.querySelector(".sidebar-wrapper");
+        
+        const sidebarOverlay = document.getElementById("sidebarOverlay") || 
+                               document.querySelector(".sidebar-overlay");
+
+        if (menuBtn && sidebar) {
+            menuBtn.onclick = (e) => {
+                e.stopPropagation();
+                sidebar.classList.toggle("active");
+                if (sidebarOverlay) {
+                    sidebarOverlay.style.display = sidebar.classList.contains("active") ? "block" : "none";
+                }
+            };
+        }
+
+        if (sidebarOverlay && sidebar) {
+            sidebarOverlay.onclick = () => {
+                sidebar.classList.remove("active");
+                sidebarOverlay.style.display = "none";
+            };
+        }
+    }
+
     document.addEventListener("DOMContentLoaded", async () => {
+        // Run universal toggle setup immediately
+        initSidebarToggle();
+
         const reportModal = document.getElementById("reportProblemModal");
         const closeReportBtn = document.getElementById("closeReportModalBtn");
         const chips = document.querySelectorAll(".report-chip");
@@ -1020,7 +1042,6 @@
                 if (reportModal) reportModal.style.display = "none";
             });
         }
-
         chips.forEach(chip => {
             chip.addEventListener("click", () => {
                 chips.forEach(c => c.classList.remove("active"));
@@ -1030,13 +1051,11 @@
                 }
             });
         });
-
         if (textarea && charCount) {
             textarea.addEventListener("input", () => {
                 charCount.textContent = `${textarea.value.length}/1000`;
             });
         }
-
         if (reportForm) {
             reportForm.addEventListener("submit", async (e) => {
                 e.preventDefault();
@@ -1046,7 +1065,6 @@
                 const currentOwnerId = localStorage.getItem("ownerId") || localStorage.getItem("userUID") || "ANONYMOUS";
                 const submitBtn = document.getElementById("submitReportBtn");
                 const originalBtnText = submitBtn.innerHTML;
-
                 try {
                     submitBtn.disabled = true;
                     submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Submitting...`;
@@ -1082,7 +1100,6 @@
                 }
             });
         }
-
         function updateClock() {
             const now = new Date();
             const options = { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
@@ -1093,25 +1110,6 @@
         }
         setInterval(updateClock, 1000);
         updateClock();
-
-        const menuBtn = document.getElementById("menuBtn") || document.querySelector(".burger-btn") || document.querySelector(".menu-toggle");
-        const sidebar = document.querySelector(".sidebar") || document.querySelector("aside");
-        const sidebarOverlay = document.getElementById("sidebarOverlay") || document.querySelector(".sidebar-overlay");
-        if (menuBtn && sidebar) {
-            menuBtn.addEventListener("click", (e) => {
-                e.stopPropagation();
-                sidebar.classList.toggle("active");
-                if (sidebarOverlay) {
-                    sidebarOverlay.style.display = sidebar.classList.contains("active") ? "block" : "none";
-                }
-            });
-        }
-        if (sidebarOverlay) {
-            sidebarOverlay.addEventListener("click", () => {
-                if (sidebar) sidebar.classList.remove("active");
-                sidebarOverlay.style.display = "none";
-            });
-        }
 
         const calendarBtn = document.getElementById("calendarBtn");
         const calendarDropdown = document.getElementById("calendarDropdown");
@@ -1128,7 +1126,6 @@
                 calendarDropdown.style.display = calendarDropdown.style.display === "block" ? "none" : "block";
             });
         }
-
         if (notifBellBtn && notifDropdown) {
             notifBellBtn.addEventListener("click", (e) => {
                 e.stopPropagation();
@@ -1137,7 +1134,6 @@
                 notifDropdown.style.display = notifDropdown.style.display === "block" ? "none" : "block";
             });
         }
-
         if (profileTrigger && profileDropdownMenu) {
             profileTrigger.addEventListener("click", (e) => {
                 e.stopPropagation();
@@ -1148,7 +1144,6 @@
                 profileTrigger.classList.toggle("active", !isOpen);
             });
         }
-
         document.addEventListener("click", (e) => {
             if (calendarDropdown && !calendarDropdown.contains(e.target) && calendarBtn && !calendarBtn.contains(e.target)) {
                 calendarDropdown.style.display = "none";
@@ -1165,7 +1160,6 @@
                 reportModal.style.display = "none";
             }
         });
-
         const searchInput = document.getElementById("topSearchInput");
         const searchDropdown = document.getElementById("liveSearchResults");
         if (searchInput && searchDropdown) {
@@ -1198,7 +1192,6 @@
                                 }
                             });
                         } catch (e) {}
-                        
                         try {
                             const apptSnapshot = await getDocs(collection(db, "appointments"));
                             apptSnapshot.forEach((docSnap) => {
@@ -1216,7 +1209,6 @@
                                 }
                             });
                         } catch (e) {}
-
                         if (matchedResults.length > 0) {
                             let html = "";
                             matchedResults.forEach(item => {
@@ -1247,7 +1239,6 @@
                 }
             });
         }
-
         const topbarLogoutBtn = document.getElementById("topbarLogoutBtn");
         const logoutModal = document.getElementById("logoutModal");
         const cancelLogoutBtn = document.getElementById("cancelLogoutBtn");
@@ -1269,7 +1260,6 @@
                 window.location.href = "../auth/logout.php";
             });
         }
-
         const now = new Date();
         const monthYearEl = document.getElementById("currentMonthYear");
         if (monthYearEl) {
@@ -1295,18 +1285,15 @@
             }
             daysContainer.innerHTML = daysHtml;
         }
-
         const currentUserId = localStorage.getItem("ownerId") || localStorage.getItem("userUID");
         const userEmail = localStorage.getItem("userEmail");
         const savedFullName = localStorage.getItem("fullName");
         const topbarUserName = document.getElementById("topbarUserName");
         const topbarInitialAvatar = document.getElementById("topbarInitialAvatar");
         const topbarProfileImg = document.getElementById("topbarProfileImg");
-
         if (savedFullName) {
             if (topbarUserName) topbarUserName.textContent = savedFullName;
         }
-
         function setTopbarAvatar(fullName, gender) {
             const normalizedGender = (gender || "").toLowerCase();
             let displayImage = "";
@@ -1330,7 +1317,6 @@
             }
         }
         setTopbarAvatar(savedFullName, localStorage.getItem("gender"));
-
         let currentOwnerId = currentUserId;
         if (currentUserId) {
             try {
@@ -1356,26 +1342,21 @@
                 console.error("Error fetching topbar user profile:", err);
             }
         }
-
-        // ==============================================================
-        // DUAL REAL-TIME LISTENER: PUMUKAW SA APPOINTMENTS & NOTIFICATIONS
-        // ==============================================================
+        
+        // NOTIFICATION SYSTEM
         if (currentOwnerId) {
             const notifBadge = document.getElementById("notifBadge");
             const notifCountBadge = document.getElementById("notifCountBadge");
             const notifListContainer = document.getElementById("notifListContainer");
-
             let activeNotifications = [];
-
+            
             function renderAllNotifications() {
                 activeNotifications.sort((a, b) => {
                     const timeA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0);
                     const timeB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0);
                     return timeB - timeA;
                 });
-
                 let unreadCount = activeNotifications.filter(n => !n.read).length;
-
                 if (notifBadge) {
                     if (unreadCount > 0) {
                         notifBadge.textContent = unreadCount;
@@ -1387,7 +1368,6 @@
                 if (notifCountBadge) {
                     notifCountBadge.textContent = unreadCount;
                 }
-
                 if (notifListContainer) {
                     if (activeNotifications.length === 0) {
                         notifListContainer.innerHTML = `
@@ -1398,34 +1378,46 @@
                         `;
                         return;
                     }
-
                     let html = "";
-                    activeNotifications.forEach(item => {
+                    activeNotifications.slice(0, 5).forEach(item => {
                         const isUnread = !item.read ? "unread" : "";
-                        const isApproved = (item.title || "").toLowerCase().includes("approved") || (item.title || "").toLowerCase().includes("confirmed");
-                        const iconClass = isApproved ? "fa-calendar-check" : "fa-bell";
-                        const approvedClass = isApproved ? "approved" : "";
+                        const type = (item.type || item.sourceType || "").toLowerCase();
+                        
+                        let iconClass = "fa-bell";
+                        let itemClass = "";
+                        
+                        if (type.includes("appointment") || type.includes("confirmed") || type.includes("approved")) {
+                            iconClass = "fa-calendar-check";
+                            itemClass = "approved";
+                        } else if (type.includes("rejected") || type.includes("rejection") || type.includes("cancelled")) {
+                            iconClass = "fa-triangle-exclamation";
+                            itemClass = "rejected";
+                        } else if (type.includes("vaccine") || type.includes("vaccination")) {
+                            iconClass = "fa-syringe";
+                        } else if (type.includes("medication")) {
+                            iconClass = "fa-pills";
+                        } else if (type.includes("announcement")) {
+                            iconClass = "fa-bullhorn";
+                        }
                         let timeAgo = "Just now";
                         if (item.createdAt) {
                             const date = item.createdAt.toDate ? item.createdAt.toDate() : new Date(item.createdAt);
                             timeAgo = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                         }
-
                         html += `
-                            <a href="appointment.php" class="notif-item ${isUnread} ${approvedClass}" data-id="${item.id}" data-type="${item.sourceType || 'notification'}">
+                            <a href="${item.link || 'notifications.php'}" class="notif-item ${isUnread} ${itemClass}" data-id="${item.id}" data-type="${item.sourceType || 'notification'}">
                                 <div class="notif-icon-circle">
                                     <i class="fa-solid ${iconClass}"></i>
                                 </div>
                                 <div class="notif-content">
-                                    <p class="notif-title">${item.title || "Appointment Update"}</p>
-                                    <p class="notif-body">${item.message || "Your appointment status has been updated."}</p>
+                                    <p class="notif-title">${item.title || "Clinic Notification"}</p>
+                                    <p class="notif-body">${item.message || item.description || ""}</p>
                                     <span class="notif-time">${timeAgo}</span>
                                 </div>
                             </a>
                         `;
                     });
                     notifListContainer.innerHTML = html;
-
                     document.querySelectorAll(".notif-item").forEach(itemEl => {
                         itemEl.addEventListener("click", async () => {
                             const notifId = itemEl.getAttribute("data-id");
@@ -1441,8 +1433,6 @@
                     });
                 }
             }
-
-             // 1. Makinig sa `notifications` collection
             const notifQuery = query(collection(db, "notifications"), where("ownerId", "==", currentOwnerId));
             onSnapshot(notifQuery, (snapshot) => {
                 activeNotifications = activeNotifications.filter(n => n.sourceType !== "notification");
@@ -1456,39 +1446,42 @@
                 });
                 renderAllNotifications();
             });
-
-            // 2. Makinig sa `appointments_v2` collection (gaya ng nakita sa database schema)
             const apptQuery = query(collection(db, "appointments_v2"), where("ownerId", "==", currentOwnerId));
             onSnapshot(apptQuery, (snapshot) => {
                 activeNotifications = activeNotifications.filter(n => n.sourceType !== "appointment");
                 let upcoming = [];
-
                 snapshot.forEach((docSnap) => {
                     const data = docSnap.data();
                     const status = (data.status || "").toLowerCase();
                     
-                    // Kung confirmed o approved na ng doktor, gawan ng notification item
-                    if (status === "confirmed" || status === "approved" || status === "in progress" || status === "completed") {
+                    if (["confirmed", "approved", "in progress", "completed"].includes(status)) {
                         activeNotifications.push({
                             id: "appt_" + docSnap.id,
                             sourceType: "appointment",
-                            title: `Appointment ${data.status.charAt(0).toUpperCase() + data.status.slice(1)}!`,
-                            message: `Your appointment for ${data.service || 'checkup'} (Pet: ${data.petName || 'N/A'}) has been confirmed.`,
+                            type: "appointment",
+                            title: `Appointment ${status.charAt(0).toUpperCase() + status.slice(1)}!`,
+                            message: `Your appointment for ${data.service || 'checkup'} (Pet: ${data.petName || 'N/A'}) is scheduled on ${data.date || ''}.`,
+                            read: false,
+                            createdAt: data.createdAt || new Date(),
+                            link: 'appointment.php'
+                        });
+                    } else if (["rejected", "declined", "cancelled"].includes(status)) {
+                        activeNotifications.push({
+                            id: "appt_rej_" + docSnap.id,
+                            sourceType: "appointment",
+                            type: "rejected",
+                            title: `Appointment Request ${status.charAt(0).toUpperCase() + status.slice(1)}`,
+                            message: `Sorry, your request for ${data.service || 'checkup'} on ${data.date || ''} could not be accommodated.`,
                             read: false,
                             createdAt: data.createdAt || new Date(),
                             link: 'appointment.php'
                         });
                     }
-
-                    // Para sa upcoming appointments list sa calendar dropdown
-                    if (status !== "cancelled" && status !== "archived" && !data.isArchived) {
+                    if (status !== "cancelled" && status !== "rejected" && status !== "declined" && !data.isArchived) {
                         upcoming.push({ id: docSnap.id, ...data });
                     }
                 });
-
                 renderAllNotifications();
-
-                // Render sa Calendar Dropdown upcoming appointments list
                 if (topbarAppointmentsList) {
                     if (upcoming.length === 0) {
                         topbarAppointmentsList.innerHTML = `<p class="empty-state-text">No upcoming appointments.</p>`;
@@ -1506,7 +1499,72 @@
                     }
                 }
             });
-
+            const petsQuery = query(collection(db, "pets"), where("ownerId", "==", currentOwnerId));
+            onSnapshot(petsQuery, async (petsSnap) => {
+                let petIds = [];
+                petsSnap.forEach(p => {
+                    const d = p.data();
+                    if (d.petId) petIds.push(d.petId);
+                });
+                if (petIds.length > 0) {
+                    getDocs(collection(db, "vaccination_records")).then(vSnap => {
+                        activeNotifications = activeNotifications.filter(n => n.sourceType !== "vaccination");
+                        vSnap.forEach(vDoc => {
+                            const vData = vDoc.data();
+                            if (petIds.includes(vData.petId)) {
+                                activeNotifications.push({
+                                    id: "vac_" + vDoc.id,
+                                    sourceType: "vaccination",
+                                    type: "vaccination",
+                                    title: "Vaccination Reminder",
+                                    message: `Vaccine (${vData.vaccineName || 'Shot'}) for pet ID ${vData.petId} is due on ${vData.nextDueDate || 'soon'}.`,
+                                    read: false,
+                                    createdAt: new Date(),
+                                    link: 'my-pet.php'
+                                });
+                            }
+                        });
+                        renderAllNotifications();
+                    }).catch(err => console.error("Vaccine fetch error:", err));
+                    getDocs(collection(db, "health_records")).then(hSnap => {
+                        activeNotifications = activeNotifications.filter(n => n.sourceType !== "medication");
+                        hSnap.forEach(hDoc => {
+                            const hData = hDoc.data();
+                            if (petIds.includes(hData.petId) && hData.medication) {
+                                activeNotifications.push({
+                                    id: "med_" + hDoc.id,
+                                    sourceType: "medication",
+                                    type: "medication",
+                                    title: "Medication Schedule",
+                                    message: `Prescribed medication: ${hData.medication} for your pet.`,
+                                    read: false,
+                                    createdAt: hData.createdAt || new Date(),
+                                    link: 'health.php'
+                                });
+                            }
+                        });
+                        renderAllNotifications();
+                    }).catch(err => console.error("Health records fetch error:", err));
+                }
+            });
+            const announceQuery = query(collection(db, "announcements"));
+            onSnapshot(announceQuery, (snapshot) => {
+                activeNotifications = activeNotifications.filter(n => n.sourceType !== "announcement");
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    activeNotifications.push({
+                        id: "ann_" + docSnap.id,
+                        sourceType: "announcement",
+                        type: "announcement",
+                        title: data.title || "Clinic Announcement",
+                        message: data.content || data.message || "",
+                        read: false,
+                        createdAt: data.createdAt || new Date(),
+                        link: 'dashboard.php'
+                    });
+                });
+                renderAllNotifications();
+            });
             const markAllBtn = document.getElementById("markAllAsReadBtn");
             if (markAllBtn) {
                 markAllBtn.addEventListener("click", async () => {

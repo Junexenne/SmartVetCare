@@ -1,5 +1,4 @@
 <?php
-// settings.php
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -11,7 +10,6 @@ if (session_status() === PHP_SESSION_NONE) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Account Settings - Smart Vet Care</title>
     <link rel="stylesheet" href="../assets/css/dashboard.css">
-    
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <style>
@@ -50,7 +48,6 @@ if (session_status() === PHP_SESSION_NONE) {
             flex-direction: column;
             gap: 10px;
         }
-        /* Puti at bilugang Card gaya ng sa health.php */
         .profile-style-card {
             background: #ffffff;
             border-radius: 20px;
@@ -282,7 +279,6 @@ if (session_status() === PHP_SESSION_NONE) {
         <?php include("../includes/topbar.php"); ?>
         
         <div class="health-container">
-            <!-- Header Card (Puting Container katulad ng sa health.php) -->
             <div class="profile-style-card page-header">
                 <h1>
                     <i class="fa-solid fa-gear" style="background: #eef4ff; color: #5142f5; padding: 10px; border-radius: 12px;"></i>
@@ -292,8 +288,6 @@ if (session_status() === PHP_SESSION_NONE) {
             </div>
             
             <div class="settings-grid">
-                
-                <!-- Notification Preferences Section -->
                 <div class="settings-card">
                     <h3><i class="fa-solid fa-bell" style="color: #5142f5;"></i> Notification Preferences</h3>
                     <p style="font-size: 13px; color: #64748b; margin-bottom: 20px;">
@@ -337,7 +331,6 @@ if (session_status() === PHP_SESSION_NONE) {
                     </form>
                 </div>
                 
-                <!-- Change Password Section -->
                 <div class="settings-card">
                     <h3><i class="fa-solid fa-lock" style="color: #5142f5;"></i> Change Password</h3>
                     <p style="font-size: 13px; color: #64748b; margin-bottom: 20px;">
@@ -361,12 +354,10 @@ if (session_status() === PHP_SESSION_NONE) {
                         </button>
                     </form>
                 </div>
-
             </div>
         </div>
     </div>
 </div>
-<!-- Toast Notification -->
 <div id="toastNotification">
     <i id="toastIcon" class="fa-solid"></i>
     <span id="toastMessage"></span>
@@ -449,7 +440,6 @@ if (session_status() === PHP_SESSION_NONE) {
             showToast("Failed to save preferences.", "error");
         }
     });
-    // Handle Password Change inside settings
     document.getElementById("changePasswordForm").addEventListener("submit", async (e) => {
         e.preventDefault();
         const currentPassword = document.getElementById("currentPassword").value;
@@ -490,6 +480,31 @@ if (session_status() === PHP_SESSION_NONE) {
             toast.classList.remove("show");
         }, 3000);
     }
+    document.addEventListener("DOMContentLoaded", function() {
+        const menuBtn = document.getElementById("mobileMenuBtn");
+        const sidebar = document.querySelector(".sidebar");
+        const overlay = document.getElementById("sidebarOverlay");
+        if (menuBtn && sidebar) {
+            menuBtn.addEventListener("click", function(e) {
+                e.stopPropagation();
+                sidebar.classList.toggle("active");
+                if (sidebar.classList.contains("active")) {
+                    sidebar.style.left = "0px";
+                    if (overlay) overlay.style.display = "block";
+                } else {
+                    sidebar.style.left = "-270px";
+                    if (overlay) overlay.style.display = "none";
+                }
+            });
+        }
+        if (overlay && sidebar) {
+            overlay.addEventListener("click", function() {
+                sidebar.classList.remove("active");
+                sidebar.style.left = "-270px";
+                overlay.style.display = "none";
+            });
+        }
+    });
 </script>
 </body>
 </html>

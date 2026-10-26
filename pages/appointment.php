@@ -16,10 +16,13 @@
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             background: rgba(0, 0, 0, 0.4);
-            z-index: 1000;
+            z-index: 1050;
+        }
+        .sidebar-overlay.active {
+            display: block !important;
         }
         .main-content {
             padding: 16px !important;
@@ -36,7 +39,6 @@
             flex-direction: column;
             gap: 12px;
         }
-        /* Profile Style Cards */
         .profile-style-card {
             background: #ffffff;
             border-radius: 20px;
@@ -300,7 +302,6 @@
             border-color: #5142f5;
             box-shadow: 0 0 0 3px rgba(81, 66, 245, 0.1);
         }
-
         @media (max-width: 992px) {
             .appointment-card-grid {
                 grid-template-columns: 1fr;
@@ -327,8 +328,8 @@
                 left: -270px;
                 height: 100% !important;
                 transition: left 0.3s ease;
-                z-index: 1001;
-                box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+                z-index: 1100 !important;
+                background: var(--sidebar-bg, #173F81) !important; 
             }
             .sidebar.active {
                 left: 0 !important;
@@ -363,7 +364,6 @@
     <div class="main-content">
         <?php include("../includes/topbar.php"); ?>
         <div class="appointment-container">
-            <!-- Header Card -->
             <div class="profile-style-card appointment-header">
                 <h1>
                     <i class="fa-solid fa-calendar-check" style="background: #eef4ff; padding: 10px; border-radius: 12px;color: #5142f5;"></i>
@@ -371,18 +371,13 @@
                 </h1>
                 <p>Select your pet, preferred schedule, and service.</p>
             </div>
-
-            <!-- Emergency Banner -->
             <div class="emergency-banner">
                 <i class="fa-solid fa-triangle-exclamation" style="font-size: 16px; color: #e53e3e; margin-top: 2px;"></i>
                 <div>
                     <strong>Holiday & Emergency Advisory:</strong> The clinic is closed during holidays for regular appointments. However, we can still accommodate <strong>emergency cases</strong> on these days no appointment is needed for emergencies! You can proceed directly to the clinic or call us immediately at 0991-572-3015.
                 </div>
             </div>
-
             <div id="alertBox"></div>
-
-            <!-- Booking Card -->
             <div class="profile-style-card">
                 <div class="appointment-card-grid">
                     <div class="appointment-left">
@@ -470,7 +465,6 @@
                                 </optgroup>
                                 <option value="Check up">Check up</option>
                                 <option value="Minor Surgeries">Minor Surgeries</option>
-                                <option value="Pet Grooming">Pet Grooming</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -484,8 +478,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Booked Appointments List Card -->
             <div class="profile-style-card">
                 <h3 style="color: #1e1b4b; font-size: 16px; display: flex; align-items: center; gap: 8px; margin: 0 0 12px 0;">
                     <i class="fa-solid fa-calendar-check" style="color: #5142f5;"></i>
@@ -498,8 +490,6 @@
         </div>
     </div>
 </div>
-
-<!-- Reschedule Modal -->
 <div id="rescheduleModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 15px;">
     <div style="background: #fff; padding: 25px; border-radius: 16px; width: 100%; max-width: 450px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
         <h3 style="margin-bottom: 15px; color: #1e1b4b; display: flex; align-items: center; gap: 8px; font-size: 16px;">
@@ -522,7 +512,6 @@
         </div>
     </div>
 </div>
-
 <script>
     document.addEventListener("DOMContentLoaded", () => {
         const mobileBtn = document.getElementById('mobileMenuBtn');
@@ -532,10 +521,12 @@
             mobileBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 sidebar.classList.toggle('active');
+                sidebar.style.left = sidebar.classList.contains('active') ? "0px" : "-270px";
                 overlay.classList.toggle('active');
             });
             overlay.addEventListener('click', () => {
                 sidebar.classList.remove('active');
+                sidebar.style.left = "-270px";
                 overlay.classList.remove('active');
             });
         }
@@ -570,6 +561,51 @@
             yearSelect.appendChild(opt);
         }
         
+        function isPhilippineHoliday(dateObj) {
+            const year = dateObj.getFullYear();
+            const month = dateObj.getMonth();
+            const day = dateObj.getDate();
+            const fixedHolidays = [
+                { m: 0, d: 1 }, { m: 3, d: 9 }, { m: 4, d: 1 }, { m: 5, d: 12 },
+                { m: 7, d: 21 }, { m: 10, d: 1 }, { m: 10, d: 2 }, { m: 10, d: 30 },
+                { m: 11, d: 8 }, { m: 11, d: 24 }, { m: 11, d: 25 }, { m: 11, d: 30 }, { m: 11, d: 31 }
+            ];
+            for (let h of fixedHolidays) {
+                if (month === h.m && day === h.d) return true;
+            }
+            if (month === 7) {
+                const lastDayAugust = new Date(year, 7, 31);
+                let lastMondayAugust = 31 - ((lastDayAugust.getDay() + 6) % 7);
+                if (day === lastMondayAugust) return true;
+            }
+            if (month === 1 && day === 25) return true;
+            const a = year % 19;
+            const b = Math.floor(year / 100);
+            const c = year % 100;
+            const d = Math.floor(b / 4);
+            const e = b % 4;
+            const f = Math.floor((b + 8) / 25);
+            const g = Math.floor((b - f + 1) / 3);
+            const h = (19 * a + b - d - g + 15) % 30;
+            const i = Math.floor(c / 4);
+            const k = c % 4;
+            const L = (32 + 2 * e + 2 * i - h - k) % 7;
+            const m = Math.floor((a + 11 * h + 22 * L) / 451);
+            const monthEaster = Math.floor((h + L - 7 * m + 114) / 31) - 1;
+            const dayEaster = ((h + L - 7 * m + 114) % 31) + 1;
+            const easterDate = new Date(year, monthEaster, dayEaster);
+            
+            const maundyThursday = new Date(easterDate);
+            maundyThursday.setDate(easterDate.getDate() - 3);
+            if (month === maundyThursday.getMonth() && day === maundyThursday.getDate()) return true;
+            const goodFriday = new Date(easterDate);
+            goodFriday.setDate(easterDate.getDate() - 2);
+            if (month === goodFriday.getMonth() && day === goodFriday.getDate()) return true;
+            const blackSaturday = new Date(easterDate);
+            blackSaturday.setDate(easterDate.getDate() - 1);
+            if (month === blackSaturday.getMonth() && day === blackSaturday.getDate()) return true;
+            return false;
+        }
         function renderCalendarDays() {
             const grid = document.getElementById('calendarDaysGrid');
             grid.innerHTML = '';
@@ -591,14 +627,17 @@
                 dayEl.textContent = d;
                 const currentCellDate = new Date(selectedYear, selectedMonth, d);
                 currentCellDate.setHours(0, 0, 0, 0);
+                
                 let isDisabled = false;
-                if (currentCellDate < today) {
+                let isHoliday = isPhilippineHoliday(currentCellDate);
+                if (currentCellDate < today || isHoliday) {
                     isDisabled = true;
                 }
+                
                 if (isDisabled) {
                     dayEl.classList.add('disabled', 'muted');
-                    dayEl.style.backgroundColor = '#f1f5f9';
-                    dayEl.style.color = '#cbd5e1';
+                    dayEl.style.backgroundColor = isHoliday ? '#fee2e2' : '#f1f5f9';
+                    dayEl.style.color = isHoliday ? '#991b1b' : '#cbd5e1';
                     dayEl.style.cursor = 'not-allowed';
                     dayEl.style.opacity = '0.7';
                 } else {
@@ -636,7 +675,6 @@
         }
         function loadPickerTimeSlots() {
             pickerSlotsContainer.innerHTML = '<p style="color: #888; font-size: 12px; text-align: center;">Loading slots...</p>';
-            
             let standardSlots = [
                 { time: "10:00 AM", isBreak: false },
                 { time: "11:30 AM", isBreak: false },
@@ -646,10 +684,14 @@
                 { time: "04:00 PM", isBreak: false },
                 { time: "05:30 PM", isBreak: false }
             ];
-            
             const selectedDateObj = new Date(selectedYear, selectedMonth, selectedDay);
+            const isHolidayDate = isPhilippineHoliday(selectedDateObj);
             setTimeout(() => {
                 pickerSlotsContainer.innerHTML = '';
+                if (isHolidayDate) {
+                    pickerSlotsContainer.innerHTML = `<div style="background: #fee2e2; color: #991b1b; padding: 12px; border-radius: 8px; font-size: 12px; text-align: center; font-weight: 500;">Clinic is Closed (Holiday). Walk-in emergencies only.</div>`;
+                    return;
+                }
                 standardSlots.forEach(slotObj => {
                     const slotDiv = document.createElement('div');
                     slotDiv.className = 'picker-time-slot';
@@ -663,7 +705,6 @@
                         slotDiv.style.fontSize = '11px';
                     } else if (hasPassed) {
                         slotDiv.classList.add('disabled');
-                        slotDiv.title = "This time slot has already passed.";
                     } else {
                         if (selectedTimeValue === slotObj.time) {
                             slotDiv.classList.add('selected');
@@ -730,6 +771,11 @@
         const doneBtn = document.getElementById('donePickerBtn');
         if (doneBtn) {
             doneBtn.addEventListener('click', () => {
+                const selectedDateObjCheck = new Date(selectedYear, selectedMonth, selectedDay);
+                if (isPhilippineHoliday(selectedDateObjCheck)) {
+                    alert("Cannot select appointments on holidays. The clinic is closed for regular appointments.");
+                    return;
+                }
                 if (!selectedTimeValue) {
                     alert("Please select an available time slot.");
                     return;
@@ -752,6 +798,35 @@
             loadPickerTimeSlots();
         }
         updatePickerUI();
+    });
+    <!-- Dedicated Mobile Sidebar Direct Fix Script -->
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const menuBtn = document.getElementById("mobileMenuBtn");
+        const sidebar = document.querySelector(".sidebar");
+        const overlay = document.getElementById("sidebarOverlay");
+
+        if (menuBtn && sidebar) {
+            menuBtn.addEventListener("click", function(e) {
+                e.stopPropagation();
+                sidebar.classList.toggle("active");
+                if (sidebar.classList.contains("active")) {
+                    sidebar.style.left = "0px";
+                    if (overlay) overlay.style.display = "block";
+                } else {
+                    sidebar.style.left = "-270px";
+                    if (overlay) overlay.style.display = "none";
+                }
+            });
+        }
+
+        if (overlay && sidebar) {
+            overlay.addEventListener("click", function() {
+                sidebar.classList.remove("active");
+                sidebar.style.left = "-270px";
+                overlay.style.display = "none";
+            });
+        }
     });
 </script>
 <script type="module" src="../assets/js/appointment.js"></script>
