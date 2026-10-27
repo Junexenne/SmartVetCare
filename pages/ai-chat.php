@@ -9,7 +9,7 @@ if (session_status() === PHP_SESSION_NONE) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Smart Vet Care AI</title>
+    <title>KuaGO AI Support | Smart Vet Care</title>
     <link rel="stylesheet" href="../assets/css/dashboard.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
@@ -51,17 +51,18 @@ if (session_status() === PHP_SESSION_NONE) {
             overflow: hidden;
             box-sizing: border-box;
             min-width: 0;
-            padding: 10px 20px 20px 20px !important;
+            padding: 10px 20px 8px 20px !important;
             gap: 6px !important;
         }
         .topbar, header, .top-navbar {
-            margin-bottom: 5px !important;
+            margin-bottom: 4px !important;
             flex-shrink: 0;
         }
         .chat-container {
             display: flex;
             flex-direction: column;
             flex: 1;
+            height: 100%;
             min-height: 0;
             overflow: hidden;
             box-sizing: border-box;
@@ -71,7 +72,7 @@ if (session_status() === PHP_SESSION_NONE) {
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
             border: 1px solid rgba(226, 232, 240, 0.8);
             position: relative;
-            padding: 12px 18px;
+            padding: 12px 18px 8px 18px;
             gap: 8px;
         }
         .chat-ai-header {
@@ -79,7 +80,7 @@ if (session_status() === PHP_SESSION_NONE) {
             background: linear-gradient(135deg, #163B7A 0%, #2563EB 50%, #38BDF8 100%);
             color: #ffffff;
             padding: 10px 16px;
-            border-radius: 12px;
+            border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -87,20 +88,148 @@ if (session_status() === PHP_SESSION_NONE) {
             position: relative;
             z-index: 10;
         }
-        .chat-ai-header-content h2 {
-            font-size: 14.5px;
-            font-weight: 600;
+        .chat-ai-header-left {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
+        }
+        .kuago-avatar-header {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #ffffff;
+            padding: 2px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .kuago-avatar-header img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .online-dot {
+            width: 9px;
+            height: 9px;
+            background: #10B981;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            position: absolute;
+            bottom: 0;
+            right: 0;
+        }
+        .chat-ai-header-content h2 {
+            font-size: 14.5px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
             margin: 0 0 2px 0;
             color: #ffffff;
         }
         .chat-ai-header-content p {
             font-size: 11px;
-            color: rgba(255, 255, 255, 0.85);
+            color: rgba(255, 255, 255, 0.9);
             margin: 0;
         }
+        /* Mobile KuaGO Welcome Card */
+        .kuago-welcome-card {
+            background: linear-gradient(135deg, #173F81 0%, #1e40af 100%);
+            border-radius: 14px;
+            padding: 12px 16px;
+            color: #ffffff;
+            margin-bottom: 2px;
+            box-shadow: 0 3px 10px rgba(23, 63, 129, 0.15);
+            flex-shrink: 0;
+        }
+        .kuago-welcome-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+        .kuago-title-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .kuago-card-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .kuago-card-icon img {
+            width: 100%;
+            height: 100%;
+            border-radius: 4px;
+            object-fit: cover;
+        }
+        .kuago-welcome-top h3 {
+            margin: 0;
+            font-size: 15px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+        .ai-support-badge {
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            font-size: 9.5px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 10px;
+            letter-spacing: 0.5px;
+        }
+        .kuago-welcome-card p {
+            margin: 0;
+            font-size: 12px;
+            line-height: 1.4;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        /* Action Buttons Bar */
+        .kuago-action-buttons-bar {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 2px 2px 4px 2px;
+            flex-shrink: 0;
+            scrollbar-width: none;
+        }
+        .kuago-action-buttons-bar::-webkit-scrollbar {
+            display: none;
+        }
+        .kuago-action-pill {
+            background: #ffffff;
+            color: #1e293b;
+            border: 1.5px solid #e2e8f0;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+        .kuago-action-pill:hover {
+            background: #f0f7ff;
+            color: #2563EB;
+            border-color: #bfdbfe;
+            transform: translateY(-1px);
+        }
+        /* Chat Messages Area - Expanded to take maximum height */
         .chat-messages {
             flex: 1;
             overflow-y: auto; 
@@ -108,11 +237,13 @@ if (session_status() === PHP_SESSION_NONE) {
             overflow-wrap: break-word;
             box-sizing: border-box;
             min-height: 0;
-            padding: 10px 6px;
+            padding: 8px 4px;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
             background: #fdfcff;
+            border-radius: 10px;
+            border: 1px solid #f1f5f9;
             -webkit-overflow-scrolling: touch;
         }
         .message-wrapper {
@@ -129,10 +260,10 @@ if (session_status() === PHP_SESSION_NONE) {
             align-items: flex-start !important;
         }
         .message {
-            padding: 12px 16px !important;
-            border-radius: 18px !important;
-            font-size: 13px !important;
-            line-height: 1.5 !important;
+            padding: 10px 14px !important;
+            border-radius: 16px !important;
+            font-size: 12.5px !important;
+            line-height: 1.45 !important;
             max-width: 80% !important;
             width: fit-content !important;
             box-sizing: border-box !important;
@@ -157,8 +288,8 @@ if (session_status() === PHP_SESSION_NONE) {
             overflow-x: auto;
             white-space: nowrap;
             display: flex;
-            gap: 8px;
-            padding: 6px 2px;
+            gap: 6px;
+            padding: 2px 2px;
             scrollbar-width: none;
             -ms-overflow-style: none;
         }
@@ -169,9 +300,9 @@ if (session_status() === PHP_SESSION_NONE) {
             background: #f1f5f9;
             color: #1e293b;
             border: 1px solid #e2e8f0;
-            padding: 8px 14px;
-            border-radius: 20px;
-            font-size: 12px;
+            padding: 6px 12px;
+            border-radius: 18px;
+            font-size: 11.5px;
             font-weight: 500;
             cursor: pointer;
             display: inline-flex;
@@ -189,7 +320,7 @@ if (session_status() === PHP_SESSION_NONE) {
         }
         .suggestion-chip i {
             color: #2563EB;
-            font-size: 12px;
+            font-size: 11px;
         }
         .chat-input-area-wrapper {
             flex-shrink: 0; 
@@ -197,10 +328,10 @@ if (session_status() === PHP_SESSION_NONE) {
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 4px;
             background: transparent;
             border: none;
-            padding: 4px 0 0 0;
+            padding: 2px 0 0 0;
         }
         .chat-input-area {
             display: flex;
@@ -216,10 +347,10 @@ if (session_status() === PHP_SESSION_NONE) {
             flex: 1;
             min-width: 0;
             box-sizing: border-box;
-            padding: 10px 16px;
-            border: 1.5px solid #e2e8f0;
+            padding: 9px 15px;
+            border: 1.5px solid #cbd5e1;
             border-radius: 28px;
-            font-size: 13px;
+            font-size: 12.5px;
             outline: none;
             background: #f8fafc;
             color: #1e293b;
@@ -233,8 +364,8 @@ if (session_status() === PHP_SESSION_NONE) {
             background: linear-gradient(135deg, #163B7A 0%, #2563EB 100%);
             color: #ffffff;
             border: none;
-            width: 38px;
-            height: 38px;
+            width: 36px;
+            height: 36px;
             border-radius: 100%;
             display: flex;
             align-items: center;
@@ -247,7 +378,7 @@ if (session_status() === PHP_SESSION_NONE) {
             opacity: 0.9;
         }
         .chat-disclaimer {
-            font-size: 10px;
+            font-size: 9.5px;
             color: #94a3b8;
             line-height: 1.2;
             display: flex;
@@ -297,16 +428,11 @@ if (session_status() === PHP_SESSION_NONE) {
                 border-radius: 0 !important;
                 border: none !important;
                 height: 100% !important;
-                padding: 8px 12px calc(75px + env(safe-area-inset-bottom, 30px)) 12px !important;
+                padding: 8px 8px calc(40px + env(safe-area-inset-bottom, 10px)) 10px !important;
             }
             .message {
                 max-width: 85% !important;
             }
-        }
-        @keyframes blink {
-            0% { opacity: .2; }
-            20% { opacity: 1; }
-            100% { opacity: .2; }
         }
     </style>
 </head>
@@ -318,30 +444,53 @@ if (session_status() === PHP_SESSION_NONE) {
     <div class="main-content">
         <?php include("../includes/topbar.php"); ?>
         <div class="chat-container">
+            <!-- Header Banner with Avatar Image -->
             <div class="chat-ai-header">
-                <div class="chat-ai-header-content">
-                    <h2>
-                        <i class="fa-solid fa-sparkles"></i>
-                        Smart Vet Care AI
-                    </h2>
-                    <p><span style="color: #34d399;">●</span> Online | Your trusted AI companion for instant pet care support.</p>
-                </div>
-            </div>
-            
-            <div class="chat-messages" id="chatMessages">
-                <div class="message-wrapper ai">
-                    <div class="message">
-                        <i class="fa-solid fa-sparkles" style="color: #2563EB; margin-right: 6px;"></i> Hello, Smart Vet Fam! How can I help you today with your pets or booking an appointment?
+                <div class="chat-ai-header-left">
+                    <div class="kuago-avatar-header">
+                        <img src="../assets/images/KuaGO.png" alt="KuaGO Logo" onerror="this.src='../assets/images/logo-transparent.png'">
+                        <div class="online-dot"></div>
+                    </div>
+                    <div class="chat-ai-header-content">
+                        <h2>
+                            KuaGO AI Support  ✧₊⁺
+                            <i class="fa-solid fa-sparkles" style="font-size: 13px;"></i>
+                        </h2>
+                        <p>Smart Vet Care • Internet required</p>
                     </div>
                 </div>
             </div>
+            <!-- Welcome Card -->
+            <div class="kuago-welcome-card">
+                <div class="kuago-welcome-top">
+                    <div class="kuago-title-group">
+                        <div class="kuago-card-icon">
+                            <img src="../assets/images/KuaGO.png" alt="KuaGO Avatar" onerror="this.src='../assets/images/logo-transparent.png'">
+                        </div>
+                        <h3>KuaGO</h3>
+                    </div>
+                    <span class="ai-support-badge">AI SUPPORT</span>
+                </div>
+                <p>KuaGO is ready to help! Ask about your pets, clinic services, or appointments at Furry Friends Animal Clinic.</p>
+            </div>
+            
+        
+            <!-- Chat Messages (Expanded to fill vertical space) -->
+            <div class="chat-messages" id="chatMessages"></div>
+            
             <!-- Quick Suggestion Pills -->
             <div class="chat-suggestions-wrapper">
-                <button class="suggestion-chip" type="button" onclick="sendSuggestion('What are the common symptoms of vomiting in dogs?')">
-                    <i class="fa-solid fa-dog"></i> Dog Vomiting Symptoms
+             <button class="kuago-action-pill" type="button" onclick="sendSuggestion('I want to book an appointment with KuaGO.')">
+                    <i class="fa-solid fa-calendar-plus" style="color: #2563EB;"></i> Book in Chat
                 </button>
-                <button class="suggestion-chip" type="button" onclick="sendSuggestion('How do I book a vet appointment online?')">
-                    <i class="fa-solid fa-calendar-check"></i> Book an Appointment
+                <button class="kuago-action-pill" type="button" onclick="sendSuggestion('What are the emergency contact details and urgent warning signs?')">
+                    <i class="fa-solid fa-phone-volume" style="color: #2563EB;"></i> Emergency Contact
+                </button>
+                <button class="kuago-action-pill" type="button" onclick="window.location.href='appointment.php'">
+                    <i class="fa-solid fa-calendar-days" style="color: #2563EB;"></i> My Bookings
+                </button>   
+               <button class="suggestion-chip" type="button" onclick="sendSuggestion('What are the common symptoms of vomiting in dogs?')">
+                    <i class="fa-solid fa-dog"></i> Dog Vomiting Symptoms
                 </button>
                 <button class="suggestion-chip" type="button" onclick="sendSuggestion('What are your clinic operating hours?')">
                     <i class="fa-solid fa-clock"></i> Clinic Hours & Schedule
@@ -356,9 +505,10 @@ if (session_status() === PHP_SESSION_NONE) {
                     <i class="fa-solid fa-syringe"></i> Puppy Vaccination
                 </button>
             </div>
+            <!-- Chat Input Area at the bottom -->
             <div class="chat-input-area-wrapper">
                 <div class="chat-input-area">
-                    <input type="text" id="userInput" placeholder="Ask anything about pet care..." autocomplete="off">
+                    <input type="text" id="userInput" placeholder="Ask KuaGO about your pet..." autocomplete="off">
                     <button id="sendBtn" type="button">
                         <i class="fa-solid fa-paper-plane" style="pointer-events: none;"></i>
                     </button>
@@ -371,38 +521,45 @@ if (session_status() === PHP_SESSION_NONE) {
     </div>
 </div>
 <?php include("../includes/bottom-nav.php"); ?>
-<!-- Integrated Script para sa AI at Firestore Database -->
 <script type="module" src="../assets/js/ai-chat.js"></script>
-
-<!-- Dedicated Mobile Sidebar Direct Fix Script -->
+<!-- ROBUST EVENT DELEGATION SCRIPT PARA SA BURGER BUTTON AT SIDEBAR -->
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const menuBtn = document.getElementById("mobileMenuBtn");
-        const sidebar = document.querySelector(".sidebar");
-        const overlay = document.getElementById("sidebarOverlay");
+    document.addEventListener("click", function(e) {
+        const menuBtn = e.target.closest("#mobileMenuBtn, #menuBtn, .mobile-menu-btn, .burger-btn, .fa-bars");
+        const sidebar = document.querySelector(".sidebar") || document.getElementById("appSidebar");
+        const overlay = document.getElementById("sidebarOverlay") || document.querySelector(".sidebar-overlay");
 
         if (menuBtn && sidebar) {
-            menuBtn.addEventListener("click", function(e) {
-                e.stopPropagation();
-                sidebar.classList.toggle("active");
-                if (sidebar.classList.contains("active")) {
-                    sidebar.style.left = "0px";
-                    if (overlay) overlay.style.display = "block";
-                } else {
-                    sidebar.style.left = "-270px";
-                    if (overlay) overlay.style.display = "none";
+            e.stopPropagation();
+            e.preventDefault();
+            
+            sidebar.classList.toggle("active");
+            
+            if (sidebar.classList.contains("active")) {
+                sidebar.style.setProperty("left", "0px", "important");
+                if (overlay) {
+                    overlay.classList.add("active");
+                    overlay.style.setProperty("display", "block", "important");
                 }
-            });
+            } else {
+                sidebar.style.setProperty("left", "-270px", "important");
+                if (overlay) {
+                    overlay.classList.remove("active");
+                    overlay.style.setProperty("display", "none", "important");
+                }
+            }
+            return;
         }
 
-        if (overlay && sidebar) {
-            overlay.addEventListener("click", function() {
+        if (overlay && overlay.contains(e.target)) {
+            if (sidebar) {
                 sidebar.classList.remove("active");
-                sidebar.style.left = "-270px";
-                overlay.style.display = "none";
-            });
+                sidebar.style.setProperty("left", "-270px", "important");
+            }
+            overlay.classList.remove("active");
+            overlay.style.setProperty("display", "none", "important");
         }
-    });
+    }); 
 </script>
 </body>
 </html>

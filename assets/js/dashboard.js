@@ -32,12 +32,17 @@ function checkClinicStatus() {
 checkClinicStatus();
 setInterval(checkClinicStatus, 60000);
 
-// --- 1. Seasonal Reminder & Greeting ---
-const greeting = document.getElementById("greeting");
-if (greeting) {
-    const hour = new Date().getHours();
-    greeting.textContent = hour >= 5 && hour < 12 ? "Good Morning, Furry Friends!" : hour < 18 ? "Good Afternoon, Furry Friends!" : "Good Evening, Furry Friends!";
+// --- 1. Seasonal Reminder & Greeting (Welcome Back First Name Integration) ---
+function updateGreeting(fullName = "") {
+    const greeting = document.getElementById("greeting");
+    if (greeting) {
+        const nameToUse = fullName || localStorage.getItem("fullName") || "User";
+        const firstName = nameToUse.trim().split(" ")[0] || "User";
+        greeting.textContent = `Welcome back, ${firstName}!`;
+    }
 }
+updateGreeting();
+
 function loadSeasonalReminder() {
     const month = new Date().getMonth();
     const titleEl = document.getElementById('reminderTitle');
@@ -95,40 +100,35 @@ async function loadTopbarAppointments(ownerId) {
 function loadDashboardAppointmentTracker(ownerId) {
     const trackerContainer = document.getElementById("dashboardAppointmentTrackerContainer");
     if (!trackerContainer) return;
-
     const apptQuery = query(collection(db, "appointments_v2"), where("ownerId", "==", ownerId));
     onSnapshot(apptQuery, (snapshot) => {
         if (snapshot.empty) {
             trackerContainer.innerHTML = `<p class="empty-state" style="text-align: center; color: #64748b; padding: 15px; font-size: 13px;">No appointment tracking records found.</p>`;
             return;
         }
-
         let trackerHtml = '';
         snapshot.forEach((docSnap) => {
             const data = docSnap.data();
             const status = (data.status || "pending").toLowerCase().trim();
-
-            // Default classes para sa Stepper (Pending pa lang)
-            let step1Class = 'step active';     // Pending (Active)
-            let step2Class = 'step';           // Approved
-            let step3Class = 'step';           // Completed
+            let step1Class = 'step active';    
+            let step2Class = 'step';          
+            let step3Class = 'step';          
             let lineActive1 = '';
             let lineActive2 = '';
             let statusBadgeBg = "#fef9c3";
             let statusBadgeColor = "#854d0e";
             let statusBadgeText = "Pending";
-
             if (status === "approved" || status === "confirmed") {
-                step1Class = 'step completed'; // Tapos na ang pending, magiging faded/completed green tone
-                step2Class = 'step active';    // Kasalukuyang hakbang
+                step1Class = 'step completed'; 
+                step2Class = 'step active';    
                 lineActive1 = 'active';
                 statusBadgeBg = "#dcfce7";
                 statusBadgeColor = "#166534";
                 statusBadgeText = "Approved";
             } else if (status === "completed") {
-                step1Class = 'step completed'; // Faded green tone
-                step2Class = 'step completed'; // Faded green tone
-                step3Class = 'step completed'; // Tapos na lahat
+                step1Class = 'step completed'; 
+                step2Class = 'step completed'; 
+                step3Class = 'step completed'; 
                 lineActive1 = 'active';
                 lineActive2 = 'active';
                 statusBadgeBg = "#e0e7ff";
@@ -139,7 +139,6 @@ function loadDashboardAppointmentTracker(ownerId) {
                 statusBadgeColor = "#991b1b";
                 statusBadgeText = "Cancelled";
             }
-
             trackerHtml += `
                 <div style="background: #ffffff; padding: 15px; border-radius: 14px; border: 1px solid #e2e8f0; margin-bottom: 10px;">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
@@ -149,7 +148,6 @@ function loadDashboardAppointmentTracker(ownerId) {
                         </div>
                         <span style="background: ${statusBadgeBg}; color: ${statusBadgeColor}; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;">${statusBadgeText}</span>
                     </div>
-                    <!-- Delivery-Style Progress Tracker Stepper for Appointments -->
                     <div class="progress-tracker-container" style="background: #f8fafc; padding: 12px; border-radius: 10px; border: 1px solid #f1f5f9; margin-top: 10px;">
                         <div class="stepper">
                             <div class="${step1Class}" data-step="1">
@@ -252,8 +250,6 @@ function loadDashboardHealthData(ownerId) {
     }, (error) => {
         console.error("Health monitoring snapshot error:", error);
     });
-
-    // --- Naayos na Recent Activities Loader ---
     const activitiesContainer = document.getElementById("recentActivitiesContainer");
     const actQuery = query(
         collection(db, "activities"), 
@@ -315,9 +311,18 @@ onAuthStateChanged(auth, async (user) => {
         if (!ownerId) return;
         if (userData.fullName) {
             localStorage.setItem("fullName", userData.fullName);
+            updateGreeting(userData.fullName);
         }
+        
+        // Dynamic Address handling para sa Weather/Tandang component
+        if (userData.address) {
+            localStorage.setItem("userAddress", userData.address);
+            // I-dispatch ang event para masagap ng dashboard.php ang dynamic address pagka-login
+            window.dispatchEvent(new CustomEvent("userAddressLoaded", { detail: userData.address }));
+        }
+
         loadTopbarAppointments(ownerId);
-        loadDashboardAppointmentTracker(ownerId); // Pagtawag sa Appointment Status Tracker na may faded completed styles
+        loadDashboardAppointmentTracker(ownerId); 
         loadDashboardHealthData(ownerId);
         
         onSnapshot(query(collection(db, "pets"), where("ownerId", "==", ownerId)), (s) => {

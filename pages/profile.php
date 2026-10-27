@@ -156,7 +156,6 @@ if (session_status() === PHP_SESSION_NONE) {
                     <span class="role-badge">Pet Owner</span>
                 </div>
             </div>
-
             <!-- Update Form Card -->
             <div class="profile-card">
                 <h3><i class="fa-solid fa-user-pen"></i> Edit Account Information</h3>
@@ -230,17 +229,10 @@ if (session_status() === PHP_SESSION_NONE) {
         }
     });
 </script>
-
 <script type="module">
-    import { db } from '../assets/js/firebase-config.js';
+    import { auth, db } from '../assets/js/firebase-config.js';
     import { collection, query, where, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
-
-    const currentUserId = localStorage.getItem("ownerId") || localStorage.getItem("userUID");
-    const userEmail = localStorage.getItem("userEmail");
-
-    if (!currentUserId || localStorage.getItem("isLoggedIn") !== "true") {
-        window.location.href = 'login-user.php';
-    }
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 
     const fullNameInput = document.getElementById('fullName');
     const emailInput = document.getElementById('email');
@@ -257,7 +249,6 @@ if (session_status() === PHP_SESSION_NONE) {
     const alertBox = document.getElementById('alertBox');
     const updateForm = document.getElementById('updateProfileForm');
     const saveBtn = document.getElementById('saveBtn');
-
     let activeUserDocRef = null;
 
     function formatTimestamp(timestamp) {
@@ -279,15 +270,11 @@ if (session_status() === PHP_SESSION_NONE) {
         });
     }
 
-    async function loadUserProfile() {
+    async function loadUserProfileByEmail(email) {
         try {
-            let q = query(collection(db, "users"), where("ownerId", "==", currentUserId));
+            let q = query(collection(db, "users"), where("email", "==", email));
             let snapshot = await getDocs(q);
-            if (snapshot.empty && userEmail) {
-                q = query(collection(db, "users"), where("email", "==", userEmail));
-                snapshot = await getDocs(q);
-            }
-
+            
             if (!snapshot.empty) {
                 const userDoc = snapshot.docs[0];
                 activeUserDocRef = userDoc.ref;
@@ -298,13 +285,14 @@ if (session_status() === PHP_SESSION_NONE) {
                 if (genderSelect) genderSelect.value = data.gender || '';
                 if (contactInput) contactInput.value = data.contactNumber || data.phone || '';
                 if (addressInput) addressInput.value = data.address || '';
-                if (userIdField) userIdField.value = data.ownerId || currentUserId;
+                if (userIdField) userIdField.value = data.ownerId || '';
                 if (lastUpdatedText) lastUpdatedText.textContent = formatTimestamp(data.updatedAt || data.createdAt);
                 
-                updateBanner(data.fullName || 'User', data.email || 'No email', data.gender || '');
+                updateBanner(data.fullName || 'User', data.email || email, data.gender || '');
             } else {
                 if (bannerName) bannerName.textContent = "New User";
-                if (bannerEmail) bannerEmail.textContent = "Please complete your profile";
+                if (bannerEmail) bannerEmail.textContent = email;
+                if (emailInput) emailInput.value = email;
                 if (lastUpdatedText) lastUpdatedText.textContent = "Never updated";
             }
         } catch (error) {
@@ -312,19 +300,30 @@ if (session_status() === PHP_SESSION_NONE) {
         }
     }
 
+    onAuthStateChanged(auth, (user) => {
+        if (user && user.email) {
+            loadUserProfileByEmail(user.email);
+        } else {
+            // Fallback sa localStorage kung sakaling naka-store
+            const storedEmail = localStorage.getItem("userEmail");
+            if (storedEmail) {
+                loadUserProfileByEmail(storedEmail);
+            } else {
+                window.location.href = 'login-user.php';
+            }
+        }
+    });
+
     function updateBanner(name, email, gender) {
         if (bannerName) bannerName.textContent = name;
         if (bannerEmail) bannerEmail.textContent = email;
-
         const normalizedGender = (gender || "").toLowerCase();
         let displayImage = "";
-
         if (normalizedGender === "male") {
             displayImage = "../assets/images/male-owner.png";
         } else if (normalizedGender === "female") {
             displayImage = "../assets/images/female-owner.png";
         }
-
         if (displayImage !== "") {
             if (profileImagePreview) {
                 profileImagePreview.src = displayImage;
@@ -340,8 +339,6 @@ if (session_status() === PHP_SESSION_NONE) {
         }
     }
 
-    loadUserProfile();
-
     // Real-time update of avatar when gender changes in dropdown
     if (genderSelect) {
         genderSelect.addEventListener('change', (e) => {
@@ -356,24 +353,19 @@ if (session_status() === PHP_SESSION_NONE) {
                 showAlert("Error: User document not found for updating.", "error");
                 return;
             }
-
             if (saveBtn) {
                 saveBtn.disabled = true;
                 saveBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Saving...`;
             }
-
             try {
                 const selectedGender = genderSelect ? genderSelect.value : '';
                 const now = new Date();
-
-                // Hardcoded image assignment based on gender selection
                 let profileImageUrl = "";
                 if (selectedGender.toLowerCase() === "male") {
                     profileImageUrl = "../assets/images/male-owner.png";
                 } else if (selectedGender.toLowerCase() === "female") {
                     profileImageUrl = "../assets/images/female-owner.png";
                 }
-
                 await setDoc(activeUserDocRef, {
                     gender: selectedGender,
                     phone: contactInput ? contactInput.value : '',
@@ -382,7 +374,6 @@ if (session_status() === PHP_SESSION_NONE) {
                     profileImage: profileImageUrl,
                     updatedAt: now
                 }, { merge: true });
-
                 if (lastUpdatedText) lastUpdatedText.textContent = formatTimestamp(now);
                 updateBanner(fullNameInput.value, emailInput.value, selectedGender);
                 showAlert("Profile successfully updated!", "success");
@@ -409,13 +400,13 @@ if (session_status() === PHP_SESSION_NONE) {
             alertBox.style.display = 'none';
         }, 4000);
     }
-    <!-- Dedicated Mobile Sidebar Direct Fix Script -->
-
+</script>
+<script>
+    // Dedicated Mobile Sidebar Direct Fix Script
     document.addEventListener("DOMContentLoaded", function() {
         const menuBtn = document.getElementById("mobileMenuBtn");
         const sidebar = document.querySelector(".sidebar");
         const overlay = document.getElementById("sidebarOverlay");
-
         if (menuBtn && sidebar) {
             menuBtn.addEventListener("click", function(e) {
                 e.stopPropagation();
@@ -429,7 +420,6 @@ if (session_status() === PHP_SESSION_NONE) {
                 }
             });
         }
-
         if (overlay && sidebar) {
             overlay.addEventListener("click", function() {
                 sidebar.classList.remove("active");

@@ -31,7 +31,6 @@
             flex-direction: column;
             gap: 10px;
         }
-        /* Puti at bilugang Card gaya ng sa health.php at records.php */
         .profile-style-card {
             background: #ffffff;
             border-radius: 20px;
@@ -218,46 +217,6 @@
             font-weight: 600;
             word-break: break-word;
         }
-        /* COLLAPSIBLE DROPDOWN STYLES FOR CLINICAL/VACCINE RECORDS */
-        .collapsible-record-card {
-            background: #fffbf5;
-            border: 1px solid #feebc8;
-            border-radius: 10px;
-            padding: 12px 14px;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-            transition: all 0.2s ease;
-        }
-        .collapsible-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            cursor: pointer;
-            width: 100%;
-        }
-        .collapsible-content {
-            display: none;
-            font-size: 12px;
-            color: #475569;
-            margin-top: 8px;
-            padding-left: 46px;
-            border-top: 1px dashed #feebc8;
-            padding-top: 8px;
-        }
-        .collapsible-record-card.open .collapsible-content {
-            display: block;
-        }
-        .collapsible-arrow {
-            color: #d97706;
-            font-size: 14px;
-            transition: transform 0.2s ease;
-        }
-        .collapsible-record-card.open .collapsible-arrow {
-            transform: rotate(180deg);
-        }
-
         .sidebar-overlay {
             display: none;
             position: fixed;
@@ -289,18 +248,6 @@
                 border-radius: 8px !important;
                 box-shadow: 0 20px 40px rgba(0,0,0,0.25) !important;
             }
-            #viewPetModal .view-modal-body::before {
-                content: "OFFICIAL PET MEDICAL RECORD / EMR";
-                display: block;
-                font-size: 9px;
-                font-weight: 700;
-                letter-spacing: 0.8px;
-                color: #475569;
-                text-align: center;
-                border-bottom: 2px solid #0f172a;
-                padding-bottom: 5px;
-                margin-bottom: 8px;
-            }
             #viewPetModal .view-modal-body {
                 flex-direction: column !important;
                 gap: 10px !important;
@@ -320,9 +267,6 @@
                 text-align: center !important;
                 gap: 8px !important;
                 background: transparent !important;
-                border-top: none;
-                border-left: none;
-                border-right: none;
             }
             #viewPetModal .view-top > div:first-of-type {
                 align-items: center;
@@ -390,10 +334,6 @@
                 margin-top: 1px !important;
                 line-height: 1.2;
             }
-            #viewPetModal .view-item[style*="span 2"],
-            #viewPetModal .view-grid > .view-item:nth-last-child(-n+2) {
-                grid-column: span 2 !important;
-            }
             .sidebar {
                 position: fixed !important;
                 top: 0;
@@ -421,7 +361,7 @@
         <?php include "../includes/topbar.php"; ?>
         
         <div class="health-container">
-            <!-- Header Card (Puti at bilugang box para sa My Pets header) -->
+            <!-- Header Card -->
             <div class="profile-style-card page-header-custom">
                 <h1>
                     <i class="fa-solid fa-paw" style="background: #eef4ff; padding: 10px; border-radius: 12px; color: #5142f5;"></i>
@@ -515,7 +455,7 @@
 </div>
 <!-- VIEW PET MODAL -->
 <div class="modal" id="viewPetModal">
-    <div class="modal-content view-modal" style="max-width: 860px !important; width: 95vw !important;">
+    <div class="modal-content view-modal" style="max-width: 840px !important; width: 95vw !important;">
         <span class="close-view-modal">&times;</span>
         <div class="view-modal-body">
             <div class="view-top">
@@ -588,33 +528,20 @@
                         <h4 id="viewColor"></h4>
                     </div>
                 </div>
-                
-                <!-- ALLERGIES SECTION -->
-                <div class="view-item" style="grid-column: span 2; background: #fff5f5; border: 1px solid #fed7d7; border-radius: 12px; padding: 14px 16px; align-items: flex-start; justify-content: space-between;">
-                    <div style="display: flex; gap: 12px; align-items: center; width: 100%;">
-                        <i class="fa-solid fa-triangle-exclamation" style="background: #ffe3e3 !important; color: #e53e3e !important; width: 36px !important; height: 36px !important; border-radius: 10px !important;"></i>
-                        <div style="flex: 1;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                                <small style="font-size: 11px; font-weight: 700; color: #c53030; text-transform: uppercase;">Allergies</small>
-                                <span id="allergyNotesCountBadge" style="background: #fed7d7; color: #9b2c2c; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 12px;">0 Notes</span>
-                            </div>
-                            <h4 id="viewAllergies" style="font-size: 13.5px; color: #2d3748; margin-top: 4px; font-weight: 600;">-</h4>
-                        </div>
+                <div class="view-item" style="grid-column: span 2;">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <div>
+                        <small>Allergies / Medical Notes</small>
+                        <h4 id="viewAllergies">None recorded</h4>
                     </div>
                 </div>
-                <!-- MEDICAL HISTORY & CLINICAL FINDINGS SECTION -->
-                <div class="view-item" style="grid-column: span 2; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; align-items: flex-start; flex-direction: column; gap: 10px;">
-                    <div style="display: flex; gap: 12px; align-items: center; width: 100%;">
-                        <i class="fa-solid fa-notes-medical" style="background: #eef2ff !important; color: #4f46e5 !important; width: 38px !important; height: 38px !important; border-radius: 10px !important;"></i>
-                        <div style="flex: 1;">
-                            <small style="font-size: 11px; font-weight: 700; color: #4f46e5; text-transform: uppercase;">Medical History & Clinical Findings</small>
-                            <h4 style="font-size: 13px; color: #64748b; margin-top: 2px; font-weight: 400;">Clinical findings, vaccinations and follow-ups (read-only)</h4>
-                        </div>
-                    </div>
-                    <div style="width: 100%; border-top: 1px solid #f1f5f9; padding-top: 10px;">
-                        <span id="clinicalRecordsCountBadge" style="display: block; font-size: 11.5px; font-weight: 600; color: #64748b; margin-bottom: 8px;">0 clinical records</span>
-                        <div id="vaccinationListContainer" style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
-                            <h4 style="color: #7f8c8d; font-weight: normal; font-size: 11.5px; font-style: italic;">No clinical records found yet.</h4>
+                <!-- BAGONG LINIS AT NAKAKA-ENGANYONG VACCINATION UI -->
+                <div class="view-item" style="grid-column: span 2; align-items: flex-start; background: #faf5ff; border: 1px solid #f3e8ff;">
+                    <i class="fa-solid fa-syringe" style="background: #f3e8ff !important; color: #7c3aed !important;"></i>
+                    <div style="flex: 1; width: 100%;">
+                        <small style="color: #7c3aed; font-weight: 700;">Vaccination & Immunization Record</small>
+                        <div id="viewVaccination" style="margin-top: 6px; width: 100%;">
+                            <h4 style="color: #64748b; font-weight: normal; font-size: 13px; font-style: italic; margin: 0;">No vaccination records found yet.</h4>
                         </div>
                     </div>
                 </div>
@@ -647,13 +574,10 @@
             });
         }
     });
-    <!-- Dedicated Mobile Sidebar Direct Fix Script -->
-
     document.addEventListener("DOMContentLoaded", function() {
         const menuBtn = document.getElementById("mobileMenuBtn");
         const sidebar = document.querySelector(".sidebar");
         const overlay = document.getElementById("sidebarOverlay");
-
         if (menuBtn && sidebar) {
             menuBtn.addEventListener("click", function(e) {
                 e.stopPropagation();
@@ -667,7 +591,6 @@
                 }
             });
         }
-
         if (overlay && sidebar) {
             overlay.addEventListener("click", function() {
                 sidebar.classList.remove("active");

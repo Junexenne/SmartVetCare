@@ -542,71 +542,9 @@ TOPBAR (Original Clean Layout Restored)
     transform: translateX(0);
   }
 }
-/*=====================================
-DASHBOARD CONTENT & LAYOUT
-======================================*/
 
-.dashboard {
-    display: flex;
-    background-color: #f8fafc;
-    min-height: 100vh;
-    font-family: 'Poppins', sans-serif;
-}
 
-.main-content {
-    flex: 1;
-    padding: 30px;
-    overflow-y: auto;
-    box-sizing: border-box;
-}
 
-.dashboard-content {
-    display: flex;
-    flex-direction: column;
-    gap: 12px; /* Binabaan mula 25px para maging dikit-dikit at pantay ang espasyo */
-}
-
-/*=====================================
-WELCOME CARD
-======================================*/
-
-.welcome-card {
-    background: linear-gradient(135deg, #173F81 0%, #2563EB 50%, #38BDF8 100%);
-    color: #fff;
-    padding: 35px 40px;
-    border-radius: 20px;
-    box-shadow: 0 12px 30px rgba(23, 63, 129, 0.2);
-    position: relative;
-    overflow: hidden;
-}
-
-/* Dagdag na aesthetic glow effect sa background */
-.welcome-card::after {
-    content: '';
-    position: absolute;
-    top: -50px;
-    right: -50px;
-    width: 200px;
-    height: 200px;
-    background: rgba(255, 255, 255, 0.08);
-    border-radius: 50%;
-    pointer-events: none;
-}
-
-.welcome-card h1 {
-    font-size: 26px;
-    font-weight: 700;
-    margin: 0 0 10px 0;
-    letter-spacing: -0.5px;
-}
-
-.welcome-card p {
-    opacity: 0.95;
-    line-height: 1.7;
-    font-size: 14.5px;
-    margin: 0;
-    max-width: 800px;
-}
 /*=====================================
 STATS CARDS / DASHBOARD CARDS
 ======================================*/

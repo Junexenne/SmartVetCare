@@ -16,13 +16,16 @@ import {
     onAuthStateChanged
 }
 from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+
 // =========================
 // VARIABLES
 // =========================
 let currentUser = null;
 let ownerId = "";
 let ownerDocId = "";
+let ownerFullName = "";
 let editingPetId = null;
+
 // =========================
 // ELEMENTS
 // =========================
@@ -35,6 +38,7 @@ const cancelBtn = document.querySelector(".cancel");
 const petForm = document.getElementById("petForm");
 const savePetBtn = document.getElementById("savePetBtn");
 const archivePetBtn = document.getElementById("archivePetBtn"); 
+
 // =========================
 // LOGIN SESSION
 // =========================
@@ -56,9 +60,12 @@ onAuthStateChanged(auth, async (user) => {
     }
     const owner = snapshot.docs[0];
     ownerDocId = owner.id;
-    ownerId = owner.data().ownerId;
+    const ownerData = owner.data();
+    ownerId = ownerData.ownerId;
+    ownerFullName = ownerData.fullName || "";
     await loadPets();
 });
+
 // =========================
 // HELPER: GET HARD-CODED ICON & MAPPING
 // =========================
@@ -77,6 +84,7 @@ function getPetDisplayDetails(species, rawImage) {
     }
     return { img, speciesText };
 }
+
 // =========================
 // LOAD PETS & SYNC APPOINTMENT NOTIFICATIONS
 // =========================
@@ -146,7 +154,7 @@ async function loadPets() {
         `;
         return;
     }
-    // Awtomatikong suriin ang appointments_v2 para sa notifications
+
     for (const pet of petList) {
         await checkAndCreateAppointmentNotifications(pet);
     }
@@ -161,6 +169,7 @@ async function loadPets() {
         }
     });
 }
+
 // =========================
 // CHECK & CREATE APPOINTMENT NOTIFICATIONS HELPER
 // =========================
@@ -209,6 +218,7 @@ async function checkAndCreateAppointmentNotifications(pet) {
         console.error("Error generating automatic appointment notifications:", err);
     }
 }
+
 // =========================
 // HELPER: FORMAT TIMESTAMP TO READABLE DATE
 // =========================
@@ -230,6 +240,7 @@ function formatTimestamp(timestamp) {
         hour12: true
     });
 }
+
 // =========================
 // POPULATE ALL VIEW / SCAN FIELDS HELPER
 // =========================
@@ -260,17 +271,10 @@ function fillPetDetailsToDOM(pet) {
             }
         });
     });
-    const badgeEl = document.getElementById("allergyNotesCountBadge");
-    if (badgeEl) {
-        if (pet.allergies && pet.allergies.trim() !== "" && pet.allergies !== "None recorded") {
-            badgeEl.textContent = "1 Notes";
-        } else {
-            badgeEl.textContent = "0 Notes";
-        }
-    }
 }
+
 // =========================
-// VIEW PET & GENERATE QR CODE (Connected to Database)
+// VIEW PET & GENERATE QR CODE (Dynamic Vaccination Fetching without Hardcoding)
 // =========================
 async function openViewModal(id){
     let snap = await getDoc(doc(db,"pets",id));
@@ -300,74 +304,65 @@ async function openViewModal(id){
         }
     }
     
-    const vaccineContainer = document.getElementById("vaccinationListContainer");
-    const countBadge = document.getElementById("clinicalRecordsCountBadge");
-    let recordsHTML = `<p style="font-size: 13px; color: #7f8c8d; margin: 0; font-style: italic;">No clinical records found yet.</p>`;
-    
-    if (vaccineContainer) vaccineContainer.innerHTML = recordsHTML;
-    if (countBadge) countBadge.textContent = `0 clinical records`;
+    // Dynamic na pagkuha ng vaccination records batay sa petId at petName para sa kasalukuyang user
+    const vaccineContainer = document.getElementById("viewVaccination");
+    let vaccineHTML = `<span style="color: #7f8c8d; font-weight: normal; font-size: 13px; font-style: italic;">No vaccination records found yet.</span>`;
     
     try {
-        let allRecords = [];
-        // Kunin ang records mula sa clinical_records collection batay sa petId
-        if (pet.petId) {
-            const clinicalQuery = query(collection(db, "clinical_records"), where("petId", "==", pet.petId));
-            const clinicalSnap = await getDocs(clinicalQuery);
-            clinicalSnap.forEach(docSnap => {
+        let vacList = [];
+        const currentPetId = (pet.petId || "").trim();
+        const currentPetName = (pet.petName || "").trim().toLowerCase();
+
+        // 1. Kunin ang lahat ng vaccination records na tugma ang petId
+        if (currentPetId) {
+            const vacSnapId = await getDocs(query(collection(db, "vaccination_records"), where("petId", "==", currentPetId)));
+            vacSnapId.forEach(docSnap => {
                 const data = docSnap.data();
-                allRecords.push({
-                    title: data.serviceName || data.service || 'Consultation',
-                    category: data.category || 'Medical History',
-                    date: data.createdAt || data.date || 'N/A',
-                    notes: data.notes || 'No findings recorded.'
-                });
-            });
-            // Kunin din ang vaccination records kung mayroon man
-            const vacQuery = query(collection(db, "vaccination_records"), where("petId", "==", pet.petId));
-            const vacSnap = await getDocs(vacQuery);
-            vacSnap.forEach(docSnap => {
-                const data = docSnap.data();
-                allRecords.push({
-                    title: data.serviceName || data.service || 'Vaccination Record',
-                    category: 'Vaccination',
-                    date: data.createdAt || data.date || data.administeredDate || 'N/A',
-                    notes: data.notes || 'Vaccine administered.'
-                });
+                if (!vacList.some(v => v.id === docSnap.id)) {
+                    vacList.push({ id: docSnap.id, ...data });
+                }
             });
         }
-        if (allRecords.length > 0) {
-            if (countBadge) countBadge.textContent = `${allRecords.length} clinical records`;
-            recordsHTML = "";
-            allRecords.forEach(rec => {
-                recordsHTML += `
-                    <div class="collapsible-record-card">
-                        <div class="collapsible-header" onclick="this.parentElement.classList.toggle('open')">
-                            <div style="display: flex; gap: 12px; align-items: center;">
-                                <div style="background: #fef3c7; color: #d97706; width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;">
-                                    <i class="fa-solid fa-file-medical"></i>
-                                </div>
-                                <div>
-                                    <h4 style="margin: 0; font-size: 13.5px; font-weight: 700; color: #b45309;">${rec.title}</h4>
-                                    <p style="margin: 2px 0 0 0; font-size: 11px; color: #64748b;">${rec.category} &bull; Date: ${rec.date}</p>
-                                </div>
-                            </div>
-                            <i class="fa-solid fa-chevron-down collapsible-arrow"></i>
-                        </div>
-                        <div class="collapsible-content">
-                            <strong>Findings/Notes:</strong> ${rec.notes}
-                        </div>
-                    </div>
-                `;
+
+        // 2. Kunin din ang tugma sa petName kung sakaling may iba mang format ng ID sa database
+        if (currentPetName) {
+            const vacSnapName = await getDocs(query(collection(db, "vaccination_records")));
+            vacSnapName.forEach(docSnap => {
+                const data = docSnap.data();
+                const dbPetName = (data.petName || "").trim().toLowerCase();
+                const dbOwnerName = (data.ownerName || "").trim().toLowerCase();
+                const activeOwnerName = (ownerFullName || "").trim().toLowerCase();
+
+                // Suriin kung pareho ang pangalan ng alaga at pagmamay-ari ng kasalukuyang naka-login na user
+                if (dbPetName === currentPetName && (dbOwnerName === activeOwnerName || activeOwnerName === "")) {
+                    if (!vacList.some(v => v.id === docSnap.id)) {
+                        vacList.push({ id: docSnap.id, ...data });
+                    }
+                }
             });
         }
-    } catch (error) {
-        console.error("Error loading clinical records:", error);
-        recordsHTML = `<p style="font-size: 13px; color: #e74c3c; margin: 0;">Failed to load clinical records.</p>`;
+
+        if (vacList.length > 0) {
+            let listItems = "";
+            vacList.forEach(vac => {
+                const vName = vac.vaccineName || vac.vaccine || "Vaccine";
+                const vDate = vac.dateAdministered || vac.date || "N/A";
+                const vBatch = vac.batchLotNumber ? ` (Batch: ${vac.batchLotNumber})` : "";
+                listItems += `<li style="margin-bottom: 4px;"><strong>${vName}</strong> - Administered on: ${vDate}${vBatch}</li>`;
+            });
+            vaccineHTML = `<ul style="margin: 0; padding-left: 18px; font-size: 13px; color: #0f172a; text-align: left;">${listItems}</ul>`;
+        }
+    } catch (err) {
+        console.error("Error fetching vaccination records dynamically:", err);
     }
     
-    if (vaccineContainer) vaccineContainer.innerHTML = recordsHTML;
+    if (vaccineContainer) {
+        vaccineContainer.innerHTML = vaccineHTML;
+    }
+    
     if (viewModal) viewModal.style.display = "flex";
 }
+
 // =========================
 // QR CODE SCANNER HANDLER
 // =========================
@@ -387,6 +382,7 @@ async function handleQRCodeScanned(scannedPetId) {
     }
 }
 window.handleQRCodeScanned = handleQRCodeScanned;
+
 // =========================
 // EDIT 
 // =========================
@@ -405,6 +401,7 @@ async function openEditModal(id){
     if (allergiesInput) allergiesInput.value = pet.allergies || ""; 
     if (modal) modal.style.display = "flex";
 }
+
 // =========================
 // UPDATE PET
 // =========================
@@ -439,6 +436,7 @@ if (petForm) {
         }
     });
 }
+
 // =========================
 // ARCHIVE / DECEASED PET
 // =========================
@@ -485,6 +483,7 @@ if (archivePetBtn) {
         }, 4000);
     });
 }
+
 // =========================
 // MODAL CLOSERS
 // =========================

@@ -23,8 +23,8 @@ $currentPage = basename($_SERVER['PHP_SELF']);
         <span>Records</span>
     </a>
     <a href="ai-chat.php" class="bottom-nav-item <?= ($currentPage == 'ai-chat.php') ? 'active' : '' ?>">
-        <i class="fa-solid fa-robot"></i>
-        <span>AI Care</span>
+        <i class="fa-solid fa-gem"></i>
+        <span>KuaGO</span>
     </a>
 </div>
 

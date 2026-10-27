@@ -5,6 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
+$logged_in_user = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : (isset($_SESSION['name']) ? $_SESSION['name'] : (isset($_SESSION['fullname']) ? $_SESSION['fullname'] : 'User'));
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -152,9 +153,56 @@ error_reporting(E_ALL);
         .step-line.active {
             background: #2a1290;
         }
+        .speech-bubble {
+            background: #ffffff; 
+            color: #1e293b; 
+            border-radius: 16px; 
+            padding: 12px 14px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06); 
+            position: relative;
+        }
+        .speech-bubble::after {
+            content: "";
+            position: absolute;
+            left: -8px;
+            top: 20px;
+            border-width: 6px 8px 6px 0;
+            border-style: solid;
+            border-color: transparent #ffffff transparent transparent;
+            display: block;
+        }
+        .welcome-card {
+            padding: 20px !important;
+            border-radius: 24px !important;
+            margin-bottom: 12px !important;
+            height: auto !important;
+            min-height: auto !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
+            box-sizing: border-box !important;
+        }
+        .welcome-card-disclaimer {
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+            margin-top: 20px !important;
+            font-size: 11px !important;
+            line-height: 1.4 !important;
+            color: rgba(255, 255, 255, 0.85) !important;
+            text-align: left !important;
+            border-top: 1px solid rgba(255, 255, 255, 0.25) !important;
+            padding-top: 10px !important;
+            clear: both !important;
+            display: block !important;
+            white-space: normal !important;
+            word-break: normal !important;
+            overflow: visible !important;
+        }
         @media (max-width: 768px) {
             .main-content {
                 padding: 12px !important;
+                padding-bottom: 85px !important;
             }
             .sidebar {
                 position: fixed !important;
@@ -205,42 +253,37 @@ error_reporting(E_ALL);
             .stat-card span {
                 font-size: 10px !important;
             }
-            .welcome-card {
-                padding: 16px 20px !important;
-                border-radius: 14px !important;
-                margin-bottom: 8px !important;
-            }
             .welcome-card h1 {
                 font-size: 18px !important;
-                margin-bottom: 4px !important;
+                margin-bottom: 2px !important;
+                line-height: 1.25 !important;
             }
-            .welcome-card p {
+            .welcome-card p#subGreeting {
                 font-size: 11.5px !important;
-                line-height: 1.35 !important;
+                line-height: 1.3 !important;
+                margin-bottom: 14px !important;
             }
-            .welcome-card > div:last-child {
-                width: 42px !important;
-                height: 42px !important;
-                font-size: 18px !important;
+            .speech-bubble {
+                padding: 10px 12px !important;
+                border-radius: 14px !important;
             }
-            .vet-reminder-card {
-                padding: 12px 14px !important;
-                border-radius: 12px !important;
-                margin-bottom: 8px !important;
-            }
-            .vet-reminder-icon {
-                width: 36px !important;
-                height: 36px !important;
-                font-size: 15px !important;
-                border-radius: 10px !important;
-            }
-            .vet-reminder-content h4 {
-                font-size: 13px !important;
+            .speech-bubble h4 {
+                font-size: 10px !important;
                 margin-bottom: 2px !important;
             }
-            .vet-reminder-content p {
-                font-size: 11px !important;
-                line-height: 1.3 !important;
+            .speech-bubble p {
+                font-size: 10px !important;
+                line-height: 1.35 !important;
+                margin-bottom: 4px !important;
+            }
+            #tandangContextBadge {
+                font-size: 8.5px !important;
+                margin-top: 3px !important;
+            }
+            .welcome-card-disclaimer {
+                font-size: 9.5px !important;
+                margin-top: 14px !important;
+                padding-top: 8px !important;
             }
             .health-progress-card,
             .recent-activities-section {
@@ -283,14 +326,40 @@ error_reporting(E_ALL);
         
         <div class="health-container">
             <section class="dashboard-content" style="padding: 0; margin: 0; width: 100%;">
-                <div class="welcome-card" style="background: linear-gradient(135deg, #163B7A 0%, #2563EB 50%, #38BDF8 100%); margin-bottom: 12px; color: #ffffff; display: flex; align-items: center; justify-content: space-between; border-radius: 16px; padding: 25px 30px; box-shadow: 0 4px 15px rgba(23,63,129,0.2);">
+                
+                <!-- UNIFIED TANDANG & WELCOME CARD -->
+                <div class="welcome-card" style="background: linear-gradient(135deg, #00386B 0%, #173F81 50%, #38BDF8 100%); color: #ffffff; box-shadow: 0 8px 25px rgba(23,63,129,0.25); position: relative; overflow: hidden;">
+                    
                     <div>
-                        <h1 id="greeting" style="color: #ffffff; margin: 0 0 8px 0; font-size: 22px;">Good Morning! </h1>
-                        <p style="color: rgba(255,255,255,0.9); margin: 0; font-size: 13.5px;">Welcome back to Smart Vet Care. Manage your pets, appointments, health records, and stay connected with your veterinarian.</p>
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                            <span style="font-size: 10px; font-weight: 700; letter-spacing: 0.5px; opacity: 0.9; display: flex; align-items: center; gap: 5px;">
+                                <i class="fa-solid fa-sparkles" style="color: #fbbf24;"></i>˙✦ SMART VET CARE · MEET TANDANG
+                            </span>
+                            <button id="refreshTandangBtn" style="background: transparent; border: none; color: white; cursor: pointer; font-size: 13px; opacity: 0.85; transition: transform 0.2s;" title="Refresh Tip">
+                                <i class="fa-solid fa-rotate-right" id="refreshIcon"></i>
+                            </button>
+                        </div>
+                        <h1 id="greeting" style="color: #ffffff; margin: 0 0 2px 0; font-size: 18px; font-weight: 700;">Welcome back, <?php echo htmlspecialchars($logged_in_user); ?>!</h1>
+                        <p id="subGreeting" style="color: rgba(255,255,255,0.9); margin: 0 0 16px 0; font-size: 11px;">Good morning! Your AI pet buddy has a tip for you.</p>
+                        
+                        <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
+                            <div style="flex-shrink: 0; width: 110px; text-align: center;">
+                                <img id="tandangImage" src="../assets/images/tandang_smile.png" alt="Tandang AI Pet Buddy" style="width: 100px; height: auto; object-fit: contain; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.25)); display: block; margin: 0 auto;">
+                            </div>
+                            <div class="speech-bubble" style="flex: 1; min-width: 0;">
+                                <h4 style="margin: 0 0 3px 0; font-size: 10.5px; font-weight: 700; color: #1e293b; letter-spacing: 0.3px;">TANDANG</h4>
+                                <span id="tandangMessageText" style="display: block; margin: 0; font-size: 13px; line-height: 1.35; color: #334155;">
+                                    Kukurukuku! I'm TANDANG, your pet-care reminder buddy. Keep fresh drinking water available for your furry friends! 
+                                </span>
+                                <div id="tandangContextBadge" style="margin-top: 4px; font-size: 10px; color: #64748b; font-weight: 500;">
+                                    Pet care tip · Pet care tip
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div style="background: rgba(255, 255, 255, 0.15); width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #ffffff; flex-shrink: 0;">
-                        <i class="fa-solid fa-paw"></i>
-                    </div>
+                    <span class="welcome-card-disclaimer">
+                        General pet-care guidance only. Consult your veterinarian for health concerns.
+                    </span>
                 </div>
                 <div style="background: #ffffff; border-radius: 14px; padding: 12px 16px; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between; border-left: 5px solid #5b21b6;">
                     <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
@@ -308,15 +377,7 @@ error_reporting(E_ALL);
                         </div>
                     </div>
                 </div>
-                <div class="vet-reminder-card" id="seasonalReminderCard" style="margin-bottom: 12px;">
-                    <div class="vet-reminder-icon">
-                        <i class="fa-solid fa-triangle-exclamation" id="reminderIcon"></i>
-                    </div>
-                    <div class="vet-reminder-content">
-                        <h4 id="reminderTitle">Seasonal Pet Health Alert</h4>
-                        <p id="reminderText">Loading health tips for your pet...</p>
-                    </div>
-                </div>
+                
                 <div class="dashboard-cards" style="margin-bottom: 12px;">
                     <div class="stat-card">
                         <div class="icon-box icon-pets"><i class="fa-solid fa-paw"></i></div>
@@ -383,8 +444,9 @@ error_reporting(E_ALL);
         </div>
     </div>
 </div>
-<div id="smartVetChatWidget" style="position: fixed; bottom: 25px; right: 25px; z-index: 9999; font-family: 'Poppins', sans-serif;">
-    <button id="chatToggleBtn" style="background: linear-gradient(135deg, #5142f5, #173F81); color: #ffffff; border: none; width: 55px; height: 55px; border-radius: 50%; box-shadow: 0 6px 20px rgba(83, 66, 245, 0.4); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 22px; transition: transform 0.3s ease;">
+<!-- FIXED CHAT WIDGET BUTTON -->
+<div id="smartVetChatWidget" style="position: fixed; bottom: 75px; right: 20px; z-index: 9999; font-family: 'Poppins', sans-serif;">
+    <button id="chatToggleBtn" style="background: linear-gradient(135deg, #5142f5, #173F81); color: #ffffff; border: none; width: 55px; height: 55px; border-radius: 50%; box-shadow: 0 6px 20px rgba(83, 66, 245, 0.4); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 22px; transition: transform 0.2s ease;">
        <i class="fa-solid fa-paw"></i>
     </button>
     <div id="chatWindow" style="display: none; position: absolute; bottom: 70px; right: 0; width: 340px; height: 450px; background: #ffffff; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); border: 1px solid #edf2f7; flex-direction: column; overflow: hidden;">
@@ -423,83 +485,165 @@ error_reporting(E_ALL);
     </div>
 </div>
 <?php include("../includes/bottom-nav.php"); ?>
-<!-- Universal Mobile Sidebar Script Fix -->
+<!-- TANDANG & WEATHER SCRIPT (Dynamic based on Firebase User Address) -->
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const menuBtn = document.getElementById("mobileMenuBtn") || document.getElementById("menuBtn") || document.querySelector(".mobile-menu-btn") || document.querySelector(".burger-btn");
-        const sidebar = document.getElementById("appSidebar") || document.querySelector(".sidebar") || document.querySelector("aside");
-        const overlay = document.getElementById("sidebarOverlay") || document.querySelector(".sidebar-overlay");
-        if (menuBtn && sidebar) {
-            menuBtn.addEventListener("click", function(e) {
-                e.stopPropagation();
-                e.preventDefault();
-                sidebar.classList.toggle("active");
-                if (sidebar.classList.contains("active")) {
-                    sidebar.style.setProperty("left", "0px", "important");
-                    if (overlay) {
-                        overlay.classList.add("active");
-                        overlay.style.setProperty("display", "block", "important");
-                    }
-                } else {
-                    sidebar.style.setProperty("left", "-270px", "important");
-                    if (overlay) {
-                        overlay.classList.remove("active");
-                        overlay.style.setProperty("display", "none", "important");
-                    }
-                }
-            });
+    let currentTandangMode = 0; 
+    let weatherDataCache = { temp: 30.7, city: "Caloocan" };
+
+    // Dictionary para sa mga coordinates base sa address ng user mula sa Firebase
+    const cityCoordinates = {
+        "caloocan": { lat: 14.650, lon: 120.967 },
+        "valenzuela": { lat: 14.7006, lon: 120.9830 },
+        "quezon city": { lat: 14.6760, lon: 121.0437 },
+        "manila": { lat: 14.5995, lon: 120.9842 },
+        "malabon": { lat: 14.6681, lon: 120.9567 },
+        "navotas": { lat: 14.6675, lon: 120.9431 }
+    };
+
+    async function fetchDynamicWeather() {
+        try {
+            let userCity = localStorage.getItem("userAddress") || "Caloocan";
+            weatherDataCache.city = userCity;
+            
+            let key = userCity.toLowerCase().trim();
+            let coords = cityCoordinates[key] || { lat: 14.650, lon: 120.967 }; // Default sa Caloocan kung wala sa listahan
+
+            const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current=temperature_2m,precipitation&timezone=Asia%2FManila`);
+            const data = await res.json();
+            if (data && data.current) {
+                weatherDataCache.temp = data.current.temperature_2m;
+            }
+        } catch (err) {
+            console.error("Weather fetch error:", err);
         }
-        if (overlay && sidebar) {
-            overlay.addEventListener("click", function() {
-                sidebar.classList.remove("active");
-                sidebar.style.setProperty("left", "-270px", "important");
-                overlay.classList.remove("active");
-                overlay.style.setProperty("display", "none", "important");
-            });
+    }
+
+    function updateTandangDisplay() {
+        const imgEl = document.getElementById("tandangImage");
+        const msgEl = document.getElementById("tandangMessageText");
+        const badgeEl = document.getElementById("tandangContextBadge");
+        const subGreetingEl = document.getElementById("subGreeting");
+        const currentHour = new Date().getHours();
+        let timeGreet = "Good morning";
+        if (currentHour >= 12 && currentHour < 18) {
+            timeGreet = "Good afternoon";
+        } else if (currentHour >= 18) {
+            timeGreet = "Good evening";
         }
+        if (subGreetingEl) {
+            subGreetingEl.textContent = `${timeGreet}! Your AI pet buddy has a tip for you.`;
+        }
+        if (currentTandangMode === 0) {
+            if (imgEl) imgEl.src = "../assets/images/tandang_smile.png";
+            if (msgEl) {
+                msgEl.innerHTML = `Kukurukuku! I'm TANDANG, your pet-care reminder buddy. Keep fresh drinking water available for your furry friends!`;
+            }
+            if (badgeEl) {
+                badgeEl.textContent = `Pet care tip · Pet care tip`;
+            }
+        } else {
+            if (imgEl) imgEl.src = "../assets/images/tandang_no.png";
+            if (msgEl) {
+                msgEl.innerHTML = `TANDANG: Kukurukuku! On this ${weatherDataCache.temp} °C day in ${weatherDataCache.city}, keep your pets healthy with Smart Vet Care!`;
+            }
+            if (badgeEl) {
+                badgeEl.textContent = `AI reminder · Weather-informed · ${weatherDataCache.temp}°C ${weatherDataCache.city}`;
+            }
+        }
+    }
+
+    async function handleReloadTandang() {
+        const icon = document.getElementById("refreshIcon");
+        if (icon) {
+            icon.style.transform = "rotate(360deg)";
+            icon.style.transition = "transform 0.5s ease";
+            setTimeout(() => { icon.style.transform = "rotate(0deg)"; }, 500);
+        }
+        currentTandangMode = currentTandangMode === 0 ? 1 : 0;
+        await fetchDynamicWeather();
+        updateTandangDisplay();
+    }
+
+    // Makinig kapag na-load na ang address mula sa Firebase Auth state listener
+    window.addEventListener("userAddressLoaded", async (e) => {
+        await fetchDynamicWeather();
+        updateTandangDisplay();
     });
-</script>
-<script type="module">
-    import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
-    const GEMINI_API_KEY = "YOUR_GEMINI_API_KEY_HERE"; 
-    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ 
-        model: "gemini-1.5-flash",
-        systemInstruction: `You are the friendly AI Assistant for Furry Friends Animal Clinic in Smart Vet Care. 
-Clinic Details:
-- Hours: Mon-Sun 10:00 AM - 7:00 PM.
-- Location: Bagong Barrio, Caloocan (In front of 7-11, beside Lourdes Church).
-- Contact: 0925-889-7811 (Sun).
-- Features: Appointment booking via menu, viewing health records in sidebar, walk-ins accepted (₱300-₱500 consultation fee).
-Keep answers concise, helpful, and empathetic to pet owners. Always advise consulting a vet for serious medical emergencies.`
-    });
-    document.addEventListener("DOMContentLoaded", function() {
+
+    document.addEventListener("DOMContentLoaded", async function() {
+        await fetchDynamicWeather();
+        updateTandangDisplay();
+        const refreshBtn = document.getElementById("refreshTandangBtn");
+        if (refreshBtn) {
+            refreshBtn.addEventListener("click", handleReloadTandang);
+        }
         const badge = document.getElementById('clinicStatusBadge');
-        let isClinicOpen = true; 
         if (badge) {
             const options = { timeZone: 'Asia/Manila', hour: 'numeric', minute: 'numeric', hour12: false };
-            const formatter = new Intl.DateTimeFormat([], options);
-            const timeString = formatter.format(new Date());
-            
+            const timeString = new Intl.DateTimeFormat([], options).format(new Date());
             const [hourStr, minuteStr] = timeString.split(':');
-            const currentHour = parseInt(hourStr, 10);
-            const currentMinute = parseInt(minuteStr, 10);
-            const currentTimeDecimal = currentHour + (currentMinute / 60);
-            const openingHour = 10.0;
-            const closingHour = 19.0;
+            const currentTimeDecimal = parseInt(hourStr, 10) + (parseInt(minuteStr, 10) / 60);
             
-            if (currentTimeDecimal >= openingHour && currentTimeDecimal < closingHour) {
-                isClinicOpen = true;
+            if (currentTimeDecimal >= 10.0 && currentTimeDecimal < 19.0) {
                 badge.style.background = "#dcfce7";
                 badge.style.color = "#166534";
                 badge.innerHTML = '<span style="width: 6px; height: 6px; background: #22c55e; border-radius: 50%; display: inline-block;"></span> Open';
             } else {
-                isClinicOpen = false;
                 badge.style.background = "#fee2e2";
                 badge.style.color = "#991b1b";
                 badge.innerHTML = '<span style="width: 6px; height: 6px; background: #ef4444; border-radius: 50%; display: inline-block;"></span> Closed';
             }
         }
+    });
+</script>
+<!-- ROBUST EVENT DELEGATION SCRIPT PARA SA BURGER BUTTON AT SIDEBAR -->
+<script>
+    document.addEventListener("click", function(e) {
+        const menuBtn = e.target.closest("#mobileMenuBtn, #menuBtn, .mobile-menu-btn, .burger-btn, .fa-bars");
+        const sidebar = document.querySelector(".sidebar") || document.getElementById("appSidebar");
+        const overlay = document.getElementById("sidebarOverlay") || document.querySelector(".sidebar-overlay");
+        if (menuBtn && sidebar) {
+            e.stopPropagation();
+            e.preventDefault();
+            
+            sidebar.classList.toggle("active");
+            
+            if (sidebar.classList.contains("active")) {
+                sidebar.style.setProperty("left", "0px", "important");
+                if (overlay) {
+                    overlay.classList.add("active");
+                    overlay.style.setProperty("display", "block", "important");
+                }
+            } else {
+                sidebar.style.setProperty("left", "-270px", "important");
+                if (overlay) {
+                    overlay.classList.remove("active");
+                    overlay.style.setProperty("display", "none", "important");
+                }
+            }
+            return;
+        }
+        if (overlay && overlay.contains(e.target)) {
+            if (sidebar) {
+                sidebar.classList.remove("active");
+                sidebar.style.setProperty("left", "-270px", "important");
+            }
+            overlay.classList.remove("active");
+            overlay.style.setProperty("display", "none", "important");
+        }
+    }); 
+</script>
+<!-- GEMINI AI CHATBOT SCRIPT -->
+<script type="module">
+    import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
+    const GEMINI_API_KEY = "AQ.Ab8RN6Jme3HtnoqIAbhJcXQLflMqkotZa1qr04O81v7w-cg-fg"; 
+    const genAI = new GoogleGenerativeAI(AQ.Ab8RN6Jme3HtnoqIAbhJcXQLflMqkotZa1qr04O81v7w-cg-fg);
+    const model = genAI.getGenerativeModel({ 
+        model: "gemini-1.5-flash",
+        systemInstruction: `You are the friendly AI Assistant for Furry Friends Animal Clinic in Smart Vet Care.`
+    });
+    
+    document.addEventListener("DOMContentLoaded", function() {
         const toggleBtn = document.getElementById("chatToggleBtn");
         const chatWindow = document.getElementById("chatWindow");
         const closeBtn = document.getElementById("chatCloseBtn");
@@ -507,15 +651,21 @@ Keep answers concise, helpful, and empathetic to pet owners. Always advise consu
         const chatInput = document.getElementById("chatInput");
         const chatMessages = document.getElementById("chatMessages");
         const faqChips = document.querySelectorAll(".faq-chip");
-        toggleBtn.addEventListener("click", () => {
-            const isOpen = chatWindow.style.display === "flex";
-            chatWindow.style.display = isOpen ? "none" : "flex";
-            toggleBtn.style.transform = isOpen ? "scale(1)" : "scale(1.05)";
-        });
-        closeBtn.addEventListener("click", () => {
-            chatWindow.style.display = "none";
-            toggleBtn.style.transform = "scale(1)";
-        });
+        
+        if (toggleBtn && chatWindow) {
+            toggleBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                const isOpen = chatWindow.style.display === "flex";
+                chatWindow.style.display = isOpen ? "none" : "flex";
+            });
+        }
+        if (closeBtn && chatWindow) {
+            closeBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                chatWindow.style.display = "none";
+            });
+        }
+        
         function appendMessage(sender, text) {
             const msgDiv = document.createElement("div");
             if (sender === 'user') {
@@ -528,6 +678,7 @@ Keep answers concise, helpful, and empathetic to pet owners. Always advise consu
             chatMessages.scrollTop = chatMessages.scrollHeight;
             return msgDiv;
         }
+        
         async function handleBotResponse(question) {
             const loadingMsg = appendMessage('bot', "Thinking...");
             try {
@@ -535,42 +686,24 @@ Keep answers concise, helpful, and empathetic to pet owners. Always advise consu
                 const response = await result.response;
                 loadingMsg.textContent = response.text();
             } catch (error) {
-                console.error("Gemini API Error:", error);
-                let reply = "";
-                const q = question.toLowerCase();
-                if (q.includes("book") || q.includes("appointment")) {
-                    reply = "To book an appointment, simply go to 'Book Appointment' in the left menu, then select the date, time, and service for your pet.";
-                } else if (q.includes("oras") || q.includes("time") || q.includes("clinic") || q.includes("hours")) {
-                    reply = "Furry Friends Animal Clinic is open from Monday to Sundays from 10:00 AM - 07:00 PM.";
-                } else if (q.includes("health") || q.includes("records") || q.includes("medikal")) {
-                    reply = "You can view the complete medical records and history of your pets in the 'Health Records' or 'Records & History' section in the sidebar.";
-                } else if (q.includes("emergency")) {
-                    reply = "For emergencies, no appointment is needed! Please proceed directly to the clinic or call us immediately at 0925-889-7811 so we can assist your pet right away.";
-                } else if (q.includes("walk-in") || q.includes("fee") || q.includes("price") || q.includes("magkano")|| q.includes("bayad"))  {
-                    reply = "Yes, walk-ins are accepted, but scheduled appointments are prioritized for regular checkups. Standard consultation fees range from ₱300 to ₱500.";
-                } else {
-                    if (!isClinicOpen) {
-                        reply = "We are currently offline and attending to a patient. If beyond clinic hours and it is a medical emergency, please don't wait for our response instead bring your Pet to the nearest 24 hr animal Clinic.\n\nFor immediate response (during clinic hours) kindly call or text us at:\n0925-8897811 (sun)\nLocation: Bagong Barrio Caloocan\n(Infront of 711, beside Lourdes Church)\n\nWe are OPEN everyday 10am - 7pm";
-                    } else {
-                        reply = "I'm sorry, but you can refer to our Help & Support page for more details or message the clinic directly.";
-                    }
-                }
-                loadingMsg.textContent = reply;
+                loadingMsg.textContent = "Please visit our clinic or contact us at 0925-889-7811 for assistance.";
             }
         }
-        sendBtn.addEventListener("click", () => {
-            const text = chatInput.value.trim();
-            if (text) {
-                appendMessage('user', text);
-                chatInput.value = "";
-                handleBotResponse(text);
-            }
-        });
-        chatInput.addEventListener("keypress", (e) => {
-            if (e.key === "Enter") {
-                sendBtn.click();
-            }
-        });
+        
+        if (sendBtn && chatInput) {
+            sendBtn.addEventListener("click", () => {
+                const text = chatInput.value.trim();
+                if (text) {
+                    appendMessage('user', text);
+                    chatInput.value = "";
+                    handleBotResponse(text);
+                }
+            });
+            chatInput.addEventListener("keypress", (e) => {
+                if (e.key === "Enter") sendBtn.click();
+            });
+        }
+        
         faqChips.forEach(chip => {
             chip.addEventListener("click", () => {
                 const question = chip.getAttribute("data-question");
@@ -578,31 +711,6 @@ Keep answers concise, helpful, and empathetic to pet owners. Always advise consu
                 handleBotResponse(question);
             });
         });
-    });
-    document.addEventListener("DOMContentLoaded", function() {
-        const menuBtn = document.getElementById("mobileMenuBtn");
-        const sidebar = document.querySelector(".sidebar");
-        const overlay = document.getElementById("sidebarOverlay");
-        if (menuBtn && sidebar) {
-            menuBtn.addEventListener("click", function(e) {
-                e.stopPropagation();
-                sidebar.classList.toggle("active");
-                if (sidebar.classList.contains("active")) {
-                    sidebar.style.left = "0px";
-                    if (overlay) overlay.style.display = "block";
-                } else {
-                    sidebar.style.left = "-270px";
-                    if (overlay) overlay.style.display = "none";
-                }
-            });
-        }
-        if (overlay && sidebar) {
-            overlay.addEventListener("click", function() {
-                sidebar.classList.remove("active");
-                sidebar.style.left = "-270px";
-                overlay.style.display = "none";
-            });
-        }
     });
 </script>
 <script type="module" src="../assets/js/dashboard.js"></script>

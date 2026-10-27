@@ -38,10 +38,8 @@ $currentPage = basename($_SERVER['PHP_SELF']);
         </li>
         <li class="<?= ($currentPage == 'ai-chat.php') ? 'active' : '' ?>">
             <a href="ai-chat.php">
-                <svg style="width: 14px; height: 14px; margin-right: 10px; fill: currentColor; flex-shrink: 0;" viewBox="0 0 24 24">
-                    <path d="M12 2c1.8 5.7 4.3 8.2 10 10-5.7 1.8-8.2 4.3-10 10-1.8-5.7-4.3-8.2-10-10 5.7-1.8 8.2-4.3 10-10z"/>
-                </svg>
-                <span>AI Assistant</span>
+                <i class="fa-solid fa-gem"></i>
+                <span>KuaGO</span>
             </a>
         </li>
         <li class="<?= ($currentPage == 'messages.php') ? 'active' : '' ?>">
