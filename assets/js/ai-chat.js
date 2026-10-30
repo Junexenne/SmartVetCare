@@ -1,4 +1,3 @@
-import { GoogleGenAI } from "https://esm.run/@google/genai";
 import { db } from "./firebase-config.js";
 import { 
     doc, 
@@ -9,11 +8,17 @@ import {
     serverTimestamp 
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
-const apiKey = window.GEMINI_API_KEY || "AQ.Ab8RN6Kux8umlwt_88eObeBN6X0SisCo2B2jq6UBQtZ1H77E3Q";
-const ai = new GoogleGenAI({ apiKey: apiKey });
 const currentOwnerId = localStorage.getItem("ownerId") || "OWN-00004";
 
+// GROQ API KEY
+const GROQ_API_KEY = "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";
+
 const presetTopics = [
+    {
+        keywords: ['vaccine', 'vaccines', 'vaccination', 'bakuna', 'puppy vaccine', 'dog vaccine'],
+        answer: "Puppies typically need core vaccinations starting around 6 to 8 weeks of age, including the 5-in-1 (DHPP) vaccine and Anti-Rabies vaccination to protect them from dangerous infections.\n<b>Core Vaccinations Include:</b>\n• 5-in-1 Vaccine (Distemper, Hepatitis, Parainfluenza, Parvovirus)\n• Anti-Rabies Vaccine\n• Kennel Cough Vaccine (Bordatella)\n<i>Note: Please schedule a visit at Furry Friends Animal Clinic to get an accurate vaccination timeline and schedule for your puppy!</i>"
+    },
+    
     {
         keywords: ['vomit', 'vomiting', 'suka', 'nagsusuka', 'puke', 'throwing up', 'puking'],
         answer: "Vomiting in dogs can be caused by eating too fast, sudden diet changes, or underlying medical issues.\n<b>Common Symptoms to Watch Out For:</b>\n• Lethargy (loss of energy)\n• Loss of appetite\n• Dehydration (dry gums)\n• Vomit containing blood, bile, or foam\n<i>Note: If your pet has been vomiting for more than 24 hours, please visit our clinic immediately for an examination.</i>"
@@ -23,12 +28,12 @@ const presetTopics = [
         answer: "Booking an appointment online is quick and easy!\n<b>Steps to Book:</b>\n1. Navigate to the <b>Book Appointment</b> tab in the sidebar menu.\n2. Select your pet from the list.\n3. Choose your desired service (Check-up, Vaccination, Surgery, Grooming, etc.).\n4. Select your preferred date and available time slot.\n5. Click <b>Confirm Booking</b>.\nYou will receive an instant confirmation on your portal dashboard!"
     },
     {
-        keywords: ['hour', 'hours', 'time', 'open', 'operating', 'schedule', 'close', 'closing'],
+        keywords: ['hour', 'hours', 'time', 'open', 'operating', 'schedule', 'close', 'closing', 'oras'],
         answer: "Welcome! Here are the official operating hours for <b>Furry Friends Animal Clinic</b>:\n<b>Clinic Schedule:</b>\n• Monday to Sunday\n• 10:00 AM – 7:00 PM\nWe are open daily to serve you and care for your beloved pets!"
     },
     {
         keywords: ['emergency', 'urgent', 'critical', 'danger', 'bleeding', 'dying', 'seizure'],
-        answer: "Please bring your pet for immediate emergency care if they experience any of the following:\n<b>Emergency Warning Signs:</b>\n• Difficulty breathing or rapid panting\n• Severe physical trauma, deep wounds, or active bleeding\n• Inability or difficulty to urinate\n• Seizures, collapse, or loss of consciousness\n• Extreme lethargy or unresponsiveness\nPlease call us or proceed directly to the nearest veterinary facility!"
+        answer: "Please bring your pet for immediate emergency care if they experience any of the following:\n<b>Emergency Warning Signs:</b>\n• Difficulty breathing or rapid panting\n• Severe physical trauma, deep wounds, or active bleeding\n• Inability or difficulty to urinate\n• Seizures, collapse, or loss of consciousness\n• Extreme lethargy or unresponsiveness\nPlease call us 0991-572-3015 or proceed directly to the nearest veterinary facility!"
     }
 ];
 
@@ -36,7 +41,7 @@ function getPresetAnswer(userInputText) {
     const cleanInput = userInputText.toLowerCase();
     for (const topic of presetTopics) {
         const matches = topic.keywords.some(keyword => cleanInput.includes(keyword.toLowerCase()));
-        if (matches) return topic.answer;
+        if (matches) return topic.answer + "\n\n<small style='color: #6b7280;'><i>AI-generated guidance only. Consult a licensed vet for medical diagnosis.</i></small>";
     }
     return null;
 }
@@ -128,6 +133,7 @@ async function handleSendMessage(messageText) {
     await saveMessageToFirestore("user", promptText);
     if (userInput) userInput.value = "";
     
+    // Check preset topics first
     const matchedAnswer = getPresetAnswer(promptText);
     if (matchedAnswer) {
         appendMessageUI("ai", matchedAnswer);
@@ -148,27 +154,62 @@ async function handleSendMessage(messageText) {
     chatMessages.appendChild(loadingWrapper);
     chatMessages.scrollTop = chatMessages.scrollHeight;
     
-    const systemInstructionContent = `You are KuaGO, the official AI pet support companion in Smart Vet Care for Furry Friends Animal Clinic. Reply helpfully and concisely to pet owners in Tagalog, English, or Taglish regarding pet health and clinic services.`;
-    let aiResponseText = null;
+    // Improved System Instruction with balanced contextual guardrails & mandatory English output
+    const systemInstructionContent = `You are KuaGO, the official AI pet support companion in Smart Vet Care for Furry Friends Animal Clinic.
+
+CRITICAL INSTRUCTIONS:
+1. ALWAYS RESPOND IN ENGLISH ONLY: No matter what language the user inputs (Tagalog, Taglish, or English), your final answer MUST ALWAYS be written in clear English.
+2. SCOPE & TOPIC EVALUATION:
+   - ANSWER ALL PET-RELATED QUESTIONS: Answer queries about dogs, cats, small pets, pet nutrition, pet symptoms, pet vaccines, veterinary health, or Furry Friends Animal Clinic services.
+   - REJECT NON-PET TOPICS: If and ONLY IF the user asks about human medical conditions (e.g. human stomach ache, human illness), personal human relationships (e.g. breakups, dating advice), programming code, general politics, or non-animal topics, politely decline by replying ONLY with:
+     "I am KuaGO, an AI assistant dedicated ONLY to pet care and services at Furry Friends Animal Clinic. I cannot assist with human medical advice, personal concerns, or non-pet topics."
+3. ACCURATE CLINIC DETAILS:
+   - Clinic Name: Furry Friends Animal Clinic
+   - Hours: Monday to Sunday, 10:00 AM – 7:00 PM daily.
+   - Never invent fake telephone numbers or physical addresses. Direct bookings to the "Book Appointment" tab on the portal.
+4. TONE: Helpful, concise, empathetic, and professional in English.`;
+
+    let rawAiResponse = null;
     
     try {
-        const response = await ai.models.generateContent({
-            model: "gemini-1.5-flash",
-            contents: promptText,
-            config: {
-                systemInstruction: systemInstructionContent
-            }
+        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${GROQ_API_KEY}`
+            },
+            body: JSON.stringify({
+                model: "openai/gpt-oss-20b",
+                messages: [
+                    { role: "system", content: systemInstructionContent },
+                    { role: "user", content: promptText }
+                ],
+                temperature: 0.2
+            })
         });
-        if (response && response.text) {
-            aiResponseText = response.text.trim();
+
+        const data = await response.json();
+        if (data && data.choices && data.choices[0]?.message?.content) {
+            rawAiResponse = data.choices[0].message.content.trim();
+        } else if (data.error) {
+            console.error("Groq API Error:", data.error.message);
         }
     } catch (err) {
-        console.error("Gemini API Error:", err);
+        console.error("Fetch Error:", err);
     }
     
-    if (!aiResponseText) {
-        aiResponseText = "KuaGO is temporarily unavailable. Please check your connection and try again later.";
+    if (!rawAiResponse) {
+        const lowerPrompt = promptText.toLowerCase();
+        if (lowerPrompt.includes("bakuna") || lowerPrompt.includes("vaccine")) {
+            rawAiResponse = "We offer core pet vaccinations including 5-in-1, Anti-Rabies, and Kennel Cough at Furry Friends Animal Clinic. You can book an appointment on the Book Appointment page.";
+        } else if (lowerPrompt.includes("sakit") || lowerPrompt.includes("vet")) {
+            rawAiResponse = "Please bring your pet to Furry Friends Animal Clinic (Open daily from 10:00 AM to 7:00 PM) for proper check-up and veterinary diagnosis.";
+        } else {
+            rawAiResponse = "Hello! I am KuaGO, your AI pet support assistant at Furry Friends Animal Clinic. How can I help you and your pet today?";
+        }
     }
+
+    const aiResponseText = rawAiResponse + "\n\n<small style='color: #6b7280;'><i>AI-generated guidance only. Consult a licensed vet for medical diagnosis.</i></small>";
     
     const loadElem = document.getElementById(loadingId);
     if (loadElem) loadElem.remove();

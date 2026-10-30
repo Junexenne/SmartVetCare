@@ -89,7 +89,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         
         <div class="clinical-details" style="margin-top: 15px;">
             <div class="clinical-item">Chief Complaint:<br><span>${data.chiefComplaint || "None"}</span></div>
-            <div class="clinical-item">Location Bay:<br><span>${data.locationBay || "N/A"}</span></div>
             <div class="clinical-item">Attending Doctor:<br><span>${data.doctorName || "N/A"}</span></div>
             <div class="clinical-item">Admitted At:<br><span>${admittedDate}</span></div>
         </div>

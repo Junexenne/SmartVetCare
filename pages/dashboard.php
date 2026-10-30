@@ -199,6 +199,29 @@ $logged_in_user = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : (isse
             word-break: normal !important;
             overflow: visible !important;
         }
+        @keyframes tandangGentleJump {
+            0% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-4px) scale(1.01); }
+            100% { transform: translateY(0) scale(1); }
+        }
+        .tandang-bouncing {
+            animation: tandangGentleJump 2.2s ease-in-out infinite;
+        }
+        .item-close-btn {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            font-size: 13px;
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            margin-left: 6px;
+        }
+        .item-close-btn:hover {
+            background: #fee2e2;
+            color: #dc2626;
+        }
         @media (max-width: 768px) {
             .main-content {
                 padding: 12px !important;
@@ -329,11 +352,10 @@ $logged_in_user = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : (isse
                 
                 <!-- UNIFIED TANDANG & WELCOME CARD -->
                 <div class="welcome-card" style="background: linear-gradient(135deg, #00386B 0%, #173F81 50%, #38BDF8 100%); color: #ffffff; box-shadow: 0 8px 25px rgba(23,63,129,0.25); position: relative; overflow: hidden;">
-                    
                     <div>
                         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
                             <span style="font-size: 10px; font-weight: 700; letter-spacing: 0.5px; opacity: 0.9; display: flex; align-items: center; gap: 5px;">
-                                <i class="fa-solid fa-sparkles" style="color: #fbbf24;"></i>˙✦ SMART VET CARE · MEET TANDANG
+                                <i class="fa-solid fa-sparkles" style="color: #fbbf24;"></i>˙✦ SMART VET CARE · MEET TANDANG 
                             </span>
                             <button id="refreshTandangBtn" style="background: transparent; border: none; color: white; cursor: pointer; font-size: 13px; opacity: 0.85; transition: transform 0.2s;" title="Refresh Tip">
                                 <i class="fa-solid fa-rotate-right" id="refreshIcon"></i>
@@ -344,15 +366,15 @@ $logged_in_user = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : (isse
                         
                         <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
                             <div style="flex-shrink: 0; width: 110px; text-align: center;">
-                                <img id="tandangImage" src="../assets/images/tandang_smile.png" alt="Tandang AI Pet Buddy" style="width: 100px; height: auto; object-fit: contain; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.25)); display: block; margin: 0 auto;">
+                                <img id="tandangImage" src="../assets/images/t1.png" alt="Tandang AI Pet Buddy" class="tandang-bouncing" style="width: 100px; height: auto; object-fit: contain; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.25)); display: block; margin: 0 auto;">
                             </div>
                             <div class="speech-bubble" style="flex: 1; min-width: 0;">
                                 <h4 style="margin: 0 0 3px 0; font-size: 10.5px; font-weight: 700; color: #1e293b; letter-spacing: 0.3px;">TANDANG</h4>
                                 <span id="tandangMessageText" style="display: block; margin: 0; font-size: 13px; line-height: 1.35; color: #334155;">
-                                    Kukurukuku! I'm TANDANG, your pet-care reminder buddy. Keep fresh drinking water available for your furry friends! 
+                                    Kukurukuku! Loading weather and pet reminders for you...
                                 </span>
                                 <div id="tandangContextBadge" style="margin-top: 4px; font-size: 10px; color: #64748b; font-weight: 500;">
-                                    Pet care tip · Pet care tip
+                                    AI reminder · Weather-informed
                                 </div>
                             </div>
                         </div>
@@ -378,8 +400,9 @@ $logged_in_user = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : (isse
                     </div>
                 </div>
                 
+                <!-- CLICKABLE STATS CARDS (MY PETS, APPOINTMENTS, MESSAGES, AI ASSISTANT) -->
                 <div class="dashboard-cards" style="margin-bottom: 12px;">
-                    <div class="stat-card">
+                    <div class="stat-card" onclick="window.location.href='../pages/my-pets.php'" style="cursor: pointer;">
                         <div class="icon-box icon-pets"><i class="fa-solid fa-paw"></i></div>
                         <div class="card-info">
                             <h3>My Pets</h3>
@@ -387,7 +410,7 @@ $logged_in_user = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : (isse
                             <span>Registered Pets</span>
                         </div>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-card" onclick="window.location.href='../pages/appointment.php'" style="cursor: pointer;">
                         <div class="icon-box icon-appts"><i class="fa-solid fa-calendar-days"></i></div>
                         <div class="card-info">
                             <h3>Appointments</h3>
@@ -395,7 +418,7 @@ $logged_in_user = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : (isse
                             <span>Upcoming Schedule</span>
                         </div>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-card" onclick="window.location.href='../pages/messages.php'" style="cursor: pointer;">
                         <div class="icon-box icon-msgs"><i class="fa-solid fa-envelope"></i></div>
                         <div class="card-info">
                             <h3>Messages</h3>
@@ -403,23 +426,27 @@ $logged_in_user = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : (isse
                             <span>Unread Messages</span>
                         </div>
                     </div>
-                    <div class="stat-card">
-                        <div class="icon-box icon-ai">
-                            <svg style="width: 18px; height: 18px; fill: currentColor;" viewBox="0 0 24 24">
-                                <path d="M12 2c1.8 5.7 4.3 8.2 10 10-5.7 1.8-8.2 4.3-10 10-1.8-5.7-4.3-8.2-10-10 5.7-1.8 8.2-4.3 10-10z"/>
-                            </svg>
-                        </div>
-                        <div class="card-info">
-                            <h3>AI ASSISTANT</h3>
-                            <h2>Ready</h2>
-                            <span>Ask anything about pets</span>
-                        </div>
+                    <div class="stat-card" id="aiAssistantCardTrigger" onclick="window.location.href='../pages/ai-chat.php'" style="cursor: pointer;">
+                    <div class="icon-box icon-ai">
+                        <svg style="width: 18px; height: 18px; fill: currentColor;" viewBox="0 0 24 24">
+                            <path d="M12 2c1.8 5.7 4.3 8.2 10 10-5.7 1.8-8.2 4.3-10 10-1.8-5.7-4.3-8.2-10-10 5.7-1.8 8.2-4.3 10-10z"/>
+                        </svg>
+                    </div>
+                    <div class="card-info">
+                        <h3>KuaGO Ai Assistant</h3>
+                        <h2>Ready</h2>
+                        <span>Ask anything about pets</span>
                     </div>
                 </div>
+                </div>
+                
                 <div class="health-progress-card" style="margin-bottom: 12px;">
                     <div class="health-progress-header">
                         <h3><i class="fa-solid fa-calendar-check" style="color: #5142f5;"></i> Appointment Status Tracking</h3>
                         <a href="../pages/appointment.php">View Appointments</a>
+                    </div>
+                    <div style="background: #eef2ff; border-left: 4px solid #5142f5; padding: 8px 12px; border-radius: 6px; font-size: 11.5px; color: #1e3a8a; margin-bottom: 12px;">
+                        <i class="fa-solid fa-circle-info" style="margin-right: 5px;"></i> <strong>Note:</strong> Once an appointment status is marked as <strong>Completed</strong>, it will automatically disappear from this tracker within 24 hours.
                     </div>
                     <div id="dashboardAppointmentTrackerContainer">
                         <p class="empty-state" style="text-align: center; color: #64748b; padding: 15px; font-size: 13px;">Loading appointment status tracking...</p>
@@ -429,6 +456,9 @@ $logged_in_user = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : (isse
                     <div class="health-progress-header">
                         <h3><i class="fa-solid fa-kit-medical" style="color: #5142f5;"></i> Health Monitoring Progress Tracker</h3>
                         <a href="../pages/health.php">View Health</a>
+                    </div>
+                    <div style="background: #eef2ff; border-left: 4px solid #5142f5; padding: 8px 12px; border-radius: 6px; font-size: 11.5px; color: #1e3a8a; margin-bottom: 12px;">
+                        <i class="fa-solid fa-circle-info" style="margin-right: 5px;"></i> <strong>Note:</strong> Once a pet's status is marked as <strong>Discharged</strong>, it will automatically disappear from this tracker within 24 hours.
                     </div>
                     <div id="dashboardHealthContainer">
                         <p class="empty-state" style="text-align: center; color: #64748b; padding: 15px; font-size: 13px;">Loading health monitoring records...</p>
@@ -466,15 +496,18 @@ $logged_in_user = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : (isse
         </div>
         <div id="chatMessages" style="flex: 1; padding: 15px; overflow-y: auto; background: #f8fafc; display: flex; flex-direction: column; gap: 10px;">
             <div style="background: #ffffff; padding: 10px 14px; border-radius: 12px; font-size: 12.5px; color: #1e293b; box-shadow: 0 2px 5px rgba(0,0,0,0.03); max-width: 85%; border: 1px solid #edf2f7;">
-                Hello, Smart Vet Fam! How can I help you today with your pets or booking an appointment?
+                Hello, Smart Vet Fam! How can I help you today with your pets or website features?
             </div>
         </div>
+        <!-- Pinalawak na Suggestion Chips -->
         <div style="padding: 8px 12px; background: #ffffff; border-top: 1px solid #edf2f7; display: flex; gap: 6px; overflow-x: auto; white-space: nowrap;">
-            <button class="faq-chip" data-question="How to book an appointment?" style="background: #e0f2fe; color: #0369a1; border: none; padding: 5px 10px; border-radius: 15px; font-size: 11px; cursor: pointer; font-weight: 500;">📅 How to Book?</button>
-            <button class="faq-chip" data-question="What are the clinic hours?" style="background: #e0f2fe; color: #0369a1; border: none; padding: 5px 10px; border-radius: 15px; font-size: 11px; cursor: pointer; font-weight: 500;">⏰ Clinic Hours</button>
-            <button class="faq-chip" data-question="How to check health records?" style="background: #e0f2fe; color: #0369a1; border: none; padding: 5px 10px; border-radius: 15px; font-size: 11px; cursor: pointer; font-weight: 500;">📋 Health Records</button>
-            <button class="faq-chip" data-question="What to do during an emergency?" style="background: #fee2e2; color: #991b1b; border: none; padding: 5px 10px; border-radius: 15px; font-size: 11px; cursor: pointer; font-weight: 500;">🚨 Emergency</button>
-            <button class="faq-chip" data-question="Do you accept walk-ins?" style="background: #e0f2fe; color: #0369a1; border: none; padding: 5px 10px; border-radius: 15px; font-size: 11px; cursor: pointer; font-weight: 500;">🚶 Walk-ins & Fees</button>
+            <button class="faq-chip" data-question="How to book an appointment?" style="background: #e0f2fe; color: #0369a1; border: none; padding: 6px 12px; border-radius: 15px; font-size: 11px; cursor: pointer; font-weight: 600;">📅 How to Book?</button>
+            <button class="faq-chip" data-question="What are the clinic hours?" style="background: #e0f2fe; color: #0369a1; border: none; padding: 6px 12px; border-radius: 15px; font-size: 11px; cursor: pointer; font-weight: 600;">⏰ Clinic Hours</button>
+            <button class="faq-chip" data-question="Where can I see clinical records?" style="background: #e0f2fe; color: #0369a1; border: none; padding: 6px 12px; border-radius: 15px; font-size: 11px; cursor: pointer; font-weight: 600;">📁 Clinical Records</button>
+            <button class="faq-chip" data-question="How to use KuaGO AI?" style="background: #e0f2fe; color: #0369a1; border: none; padding: 6px 12px; border-radius: 15px; font-size: 11px; cursor: pointer; font-weight: 600;">🦉 Use KuaGO AI</button>
+            <button class="faq-chip" data-question="How to change my password?" style="background: #e0f2fe; color: #0369a1; border: none; padding: 6px 12px; border-radius: 15px; font-size: 11px; cursor: pointer; font-weight: 600;">🔑 Change Password</button>
+            <button class="faq-chip" data-question="How to report a problem or send feedback?" style="background: #e0f2fe; color: #0369a1; border: none; padding: 6px 12px; border-radius: 15px; font-size: 11px; cursor: pointer; font-weight: 600;">💬 Send Feedback</button>
+            <button class="faq-chip" data-question="What to do during an emergency?" style="background: #fee2e2; color: #991b1b; border: none; padding: 6px 12px; border-radius: 15px; font-size: 11px; cursor: pointer; font-weight: 600;">🚨 Emergency</button>
         </div>
         <div style="padding: 10px; background: #ffffff; border-top: 1px solid #edf2f7; display: flex; gap: 8px;">
             <input type="text" id="chatInput" placeholder="Type your question..." style="flex: 1; padding: 8px 12px; border: 1.5px solid #e2e8f0; border-radius: 8px; outline: none; font-size: 12px; font-family: 'Poppins', sans-serif;">
@@ -485,12 +518,10 @@ $logged_in_user = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : (isse
     </div>
 </div>
 <?php include("../includes/bottom-nav.php"); ?>
-<!-- TANDANG & WEATHER SCRIPT (Dynamic based on Firebase User Address) -->
+<!-- TANDANG TEMPERATURE CHECKER & GROQ AI SCRIPT -->
 <script>
-    let currentTandangMode = 0; 
-    let weatherDataCache = { temp: 30.7, city: "Caloocan" };
-
-    // Dictionary para sa mga coordinates base sa address ng user mula sa Firebase
+    const GROQ_API_KEY_TANDANG = "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"; 
+    let weatherDataCache = { temp: 30.7, city: "Caloocan", isRainy: false };
     const cityCoordinates = {
         "caloocan": { lat: 14.650, lon: 120.967 },
         "valenzuela": { lat: 14.7006, lon: 120.9830 },
@@ -500,29 +531,70 @@ $logged_in_user = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : (isse
         "navotas": { lat: 14.6675, lon: 120.9431 }
     };
 
+    let userPetsCache = [];
+
+    // 10 iba't ibang pet care reminders sa English
+    const englishRemindersPool = [
+        "please make sure {PETS} drink plenty of fresh water to stay hydrated throughout the day!",
+        "rain or wet weather is approaching. Keep {PETS} safe and avoid letting them walk through floodwaters to prevent leptospirosis!",
+        "always check {PETS} for ticks and fleas after outdoor walks in the park.",
+        "keep toxic human foods like chocolate, onions, and grapes strictly away from {PETS}.",
+        "schedule regular veterinary check-ups and keep {PETS} updated on their annual vaccinations.",
+        "brush {PETS}'s coat regularly and check their ears weekly to prevent dirt build-up and infections.",
+        "maintain good dental hygiene for {PETS} by brushing their teeth or giving them dental chew treats.",
+        "ensure {PETS} get balanced daily nutrition and measured food portions to maintain a healthy weight.",
+        "provide safe indoor toys and interactive games to keep {PETS} physically active and mentally sharp.",
+        "protect {PETS}'s paws by avoiding hot asphalt walks during peak midday sun hours."
+    ];
+    let reminderPoolIndex = 0;
+
+    function initTandangAnimation() {
+        const tandangImg = document.getElementById("tandangImage");
+        if (!tandangImg) return;
+        const frames = [
+            "../assets/images/t1.png",
+            "../assets/images/t2.png",
+            "../assets/images/t3.png",
+            "../assets/images/t4.png"
+        ];
+        let currentFrameIndex = 0;
+        setInterval(() => {
+            currentFrameIndex = (currentFrameIndex + 1) % frames.length;
+            tandangImg.src = frames[currentFrameIndex];
+        }, 1200); 
+    }
+
     async function fetchDynamicWeather() {
         try {
             let userCity = localStorage.getItem("userAddress") || "Caloocan";
+            userCity = userCity.split(',')[0].trim();
             weatherDataCache.city = userCity;
-            
             let key = userCity.toLowerCase().trim();
-            let coords = cityCoordinates[key] || { lat: 14.650, lon: 120.967 }; // Default sa Caloocan kung wala sa listahan
-
+            let coords = cityCoordinates[key] || { lat: 14.650, lon: 120.967 };
+            
             const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current=temperature_2m,precipitation&timezone=Asia%2FManila`);
             const data = await res.json();
             if (data && data.current) {
                 weatherDataCache.temp = data.current.temperature_2m;
+                weatherDataCache.isRainy = data.current.precipitation > 0;
             }
         } catch (err) {
             console.error("Weather fetch error:", err);
         }
     }
 
-    function updateTandangDisplay() {
-        const imgEl = document.getElementById("tandangImage");
+    function formatPetNames(pets) {
+        if (!pets || pets.length === 0) return "your pets";
+        if (pets.length === 1) return pets[0];
+        if (pets.length === 2) return `${pets[0]} and ${pets[1]}`;
+        return pets.slice(0, -1).join(", ") + `, and ${pets[pets.length - 1]}`;
+    }
+
+    async function updateTandangDisplay() {
         const msgEl = document.getElementById("tandangMessageText");
         const badgeEl = document.getElementById("tandangContextBadge");
         const subGreetingEl = document.getElementById("subGreeting");
+        
         const currentHour = new Date().getHours();
         let timeGreet = "Good morning";
         if (currentHour >= 12 && currentHour < 18) {
@@ -533,70 +605,92 @@ $logged_in_user = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : (isse
         if (subGreetingEl) {
             subGreetingEl.textContent = `${timeGreet}! Your AI pet buddy has a tip for you.`;
         }
-        if (currentTandangMode === 0) {
-            if (imgEl) imgEl.src = "../assets/images/tandang_smile.png";
-            if (msgEl) {
-                msgEl.innerHTML = `Kukurukuku! I'm TANDANG, your pet-care reminder buddy. Keep fresh drinking water available for your furry friends!`;
-            }
-            if (badgeEl) {
-                badgeEl.textContent = `Pet care tip · Pet care tip`;
-            }
+
+        const petsStr = formatPetNames(userPetsCache);
+
+        // Piliin ang susunod na reminder mula sa 10 options
+        reminderPoolIndex = (reminderPoolIndex + 1) % englishRemindersPool.length;
+        let baseReminder = englishRemindersPool[reminderPoolIndex];
+        baseReminder = baseReminder.replace(/{PETS}/g, petsStr);
+
+        // Kung mainit (>=31°C) o maulan, i-override para sa weather safety, kung hindi ay sundin ang pool tips
+        let tipSentence = "";
+        if (weatherDataCache.temp >= 31) {
+            tipSentence = `Kukurukuku! On this ${weatherDataCache.temp} °C day in ${weatherDataCache.city}, please make sure ${petsStr} drink plenty of fresh water to avoid heat exhaustion!`;
+        } else if (weatherDataCache.isRainy || weatherDataCache.temp < 27) {
+            tipSentence = `Kukurukuku! On this ${weatherDataCache.temp} °C rainy day in ${weatherDataCache.city}, keep ${petsStr} safe indoors and avoid floodwaters to prevent leptospirosis!`;
         } else {
-            if (imgEl) imgEl.src = "../assets/images/tandang_no.png";
-            if (msgEl) {
-                msgEl.innerHTML = `TANDANG: Kukurukuku! On this ${weatherDataCache.temp} °C day in ${weatherDataCache.city}, keep your pets healthy with Smart Vet Care!`;
+            tipSentence = `Kukurukuku! On this ${weatherDataCache.temp} °C day in ${weatherDataCache.city}, ${baseReminder}`;
+        }
+
+        if (msgEl) {
+            msgEl.textContent = tipSentence;
+        }
+        if (badgeEl) {
+            badgeEl.textContent = `AI reminder · Weather-informed · ${weatherDataCache.city}`;
+        }
+
+        // Optional Groq API call
+        try {
+            const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${GROQ_API_KEY_TANDANG}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    model: "llama-3.3-70b-versatile",
+                    messages: [
+                        { role: "system", content: "You are Tandang, a friendly pet care AI assistant. Write a short single-sentence message in English stating the temperature and city once, mentioning the pet names, and giving a weather-appropriate or general care tip." },
+                        { role: "user", content: `Current temperature is ${weatherDataCache.temp} °C in ${weatherDataCache.city}. Pet names are ${petsStr}.` }
+                    ],
+                    max_tokens: 70
+                })
+            });
+            if (response.ok) {
+                const data = await response.json();
+                if (data.choices && data.choices[0] && data.choices[0].message) {
+                    const aiText = data.choices[0].message.content.trim();
+                    if (msgEl) msgEl.textContent = aiText;
+                }
             }
-            if (badgeEl) {
-                badgeEl.textContent = `AI reminder · Weather-informed · ${weatherDataCache.temp}°C ${weatherDataCache.city}`;
-            }
+        } catch (e) {
+            console.log("Using localized fallback.");
         }
     }
 
-    async function handleReloadTandang() {
-        const icon = document.getElementById("refreshIcon");
-        if (icon) {
-            icon.style.transform = "rotate(360deg)";
-            icon.style.transition = "transform 0.5s ease";
-            setTimeout(() => { icon.style.transform = "rotate(0deg)"; }, 500);
-        }
-        currentTandangMode = currentTandangMode === 0 ? 1 : 0;
-        await fetchDynamicWeather();
-        updateTandangDisplay();
-    }
-
-    // Makinig kapag na-load na ang address mula sa Firebase Auth state listener
     window.addEventListener("userAddressLoaded", async (e) => {
         await fetchDynamicWeather();
         updateTandangDisplay();
     });
 
     document.addEventListener("DOMContentLoaded", async function() {
+        initTandangAnimation();
         await fetchDynamicWeather();
         updateTandangDisplay();
+        
+        // Magbabago ang reminder text every 15 seconds
+        setInterval(async () => {
+            await fetchDynamicWeather();
+            updateTandangDisplay();
+        }, 15000);
+
         const refreshBtn = document.getElementById("refreshTandangBtn");
         if (refreshBtn) {
-            refreshBtn.addEventListener("click", handleReloadTandang);
-        }
-        const badge = document.getElementById('clinicStatusBadge');
-        if (badge) {
-            const options = { timeZone: 'Asia/Manila', hour: 'numeric', minute: 'numeric', hour12: false };
-            const timeString = new Intl.DateTimeFormat([], options).format(new Date());
-            const [hourStr, minuteStr] = timeString.split(':');
-            const currentTimeDecimal = parseInt(hourStr, 10) + (parseInt(minuteStr, 10) / 60);
-            
-            if (currentTimeDecimal >= 10.0 && currentTimeDecimal < 19.0) {
-                badge.style.background = "#dcfce7";
-                badge.style.color = "#166534";
-                badge.innerHTML = '<span style="width: 6px; height: 6px; background: #22c55e; border-radius: 50%; display: inline-block;"></span> Open';
-            } else {
-                badge.style.background = "#fee2e2";
-                badge.style.color = "#991b1b";
-                badge.innerHTML = '<span style="width: 6px; height: 6px; background: #ef4444; border-radius: 50%; display: inline-block;"></span> Closed';
-            }
+            refreshBtn.addEventListener("click", async () => {
+                const icon = document.getElementById("refreshIcon");
+                if (icon) {
+                    icon.style.transform = "rotate(360deg)";
+                    icon.style.transition = "transform 0.5s ease";
+                    setTimeout(() => { icon.style.transform = "rotate(0deg)"; }, 500);
+                }
+                await fetchDynamicWeather();
+                updateTandangDisplay();
+            });
         }
     });
 </script>
-<!-- ROBUST EVENT DELEGATION SCRIPT PARA SA BURGER BUTTON AT SIDEBAR -->
+<!-- ROBUST EVENT DELEGATION SCRIPT PARA SA SIDEBAR -->
 <script>
     document.addEventListener("click", function(e) {
         const menuBtn = e.target.closest("#mobileMenuBtn, #menuBtn, .mobile-menu-btn, .burger-btn, .fa-bars");
@@ -605,9 +699,7 @@ $logged_in_user = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : (isse
         if (menuBtn && sidebar) {
             e.stopPropagation();
             e.preventDefault();
-            
             sidebar.classList.toggle("active");
-            
             if (sidebar.classList.contains("active")) {
                 sidebar.style.setProperty("left", "0px", "important");
                 if (overlay) {
@@ -637,10 +729,10 @@ $logged_in_user = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : (isse
 <script type="module">
     import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
     const GEMINI_API_KEY = "AQ.Ab8RN6Jme3HtnoqIAbhJcXQLflMqkotZa1qr04O81v7w-cg-fg"; 
-    const genAI = new GoogleGenerativeAI(AQ.Ab8RN6Jme3HtnoqIAbhJcXQLflMqkotZa1qr04O81v7w-cg-fg);
+    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ 
         model: "gemini-1.5-flash",
-        systemInstruction: `You are the friendly AI Assistant for Furry Friends Animal Clinic in Smart Vet Care.`
+        systemInstruction: `You are the friendly AI Assistant for Furry Friends Animal Clinic in Smart Vet Care. Always respond politely and clearly in English.`
     });
     
     document.addEventListener("DOMContentLoaded", function() {
@@ -651,14 +743,20 @@ $logged_in_user = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : (isse
         const chatInput = document.getElementById("chatInput");
         const chatMessages = document.getElementById("chatMessages");
         const faqChips = document.querySelectorAll(".faq-chip");
+        const cardTrigger = document.getElementById("aiAssistantCardTrigger");
         
-        if (toggleBtn && chatWindow) {
+        function toggleChat() {
+            if (!chatWindow) return;
+            const isFlex = window.getComputedStyle(chatWindow).display === "flex";
+            chatWindow.style.display = isFlex ? "none" : "flex";
+        }
+        if (toggleBtn) {
             toggleBtn.addEventListener("click", (e) => {
                 e.stopPropagation();
-                const isOpen = chatWindow.style.display === "flex";
-                chatWindow.style.display = isOpen ? "none" : "flex";
+                toggleChat();
             });
         }
+        
         if (closeBtn && chatWindow) {
             closeBtn.addEventListener("click", (e) => {
                 e.stopPropagation();
@@ -681,12 +779,43 @@ $logged_in_user = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : (isse
         
         async function handleBotResponse(question) {
             const loadingMsg = appendMessage('bot', "Thinking...");
+            const lowerQ = question.toLowerCase().trim();
+            if (lowerQ.includes('password') || lowerQ.includes('change pass') || lowerQ.includes('reset pass')) {
+                loadingMsg.textContent = `To change your account password:\n\n1. Click on the arrow down icon beside your profile picture at the top-right corner of the screen.\n2. Click "Settings" from the dropdown menu.\n3. Update your password details and save your changes!`;
+                return;
+            }
+            if (lowerQ.includes('kuago') || lowerQ.includes('ai support') || lowerQ.includes('explain ai')) {
+                loadingMsg.textContent = `To use Explain with Kuago:\n\n1. Go to "Records & History" from the sidebar menu.\n2. Open any clinical record entry.\n3. Click the "Explain with KuaGO" button to generate a simplified medical explanation.\n\nNote: Please note that KuaGO is an AI assistant. Always consult a licensed veterinarian for official medical diagnosis and prescriptions.`;
+                return;
+            }
+            if (lowerQ.includes('clinical record') || lowerQ.includes('where are records') || lowerQ.includes('archive') || lowerQ.includes('trash')) {
+                loadingMsg.textContent = `To view all your pet's clinical records, archived files, and trash:\n\n1. Go to "Records & History" in the sidebar menu.\n2. Make sure to change the year dropdown filter to "All Years" so all historical records are displayed.\n3. Switch between tabs to view Clinical Records, Archived Appointments, Archived Pets, or Trash!`;
+                return;
+            }
+            if (lowerQ.includes('report') || lowerQ.includes('feedback') || lowerQ.includes('problem') || lowerQ.includes('issue') || lowerQ.includes('flag')) {
+                loadingMsg.textContent = `To report a problem or submit feedback:\n\nOption 1: Go to the "Help & Support" tab in the sidebar menu, scroll down to the bottom, and fill out the "Send Feedback" form.\n\nOption 2: Click the "Flag" icon located at the top-bar (beside the date and time display) to quickly report an issue!`;
+                return;
+            }
+            if (lowerQ.includes('book') || lowerQ.includes('appointment') || lowerQ.includes('sched')) {
+                loadingMsg.textContent = `To book an appointment on our website:\n\n1. Click on "Book Appointment" in the sidebar menu.\n2. Select your registered pet.\n3. Choose your preferred service, date, and available time slot.\n4. Enter any specific notes or reasons for the visit.\n5. Click "Submit Appointment" to confirm!`;
+                return;
+            }
+            if (lowerQ.includes('hour') || lowerQ.includes('time') || lowerQ.includes('open') || lowerQ.includes('oras') || lowerQ.includes('araw') || lowerQ.includes('schedule')) {
+                loadingMsg.textContent = `Furry Friends Animal Clinic is OPEN everyday from 10:00 AM to 7:00 PM.\n\nLocation: Bagong Barrio, Caloocan (Infront of 7-11, beside Lourdes Church).\nContact us at: 0925-8897811 (Sun).`;
+                return;
+            }
+            if (lowerQ.includes('emergency') || lowerQ.includes('urgent')) {
+                loadingMsg.textContent = `For emergencies during clinic hours (10:00 AM - 7:00 PM):\nNo need to book an appointment! Please bring your pet directly to our clinic immediately or call us at 0925-8897811.\n\nIf it is beyond clinic hours, please bring your pet immediately to the nearest 24-hour emergency animal clinic!`;
+                return;
+            }
             try {
-                const result = await model.generateContent(question);
+                const promptInEnglish = `${question} (Please respond clearly and politely in English for Furry Friends Animal Clinic website user)`;
+                const result = await model.generateContent(promptInEnglish);
                 const response = await result.response;
-                loadingMsg.textContent = response.text();
+                const textReply = response.text();
+                loadingMsg.textContent = textReply ? textReply : `For immediate assistance, please visit our clinic or contact us at 0925-8897811.`;
             } catch (error) {
-                loadingMsg.textContent = "Please visit our clinic or contact us at 0925-889-7811 for assistance.";
+                loadingMsg.textContent = `We are currently offline and attending to a patient. If beyond clinic hours and it is a medical emergency, please bring your pet to the nearest 24hr animal clinic.\n\nFor immediate response during clinic hours, kindly call or text us at 0925-8897811.\nOpen everyday 10am - 7pm.`;
             }
         }
         
@@ -711,6 +840,47 @@ $logged_in_user = isset($_SESSION['user_name']) ? $_SESSION['user_name'] : (isse
                 handleBotResponse(question);
             });
         });
+    });
+</script>
+
+<!-- FIREBASE CONNECTOR PARA SA PET NAMES AT ADDRESS NG USER -->
+<script type="module">
+    import { auth, db } from "./firebase-config.js";
+    import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) return;
+        try {
+            const userQuery = query(collection(db, "users"), where("email", "==", user.email));
+            const userSnap = await getDocs(userQuery);
+            if (!userSnap.empty) {
+                const userData = userSnap.docs[0].data();
+                const ownerId = userData.ownerId;
+                if (userData.address) {
+                    localStorage.setItem("userAddress", userData.address);
+                    window.dispatchEvent(new CustomEvent("userAddressLoaded", { detail: userData.address }));
+                }
+                if (ownerId) {
+                    const petsQuery = query(collection(db, "pets"), where("ownerId", "==", ownerId));
+                    const petsSnap = await getDocs(petsQuery);
+                    let names = [];
+                    petsSnap.forEach(doc => {
+                        const pData = doc.data();
+                        if (pData.petName) names.push(pData.petName);
+                    });
+                    if (names.length > 0) {
+                        window.userPetsCache = names;
+                        if (typeof updateTandangDisplay === "function") {
+                            await fetchDynamicWeather();
+                            updateTandangDisplay();
+                        }
+                    }
+                }
+            }
+        } catch (err) {
+            console.error("Error fetching user pets/address:", err);
+        }
     });
 </script>
 <script type="module" src="../assets/js/dashboard.js"></script>

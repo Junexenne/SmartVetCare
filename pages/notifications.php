@@ -119,6 +119,7 @@
             transition: all 0.2s ease;
             position: relative;
             text-decoration: none;
+            cursor: pointer;
         }
         .full-notif-card.unread {
             background: #f0f7ff;
@@ -161,6 +162,7 @@
         }
         .full-notif-content {
             flex: 1;
+            padding-right: 24px; /* Para hindi matakpan ng X button */
         }
         .full-notif-title {
             font-size: 14px;
@@ -189,7 +191,29 @@
             border-radius: 50%;
             position: absolute;
             top: 20px;
-            right: 20px;
+            right: 45px;
+        }
+        /* Estilo para sa X Close / Delete Button */
+        .delete-notif-btn {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            z-index: 5;
+        }
+        .delete-notif-btn:hover {
+            background: #fee2e2;
+            color: #dc2626;
         }
         .empty-notifications-card {
             text-align: center;
@@ -224,7 +248,7 @@
                     </h1>
                     <p>View, manage, and check all your clinic alerts and reminders in one place.</p>
                 </div>
-                <button class="btn-mark-read" id="pageMarkAllBtn">
+                <button class="btn-mark-read" id="pageMarkAllBtn" type="button">
                     <i class="fa-solid fa-check-double"></i> Mark All as Read
                 </button>
             </div>
@@ -275,7 +299,6 @@
     
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-
     document.addEventListener("DOMContentLoaded", () => {
         const currentOwnerId = localStorage.getItem("ownerId") || localStorage.getItem("userUID");
         const currentOwnerName = localStorage.getItem("fullName") || localStorage.getItem("userName") || "Junexenne Agravante";
@@ -285,7 +308,6 @@
         
         let allNotifications = [];
         let currentFilter = "all";
-
         if (!currentOwnerId) {
             notifContainer.innerHTML = `
                 <div class="empty-notifications-card">
@@ -296,20 +318,65 @@
             `;
             return;
         }
+        // LocalStorage key for tracking read notifications across reloads
+        const READ_NOTIFS_KEY = `read_notifs_${currentOwnerId}`;
+        // LocalStorage key para sa mga tinanggal/tinatagong notifications gamit ang X button
+        const DELETED_NOTIFS_KEY = `deleted_notifs_${currentOwnerId}`;
 
-        // Render Function
-        function renderNotifications() {
-            let filtered = allNotifications;
-            if (currentFilter !== "all") {
-                filtered = allNotifications.filter(n => (n.category || "").toLowerCase() === currentFilter.toLowerCase());
+        function getReadNotifIds() {
+            try {
+                return JSON.parse(localStorage.getItem(READ_NOTIFS_KEY)) || [];
+            } catch (e) {
+                return [];
             }
+        }
+        function markNotifAsReadLocal(id) {
+            const readIds = getReadNotifIds();
+            if (!readIds.includes(id)) {
+                readIds.push(id);
+                localStorage.setItem(READ_NOTIFS_KEY, JSON.stringify(readIds));
+            }
+        }
 
+        function getDeletedNotifIds() {
+            try {
+                return JSON.parse(localStorage.getItem(DELETED_NOTIFS_KEY)) || [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function markNotifAsDeletedLocal(id) {
+            const deletedIds = getDeletedNotifIds();
+            if (!deletedIds.includes(id)) {
+                deletedIds.push(id);
+                localStorage.setItem(DELETED_NOTIFS_KEY, JSON.stringify(deletedIds));
+            }
+        }
+
+        // Render Function with LocalStorage Read & Delete State Integration
+        function renderNotifications() {
+            const readIds = getReadNotifIds();
+            const deletedIds = getDeletedNotifIds();
+
+            // Sync read status at i-filter out ang mga tinanggal gamit ang X button
+            allNotifications.forEach(n => {
+                if (readIds.includes(n.id)) {
+                    n.read = true;
+                }
+            });
+
+            let visibleNotifications = allNotifications.filter(n => !deletedIds.includes(n.id));
+
+            let filtered = visibleNotifications;
+            if (currentFilter !== "all") {
+                filtered = visibleNotifications.filter(n => (n.category || "").toLowerCase() === currentFilter.toLowerCase());
+            }
             filtered.sort((a, b) => {
                 const timeA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0);
                 const timeB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0);
                 return timeB - timeA;
             });
-
             if (filtered.length === 0) {
                 notifContainer.innerHTML = `
                     <div class="empty-notifications-card">
@@ -320,18 +387,17 @@
                 `;
                 return;
             }
-
             let html = "";
             filtered.forEach(item => {
                 const isUnread = !item.read ? "unread" : "";
                 const category = (item.category || "").toLowerCase();
                 const titleStr = (item.title || "").toLowerCase();
                 const msgStr = (item.message || "").toLowerCase();
-
+                
                 let iconContent = `<i class="fa-solid fa-bell"></i>`;
                 let iconClass = "full-notif-icon";
                 let itemClass = "";
-
+                
                 // Gagamitin ang BANTAY.png at blue background (.bantay-bg) para sa lahat ng BANTAY at Vaccination reminder
                 if (titleStr.includes("bantay") || titleStr.includes("vaccination") || msgStr.includes("bantay") || category === "health" || category === "vaccination") {
                     iconContent = `<img src="../assets/images/BANTAY.png" alt="BANTAY" onerror="this.outerHTML='<i class=\'fa-solid fa-shield-dog\'></i>'">`;
@@ -343,7 +409,6 @@
                 } else if (category === "clinic") {
                     iconContent = `<i class="fa-solid fa-bullhorn"></i>`;
                 }
-
                 let timeFormatted = "Just now";
                 if (item.createdAt) {
                     const date = item.createdAt.toDate ? item.createdAt.toDate() : new Date(item.createdAt);
@@ -358,39 +423,62 @@
                         });
                     }
                 }
-
                 html += `
-                    <a href="${item.link || '#'}" class="full-notif-card ${isUnread} ${itemClass}" data-id="${item.id}" data-type="${item.sourceType}">
-                        <div class="${iconClass}">
-                            ${iconContent}
-                        </div>
-                        <div class="full-notif-content">
-                            <h4 class="full-notif-title">${item.title || "Clinic Notification"}</h4>
-                            <p class="full-notif-msg">${item.message || ""}</p>
-                            <span class="full-notif-time"><i class="fa-regular fa-clock"></i> ${timeFormatted}</span>
-                        </div>
-                        ${!item.read ? '<div class="unread-dot"></div>' : ''}
-                    </a>
+                    <div style="position: relative; display: flex; align-items: stretch;">
+                        <a href="${item.link || '#'}" class="full-notif-card ${isUnread} ${itemClass}" data-id="${item.id}" data-type="${item.sourceType}" style="flex: 1;">
+                            <div class="${iconClass}">
+                                ${iconContent}
+                            </div>
+                            <div class="full-notif-content">
+                                <h4 class="full-notif-title">${item.title || "Clinic Notification"}</h4>
+                                <p class="full-notif-msg">${item.message || ""}</p>
+                                <span class="full-notif-time"><i class="fa-regular fa-clock"></i> ${timeFormatted}</span>
+                            </div>
+                            ${!item.read ? '<div class="unread-dot"></div>' : ''}
+                        </a>
+                        <button type="button" class="delete-notif-btn" data-id="${item.id}" title="Remove Notification">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
                 `;
             });
-
             notifContainer.innerHTML = html;
 
+            // Event Listeners para sa X Close / Delete Button
+            document.querySelectorAll(".delete-notif-btn").forEach(btn => {
+                btn.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const notifId = btn.getAttribute("data-id");
+                    if (notifId) {
+                        markNotifAsDeletedLocal(notifId);
+                        renderNotifications();
+                    }
+                });
+            });
+
+            // Event Listeners for Clicking Individual Notification Card
             document.querySelectorAll(".full-notif-card").forEach(card => {
-                card.addEventListener("click", async () => {
+                card.addEventListener("click", async (e) => {
                     const notifId = card.getAttribute("data-id");
                     const sourceType = card.getAttribute("data-type");
-                    if (notifId && sourceType === "notification") {
-                        try {
-                            await updateDoc(doc(db, "notifications", notifId), { read: true });
-                        } catch (e) {
-                            console.error("Error reading notification:", e);
+                    
+                    if (notifId) {
+                        markNotifAsReadLocal(notifId);
+                        const found = allNotifications.find(n => n.id === notifId);
+                        if (found) found.read = true;
+                        if (sourceType === "notification") {
+                            try {
+                                await updateDoc(doc(db, "notifications", notifId), { read: true });
+                            } catch (e) {
+                                console.error("Error reading notification:", e);
+                            }
                         }
+                        renderNotifications();
                     }
                 });
             });
         }
-
         // Filter Handlers
         filterBtns.forEach(btn => {
             btn.addEventListener("click", () => {
@@ -400,7 +488,6 @@
                 renderNotifications();
             });
         });
-
         // 1. Fetch General Notifications Collection
         const notifQuery = query(collection(db, "notifications"), where("ownerId", "==", currentOwnerId));
         onSnapshot(notifQuery, (snap) => {
@@ -410,40 +497,59 @@
                 const titleStr = (data.title || "").toLowerCase();
                 let cat = data.category || "clinic";
                 if (titleStr.includes("bantay") || titleStr.includes("vaccination")) cat = "health";
-
                 allNotifications.push({ 
                     id: docSnap.id, 
                     sourceType: "notification", 
                     category: cat,
+                    read: data.read || false,
                     ...data 
                 });
             });
             renderNotifications();
         });
-
         // 2. Fetch Appointments (`appointments_v2`)
         const apptQuery = query(collection(db, "appointments_v2"), where("ownerId", "==", currentOwnerId));
-        onSnapshot(apptQuery, (snap) => {
+        onSnapshot(apptQuery, (snapshot) => {
             allNotifications = allNotifications.filter(n => n.sourceType !== "appointment");
-            snap.forEach(docSnap => {
+            let upcoming = [];
+            snapshot.forEach((docSnap) => {
                 const data = docSnap.data();
-                const status = (data.status || "").toLowerCase();
-                if (["confirmed", "approved", "in progress", "completed", "rejected", "declined", "cancelled"].includes(status)) {
+                const status = (data.status || "").toLowerCase().trim();
+                // Kasama na ang "pending" para lumabas ang appointment at notification!
+                if (["pending", "confirmed", "approved", "in progress", "completed"].includes(status)) {
                     allNotifications.push({
                         id: "appt_" + docSnap.id,
                         sourceType: "appointment",
                         category: "appointment",
-                        title: `Appointment ${status.charAt(0).toUpperCase() + status.slice(1)}`,
-                        message: `Your appointment for ${data.service || 'checkup'} (Pet: ${data.petName || 'N/A'}) is ${status}.`,
+                        title: `Appointment ${status.charAt(0).toUpperCase() + status.slice(1)}!`,
+                        message: `Your appointment for ${data.service || 'checkup'} (Pet: ${data.petName || 'N/A'}) is scheduled on ${data.date || ''}.`,
+                        read: false,
+                        createdAt: data.createdAt || new Date(),
+                        link: 'appointment.php'
+                    });
+                } else if (["rejected", "declined", "cancelled"].includes(status)) {
+                    allNotifications.push({
+                        id: "appt_rej_" + docSnap.id,
+                        sourceType: "appointment",
+                        category: "appointment",
+                        title: `Appointment Request ${status.charAt(0).toUpperCase() + status.slice(1)}`,
+                        message: `Sorry, your request for ${data.service || 'checkup'} on ${data.date || ''} could not be accommodated.`,
                         read: false,
                         createdAt: data.createdAt || new Date(),
                         link: 'appointment.php'
                     });
                 }
+                // Isasama sa upcoming array ang pending, confirmed, at approved na hindi archived
+                if (status !== "cancelled" && status !== "rejected" && status !== "declined" && !data.isArchived) {
+                    upcoming.push({ id: docSnap.id, ...data });
+                }
             });
+            // Siguraduhing nare-render ang upcoming appointments sa UI
+            if (typeof renderUpcomingAppointments === "function") {
+                renderUpcomingAppointments(upcoming);
+            }
             renderNotifications();
         });
-
         // 3. Fetch Health Monitoring (`health_monitoring`) - BANTAY
         const healthQuery = query(collection(db, "health_monitoring"), where("ownerId", "==", currentOwnerId));
         onSnapshot(healthQuery, (snap) => {
@@ -465,34 +571,27 @@
             });
             renderNotifications();
         });
-
-        // 4. Fetch Vaccination Records (`vaccination_records`) - Makatotohanang Due Date base sa itinurok na vaccine
+        // 4. Fetch Vaccination Records (`vaccination_records`)
         const fetchVaccinationRecords = async () => {
             try {
                 const vacSnapByName = await getDocs(query(collection(db, "vaccination_records"), where("ownerName", "==", currentOwnerName)));
                 const vacSnapById = await getDocs(query(collection(db, "vaccination_records"), where("ownerId", "==", currentOwnerId)));
-
                 allNotifications = allNotifications.filter(n => n.sourceType !== "vaccination_records");
-
                 const processVacDoc = (docSnap) => {
                     const data = docSnap.data();
                     const petName = data.petName || "Your Pet";
                     const petId = data.petId || "N/A";
                     const vaccineName = data.vaccineName || data.vaccine || "5-in-1 Vaccine";
                     
-                    // Kalkulahin o kunin ang makatotohanang due date (karaniwan ay 1 taon pagkatapos ng dateAdministered)
                     let administeredDateObj = new Date();
                     if (data.dateAdministered) {
                         administeredDateObj = new Date(data.dateAdministered);
                     } else if (data.createdAt) {
                         administeredDateObj = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
                     }
-
-                    // Magdagdag ng 1 taon para sa susunod na due date ng bakuna (makatotohanang schedule)
                     let dueDateObj = new Date(administeredDateObj);
                     dueDateObj.setFullYear(dueDateObj.getFullYear() + 1);
                     const dueDateStr = dueDateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-
                     const exists = allNotifications.some(n => n.id === "vac_" + docSnap.id);
                     if (!exists) {
                         allNotifications.push({
@@ -507,7 +606,6 @@
                         });
                     }
                 };
-
                 vacSnapByName.forEach(processVacDoc);
                 vacSnapById.forEach(processVacDoc);
                 renderNotifications();
@@ -516,7 +614,6 @@
             }
         };
         fetchVaccinationRecords();
-
         // 5. Fetch Announcements / Clinic
         const announceQuery = query(collection(db, "announcements"));
         onSnapshot(announceQuery, (snap) => {
@@ -536,17 +633,19 @@
             });
             renderNotifications();
         });
-
-        // Mark All as Read
+        // Mark All as Read with Persistent LocalStorage & Database Update
         if (markAllBtn) {
             markAllBtn.addEventListener("click", async () => {
                 try {
+                    allNotifications.forEach(n => {
+                        n.read = true;
+                        markNotifAsReadLocal(n.id);
+                    });
                     const unreadQuery = query(collection(db, "notifications"), where("ownerId", "==", currentOwnerId), where("read", "==", false));
                     const unreadSnap = await getDocs(unreadQuery);
                     unreadSnap.forEach(async (docSnap) => {
                         await updateDoc(doc(db, "notifications", docSnap.id), { read: true });
                     });
-                    allNotifications.forEach(n => n.read = true);
                     renderNotifications();
                 } catch (e) {
                     console.error("Error marking all read:", e);

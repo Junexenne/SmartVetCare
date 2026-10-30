@@ -275,7 +275,6 @@
             margin-bottom: 6px;
             color: #475569;
         }
-        .form-group select, 
         .form-group textarea {
             width: 100% !important;
             max-width: 100% !important;
@@ -289,19 +288,36 @@
             background: #fff;
             outline: none;
             transition: border-color 0.2s, box-shadow 0.2s;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            overflow: hidden;
         }
-        .form-group select option {
-            max-width: 100%;
-            white-space: normal;
-            word-wrap: break-word;
-        }
-        .form-group select:focus, 
         .form-group textarea:focus {
             border-color: #5142f5;
             box-shadow: 0 0 0 3px rgba(81, 66, 245, 0.1);
+        }
+        .multi-checkbox-box {
+            max-height: 160px;
+            overflow-y: auto;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 10px 12px;
+            background: #ffffff;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .multi-checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: #1e1b4b;
+            cursor: pointer;
+            user-select: none;
+        }
+        .multi-checkbox-item input[type="checkbox"] {
+            accent-color: #5142f5;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
         }
         @media (max-width: 992px) {
             .appointment-card-grid {
@@ -378,7 +394,8 @@
                     <strong>Holiday & Emergency Advisory:</strong> The clinic is closed during holidays for regular appointments. However, we can still accommodate <strong>emergency cases</strong> on these days no appointment is needed for emergencies! You can proceed directly to the clinic or call us immediately at 0991-572-3015.
                 </div>
             </div>
-            <div id="alertBox"></div>
+            
+            <div id="alertBox" style="display: none; padding: 12px 16px; border-radius: 10px; font-size: 13px; font-weight: 500;"></div>
             <div class="profile-style-card">
                 <div class="appointment-card-grid">
                     <div class="appointment-left">
@@ -389,6 +406,11 @@
                         <p class="calendar-note" style="color: #64748b; font-size: 13px; margin-bottom: 16px;">
                             Choose your preferred appointment date and schedule (Clinic hours: 10:00 AM – 7:00 PM).
                         </p>
+                        
+                        <div id="holidayNoticeBanner" style="display: none; border-left: 4px solid #e53e3e; background: #fff5f5; padding: 10px 14px; border-radius: 0 8px 8px 0; margin-bottom: 12px;">
+                            <small style="text-transform: uppercase; font-size: 10px; font-weight: 700; color: #e53e3e; display: block;">Holiday Notice</small>
+                            <h4 id="holidayNoticeText" style="margin: 2px 0 0 0; font-size: 13.5px; color: #9b2c2c; font-weight: 600;">-</h4>
+                        </div>
                         <div class="custom-datetime-wrapper">
                             <div class="datetime-display-box" id="datetimeToggleBtn">
                                 <div style="display: flex; align-items: center; gap: 8px; color: #475569; font-size: 13px; font-weight: 500; overflow: hidden;">
@@ -437,40 +459,35 @@
                     </div>
                     <div class="appointment-right">
                         <div class="form-group">
-                            <label>Registered Pet</label>
-                            <select id="petSelect">
-                                <option value="">Loading pets...</option>
-                            </select>
+                            <label><i class="fa-solid fa-paw" style="color: #5142f5;"></i> Registered Pet(s) <small style="color: #64748b;">(Select one or more)</small></label>
+                            <div id="petsCheckboxContainer" class="multi-checkbox-box">
+                                <span style="font-size: 12px; color: #888;">Loading your pets...</span>
+                            </div>
                         </div>
                         <div class="form-group">
-                            <label>Service</label>
-                            <select id="service">
-                                <option value="Select a Service">Select a Service</option>
-                                <optgroup label="Wellness">
-                                    <option value="Wellness - Deworming">Deworming</option>
-                                    <option value="Wellness - Anti Rabies">Anti Rabies</option>
-                                    <option value="Wellness - Vaccination (2in1)">2in1 Vaccine</option>
-                                    <option value="Wellness - Vaccination (4in1 Cat)">4in1 Vaccine (Cat)</option>
-                                    <option value="Wellness - Vaccination (4in1 Dog)">4in1 Vaccine (Dog)</option>
-                                    <option value="Wellness - Vaccination (5in1)">5in1 Vaccine</option>
-                                    <option value="Wellness - Vaccination (6in1)">6in1 Vaccine</option>
-                                    <option value="Wellness - Vaccination (7in1)">7in1 Vaccine</option>
-                                    <option value="Wellness - Vaccination (8in1)">8in1 Vaccine</option>
-                                </optgroup>
-                                <optgroup label="Laboratories">
-                                    <option value="Laboratories - CBC">CBC</option>
-                                    <option value="Laboratories - Chemistry">Chemistry</option>
-                                    <option value="Laboratories - Microscopy">Microscopy</option>
-                                    <option value="Laboratories - Ultrasound">Ultrasound</option>
-                                    <option value="Laboratories - Laser Therapy">Laser Therapy</option>
-                                </optgroup>
-                                <option value="Check up">Check up</option>
-                                <option value="Minor Surgeries">Minor Surgeries</option>
-                            </select>
+                            <label><i class="fa-solid fa-stethoscope" style="color: #5142f5;"></i> Service(s) <small style="color: #64748b;">(Select one or more)</small></label>
+                            <div id="servicesCheckboxContainer" class="multi-checkbox-box" style="max-height: 180px;">
+                                <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" value="Wellness - Deworming"> Deworming</label>
+                                <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" value="Wellness - Anti Rabies"> Anti Rabies</label>
+                                <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" value="Wellness - Vaccination (2in1)"> 2in1 Vaccine</label>
+                                <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" value="Wellness - Vaccination (4in1 Cat)"> 4in1 Vaccine (Cat)</label>
+                                <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" value="Wellness - Vaccination (4in1 Dog)"> 4in1 Vaccine (Dog)</label>
+                                <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" value="Wellness - Vaccination (5in1)"> 5in1 Vaccine</label>
+                                <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" value="Wellness - Vaccination (6in1)"> 6in1 Vaccine</label>
+                                <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" value="Wellness - Vaccination (7in1)"> 7in1 Vaccine</label>
+                                <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" value="Wellness - Vaccination (8in1)"> 8in1 Vaccine</label>
+                                <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" value="Laboratories - CBC"> Laboratories - CBC</label>
+                                <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" value="Laboratories - Chemistry"> Laboratories - Chemistry</label>
+                                <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" value="Laboratories - Microscopy"> Laboratories - Microscopy</label>
+                                <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" value="Laboratories - Ultrasound"> Laboratories - Ultrasound</label>
+                                <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" value="Laboratories - Laser Therapy"> Laboratories - Laser Therapy</label>
+                                <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" value="Check up"> Check up</label>
+                                <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" value="Minor Surgeries"> Minor Surgeries</label>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label>Reason / Notes</label>
-                            <textarea id="notes" placeholder="Describe your pet's condition or consultation details..." style="resize: vertical; min-height: 110px;"></textarea>
+                            <textarea id="notes" placeholder="Describe your pet's condition or consultation details..." style="resize: vertical; min-height: 90px;"></textarea>
                         </div>
                         <button id="bookAppointmentBtn" class="book-btn" style="width: 100%; background: #5142f5; color: #fff; border: none; padding: 12px; border-radius: 10px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s, box-shadow 0.2s;">
                             <i class="fa-solid fa-calendar-plus"></i>
@@ -479,6 +496,7 @@
                     </div>
                 </div>
             </div>
+            
             <div class="profile-style-card">
                 <h3 style="color: #1e1b4b; font-size: 16px; display: flex; align-items: center; gap: 8px; margin: 0 0 12px 0;">
                     <i class="fa-solid fa-calendar-check" style="color: #5142f5;"></i>
@@ -516,22 +534,6 @@
 <?php include("../includes/bottom-nav.php"); ?>
 <script>
     document.addEventListener("DOMContentLoaded", () => {
-        const mobileBtn = document.getElementById('mobileMenuBtn');
-        const sidebar = document.querySelector('.sidebar'); 
-        const overlay = document.getElementById('sidebarOverlay');
-        if (mobileBtn && sidebar && overlay) {
-            mobileBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                sidebar.classList.toggle('active');
-                sidebar.style.left = sidebar.classList.contains('active') ? "0px" : "-270px";
-                overlay.classList.toggle('active');
-            });
-            overlay.addEventListener('click', () => {
-                sidebar.classList.remove('active');
-                sidebar.style.left = "-270px";
-                overlay.classList.remove('active');
-            });
-        }
         const toggleBtn = document.getElementById('datetimeToggleBtn');
         const popup = document.getElementById('datetimePopup');
         const selectedDateText = document.getElementById('selectedDateText');
@@ -539,6 +541,8 @@
         const hiddenDateInput = document.getElementById('appointmentDate');
         const hiddenTimeInput = document.getElementById('appointmentTime');
         const pickerSlotsContainer = document.getElementById('pickerSlotsContainer');
+        const holidayNoticeBanner = document.getElementById('holidayNoticeBanner');
+        const holidayNoticeText = document.getElementById('holidayNoticeText');
         
         let currentDate = new Date();
         let selectedYear = currentDate.getFullYear();
@@ -550,66 +554,54 @@
         const monthSelect = document.getElementById('monthSelect');
         const yearSelect = document.getElementById('yearSelect');
         
-        monthNames.forEach((m, idx) => {
-            const opt = document.createElement('option');
-            opt.value = idx;
-            opt.textContent = m;
-            monthSelect.appendChild(opt);
-        });
-        for (let y = selectedYear - 2; y <= selectedYear + 5; y++) {
-            const opt = document.createElement('option');
-            opt.value = y;
-            opt.textContent = y;
-            yearSelect.appendChild(opt);
+        if (monthSelect && yearSelect) {
+            monthNames.forEach((m, idx) => {
+                const opt = document.createElement('option');
+                opt.value = idx;
+                opt.textContent = m;
+                monthSelect.appendChild(opt);
+            });
+            for (let y = selectedYear - 2; y <= selectedYear + 5; y++) {
+                const opt = document.createElement('option');
+                opt.value = y;
+                opt.textContent = y;
+                yearSelect.appendChild(opt);
+            }
         }
         
-        function isPhilippineHoliday(dateObj) {
+        function getHolidayName(dateObj) {
             const year = dateObj.getFullYear();
             const month = dateObj.getMonth();
             const day = dateObj.getDate();
-            const fixedHolidays = [
-                { m: 0, d: 1 }, { m: 3, d: 9 }, { m: 4, d: 1 }, { m: 5, d: 12 },
-                { m: 7, d: 21 }, { m: 10, d: 1 }, { m: 10, d: 2 }, { m: 10, d: 30 },
-                { m: 11, d: 8 }, { m: 11, d: 24 }, { m: 11, d: 25 }, { m: 11, d: 30 }, { m: 11, d: 31 }
-            ];
-            for (let h of fixedHolidays) {
-                if (month === h.m && day === h.d) return true;
-            }
+            
+            const specificHolidays = {
+                "0-1": "New Year's Day",
+                "3-9": "Araw ng Kagitingan",
+                "4-1": "Labor Day",
+                "5-12": "Independence Day",
+                "7-21": "Ninoy Aquino Day",
+                "10-1": "All Saints' Day (Undas)",
+                "10-2": "All Souls' Day",
+                "10-30": "Bonifacio Day",
+                "11-8": "Feast of the Immaculate Conception",
+                "11-24": "Christmas Eve",
+                "11-25": "Christmas Day",
+                "11-30": "Rizal Day",
+                "11-31": "New Year's Eve"
+            };
+            const key = `${month}-${day}`;
+            if (specificHolidays[key]) return specificHolidays[key];
             if (month === 7) {
                 const lastDayAugust = new Date(year, 7, 31);
                 let lastMondayAugust = 31 - ((lastDayAugust.getDay() + 6) % 7);
-                if (day === lastMondayAugust) return true;
+                if (day === lastMondayAugust) return "National Heroes Day";
             }
-            if (month === 1 && day === 25) return true;
-            const a = year % 19;
-            const b = Math.floor(year / 100);
-            const c = year % 100;
-            const d = Math.floor(b / 4);
-            const e = b % 4;
-            const f = Math.floor((b + 8) / 25);
-            const g = Math.floor((b - f + 1) / 3);
-            const h = (19 * a + b - d - g + 15) % 30;
-            const i = Math.floor(c / 4);
-            const k = c % 4;
-            const L = (32 + 2 * e + 2 * i - h - k) % 7;
-            const m = Math.floor((a + 11 * h + 22 * L) / 451);
-            const monthEaster = Math.floor((h + L - 7 * m + 114) / 31) - 1;
-            const dayEaster = ((h + L - 7 * m + 114) % 31) + 1;
-            const easterDate = new Date(year, monthEaster, dayEaster);
-            
-            const maundyThursday = new Date(easterDate);
-            maundyThursday.setDate(easterDate.getDate() - 3);
-            if (month === maundyThursday.getMonth() && day === maundyThursday.getDate()) return true;
-            const goodFriday = new Date(easterDate);
-            goodFriday.setDate(easterDate.getDate() - 2);
-            if (month === goodFriday.getMonth() && day === goodFriday.getDate()) return true;
-            const blackSaturday = new Date(easterDate);
-            blackSaturday.setDate(easterDate.getDate() - 1);
-            if (month === blackSaturday.getMonth() && day === blackSaturday.getDate()) return true;
-            return false;
+            if (month === 1 && day === 25) return "EDSA People Power Revolution Anniversary";
+            return null;
         }
         function renderCalendarDays() {
             const grid = document.getElementById('calendarDaysGrid');
+            if (!grid) return;
             grid.innerHTML = '';
             const firstDayIndex = new Date(selectedYear, selectedMonth, 1).getDay();
             const totalDays = new Date(selectedYear, selectedMonth + 1, 0).getDate();
@@ -631,7 +623,8 @@
                 currentCellDate.setHours(0, 0, 0, 0);
                 
                 let isDisabled = false;
-                let isHoliday = isPhilippineHoliday(currentCellDate);
+                let holidayName = getHolidayName(currentCellDate);
+                let isHoliday = holidayName !== null;
                 if (currentCellDate < today || isHoliday) {
                     isDisabled = true;
                 }
@@ -646,12 +639,25 @@
                     if (d === selectedDay) {
                         dayEl.classList.add('selected');
                     }
-                    dayEl.addEventListener('click', () => {
-                        selectedDay = d;
-                        renderCalendarDays();
-                        loadPickerTimeSlots();
-                    });
                 }
+                dayEl.addEventListener('click', () => {
+                    selectedDay = d;
+                    renderCalendarDays();
+                    loadPickerTimeSlots();
+                    
+                    const clickedDateObj = new Date(selectedYear, selectedMonth, d);
+                    const nameOfHoliday = getHolidayName(clickedDateObj);
+                    if (nameOfHoliday) {
+                        if (holidayNoticeBanner && holidayNoticeText) {
+                            holidayNoticeText.textContent = `${nameOfHoliday} (${clickedDateObj.toLocaleDateString()})`;
+                            holidayNoticeBanner.style.display = "block";
+                        }
+                    } else {
+                        if (holidayNoticeBanner) {
+                            holidayNoticeBanner.style.display = "none";
+                        }
+                    }
+                });
                 grid.appendChild(dayEl);
             }
         }
@@ -676,6 +682,7 @@
             return now > slotDate;
         }
         function loadPickerTimeSlots() {
+            if (!pickerSlotsContainer) return;
             pickerSlotsContainer.innerHTML = '<p style="color: #888; font-size: 12px; text-align: center;">Loading slots...</p>';
             let standardSlots = [
                 { time: "10:00 AM", isBreak: false },
@@ -687,12 +694,17 @@
                 { time: "05:30 PM", isBreak: false }
             ];
             const selectedDateObj = new Date(selectedYear, selectedMonth, selectedDay);
-            const isHolidayDate = isPhilippineHoliday(selectedDateObj);
+            const holidayTitle = getHolidayName(selectedDateObj);
+            const isHolidayDate = holidayTitle !== null;
             setTimeout(() => {
                 pickerSlotsContainer.innerHTML = '';
+                const doneBtn = document.getElementById('donePickerBtn');
                 if (isHolidayDate) {
-                    pickerSlotsContainer.innerHTML = `<div style="background: #fee2e2; color: #991b1b; padding: 12px; border-radius: 8px; font-size: 12px; text-align: center; font-weight: 500;">Clinic is Closed (Holiday). Walk-in emergencies only.</div>`;
+                    if (doneBtn) doneBtn.style.display = 'none';
+                    pickerSlotsContainer.innerHTML = `<div style="background: #fee2e2; color: #991b1b; padding: 12px; border-radius: 8px; font-size: 12px; text-align: center; font-weight: 500;">Clinic is Closed (${holidayTitle}). Walk-in emergencies only.</div>`;
                     return;
+                } else {
+                    if (doneBtn) doneBtn.style.display = 'block';
                 }
                 standardSlots.forEach(slotObj => {
                     const slotDiv = document.createElement('div');
@@ -774,8 +786,9 @@
         if (doneBtn) {
             doneBtn.addEventListener('click', () => {
                 const selectedDateObjCheck = new Date(selectedYear, selectedMonth, selectedDay);
-                if (isPhilippineHoliday(selectedDateObjCheck)) {
-                    alert("Cannot select appointments on holidays. The clinic is closed for regular appointments.");
+                const holidayCheckName = getHolidayName(selectedDateObjCheck);
+                if (holidayCheckName) {
+                    alert(`Cannot select appointments on holidays (${holidayCheckName}). The clinic is closed for regular appointments.`);
                     return;
                 }
                 if (!selectedTimeValue) {
@@ -801,36 +814,43 @@
         }
         updatePickerUI();
     });
-    <!-- Dedicated Mobile Sidebar Direct Fix Script -->
+</script>
+<script type="module" src="../assets/js/appointment.js"></script>
 
-    document.addEventListener("DOMContentLoaded", function() {
-        const menuBtn = document.getElementById("mobileMenuBtn");
-        const sidebar = document.querySelector(".sidebar");
-        const overlay = document.getElementById("sidebarOverlay");
-
+<!-- ROBUST EVENT DELEGATION SCRIPT PARA SA SIDEBAR -->
+<script>
+    document.addEventListener("click", function(e) {
+        const menuBtn = e.target.closest("#mobileMenuBtn, #menuBtn, .mobile-menu-btn, .burger-btn, .fa-bars");
+        const sidebar = document.querySelector(".sidebar") || document.getElementById("appSidebar");
+        const overlay = document.getElementById("sidebarOverlay") || document.querySelector(".sidebar-overlay");
         if (menuBtn && sidebar) {
-            menuBtn.addEventListener("click", function(e) {
-                e.stopPropagation();
-                sidebar.classList.toggle("active");
-                if (sidebar.classList.contains("active")) {
-                    sidebar.style.left = "0px";
-                    if (overlay) overlay.style.display = "block";
-                } else {
-                    sidebar.style.left = "-270px";
-                    if (overlay) overlay.style.display = "none";
+            e.stopPropagation();
+            e.preventDefault();
+            sidebar.classList.toggle("active");
+            if (sidebar.classList.contains("active")) {
+                sidebar.style.setProperty("left", "0px", "important");
+                if (overlay) {
+                    overlay.classList.add("active");
+                    overlay.style.setProperty("display", "block", "important");
                 }
-            });
+            } else {
+                sidebar.style.setProperty("left", "-270px", "important");
+                if (overlay) {
+                    overlay.classList.remove("active");
+                    overlay.style.setProperty("display", "none", "important");
+                }
+            }
+            return;
         }
-
-        if (overlay && sidebar) {
-            overlay.addEventListener("click", function() {
+        if (overlay && overlay.contains(e.target)) {
+            if (sidebar) {
                 sidebar.classList.remove("active");
-                sidebar.style.left = "-270px";
-                overlay.style.display = "none";
-            });
+                sidebar.style.setProperty("left", "-270px", "important");
+            }
+            overlay.classList.remove("active");
+            overlay.style.setProperty("display", "none", "important");
         }
     });
 </script>
-<script type="module" src="../assets/js/appointment.js"></script>
 </body>
 </html>

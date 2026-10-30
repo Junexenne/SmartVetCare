@@ -1162,6 +1162,7 @@
                 reportModal.style.display = "none";
             }
         });
+        // REAL-TIME LIVE SEARCH FOR OWNER'S PETS, APPOINTMENTS, HEALTH, VACCINATION & CLINICAL RECORDS
         const searchInput = document.getElementById("topSearchInput");
         const searchDropdown = document.getElementById("liveSearchResults");
         if (searchInput && searchDropdown) {
@@ -1177,40 +1178,118 @@
                 debounceTimer = setTimeout(async () => {
                     try {
                         let matchedResults = [];
-                        try {
-                            const petsSnapshot = await getDocs(collection(db, "pets"));
-                            petsSnapshot.forEach((docSnap) => {
-                                const data = docSnap.data();
-                                const petName = (data.petName || data.name || "").toLowerCase();
-                                const breed = (data.breed || "").toLowerCase();
-                                const owner = (data.ownerName || "").toLowerCase();
-                                if (petName.includes(queryVal) || breed.includes(queryVal) || owner.includes(queryVal)) {
-                                    matchedResults.push({
-                                        title: data.petName || data.name || "Unnamed Pet",
-                                        description: `Breed: ${data.breed || 'N/A'} - Owner: ${data.ownerName || 'N/A'}`,
-                                        type: "Pet",
-                                        url: "my-pets.php"
-                                    });
-                                }
-                            });
-                        } catch (e) {}
-                        try {
-                            const apptSnapshot = await getDocs(collection(db, "appointments"));
-                            apptSnapshot.forEach((docSnap) => {
-                                const data = docSnap.data();
-                                const service = (data.service || data.reason || "").toLowerCase();
-                                const clientName = (data.clientName || data.ownerName || "").toLowerCase();
-                                const petName = (data.petName || "").toLowerCase();
-                                if (service.includes(queryVal) || clientName.includes(queryVal) || petName.includes(queryVal)) {
-                                    matchedResults.push({
-                                        title: `Appointment: ${data.service || data.reason || 'Checkup'}`,
-                                        description: `Pet: ${data.petName || 'N/A'} | Date: ${data.date || 'N/A'}`,
-                                        type: "Appointment",
-                                        url: "appointment.php"
-                                    });
-                                }
-                            });
-                        } catch (e) {}
+
+                        if (currentOwnerId) {
+                            // 1. Search Pets (Filtered strictly by currentOwnerId)
+                            try {
+                                const petQuery = query(collection(db, "pets"), where("ownerId", "==", currentOwnerId));
+                                const petsSnapshot = await getDocs(petQuery);
+                                petsSnapshot.forEach((docSnap) => {
+                                    const data = docSnap.data();
+                                    const petName = (data.petName || data.name || "").toLowerCase();
+                                    const breed = (data.breed || "").toLowerCase();
+                                    const species = (data.species || "").toLowerCase();
+                                    if (petName.includes(queryVal) || breed.includes(queryVal) || species.includes(queryVal)) {
+                                        matchedResults.push({
+                                            title: data.petName || data.name || "Unnamed Pet",
+                                            description: `Species: ${data.species || 'N/A'} • Breed: ${data.breed || 'N/A'}`,
+                                            type: "Pet",
+                                            badgeBg: "#e0f2fe",
+                                            badgeColor: "#0369a1",
+                                            url: "my-pets.php"
+                                        });
+                                    }
+                                });
+                            } catch (e) { console.error("Pet Search Error:", e); }
+
+                            // 2. Search Appointments (`appointments_v2`) Filtered strictly by currentOwnerId
+                            try {
+                                const apptQuery = query(collection(db, "appointments_v2"), where("ownerId", "==", currentOwnerId));
+                                const apptSnapshot = await getDocs(apptQuery);
+                                apptSnapshot.forEach((docSnap) => {
+                                    const data = docSnap.data();
+                                    const service = (data.service || "").toLowerCase();
+                                    const petName = (data.petName || "").toLowerCase();
+                                    const status = (data.status || "").toLowerCase();
+                                    const date = (data.date || "").toLowerCase();
+                                    if (service.includes(queryVal) || petName.includes(queryVal) || status.includes(queryVal) || date.includes(queryVal)) {
+                                        matchedResults.push({
+                                            title: `Appointment: ${data.service || 'Consultation'}`,
+                                            description: `Pet: ${data.petName || 'N/A'} • Date: ${data.date || 'N/A'} (${data.timeSlot || ''})`,
+                                            type: "Appointment",
+                                            badgeBg: "#fef9c3",
+                                            badgeColor: "#854d0e",
+                                            url: "appointment.php"
+                                        });
+                                    }
+                                });
+                            } catch (e) { console.error("Appointment Search Error:", e); }
+
+                            // 3. Search Health Monitoring (`health_monitoring`) Filtered strictly by currentOwnerId
+                            try {
+                                const healthQuery = query(collection(db, "health_monitoring"), where("ownerId", "==", currentOwnerId));
+                                const healthSnapshot = await getDocs(healthQuery);
+                                healthSnapshot.forEach((docSnap) => {
+                                    const data = docSnap.data();
+                                    const petName = (data.petName || "").toLowerCase();
+                                    const status = (data.status || "").toLowerCase();
+                                    const breed = (data.breed || "").toLowerCase();
+                                    if (petName.includes(queryVal) || status.includes(queryVal) || breed.includes(queryVal)) {
+                                        matchedResults.push({
+                                            title: `Health Record: ${data.petName || 'Pet Health'}`,
+                                            description: `Status: ${data.status || 'Active'} • Breed: ${data.breed || 'N/A'}`,
+                                            type: "Health",
+                                            badgeBg: "#dcfce7",
+                                            badgeColor: "#166534",
+                                            url: "health.php"
+                                        });
+                                    }
+                                });
+                            } catch (e) { console.error("Health Search Error:", e); }
+
+                            // 4. Search Vaccination Records (`vaccination_records`) Filtered strictly by currentOwnerId
+                            try {
+                                const vacQuery = query(collection(db, "vaccination_records"), where("ownerId", "==", currentOwnerId));
+                                const vacSnapshot = await getDocs(vacQuery);
+                                vacSnapshot.forEach((docSnap) => {
+                                    const data = docSnap.data();
+                                    const petName = (data.petName || "").toLowerCase();
+                                    const vaccine = (data.vaccineName || data.vaccine || "").toLowerCase();
+                                    if (petName.includes(queryVal) || vaccine.includes(queryVal)) {
+                                        matchedResults.push({
+                                            title: `Vaccine: ${data.vaccineName || data.vaccine || 'Vaccine Record'}`,
+                                            description: `Pet: ${data.petName || 'N/A'} • Administered: ${data.dateAdministered || 'N/A'}`,
+                                            type: "Vaccination",
+                                            badgeBg: "#ede9fe",
+                                            badgeColor: "#5b21b6",
+                                            url: "records.php"
+                                        });
+                                    }
+                                });
+                            } catch (e) { console.error("Vaccination Search Error:", e); }
+
+                            // 5. Search Clinical Records (`clinical_records`) Filtered strictly by currentOwnerId
+                            try {
+                                const clinQuery = query(collection(db, "clinical_records"), where("ownerId", "==", currentOwnerId));
+                                const clinSnapshot = await getDocs(clinQuery);
+                                clinSnapshot.forEach((docSnap) => {
+                                    const data = docSnap.data();
+                                    const petName = (data.petName || "").toLowerCase();
+                                    const diagnosis = (data.diagnosis || data.notes || "").toLowerCase();
+                                    if (petName.includes(queryVal) || diagnosis.includes(queryVal)) {
+                                        matchedResults.push({
+                                            title: `Clinical Record: ${data.petName || 'Pet Record'}`,
+                                            description: `Diagnosis/Notes: ${data.diagnosis || data.notes || 'N/A'}`,
+                                            type: "Clinical Record",
+                                            badgeBg: "#fee2e2",
+                                            badgeColor: "#991b1b",
+                                            url: "records.php"
+                                        });
+                                    }
+                                });
+                            } catch (e) { console.error("Clinical Records Search Error:", e); }
+                        }
+
                         if (matchedResults.length > 0) {
                             let html = "";
                             matchedResults.forEach(item => {
@@ -1220,14 +1299,14 @@
                                             <p class="item-title">${item.title}</p>
                                             <p class="item-sub">${item.description}</p>
                                         </div>
-                                        <span style="font-size: 10px; background: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 4px; font-weight: 600;">${item.type}</span>
+                                        <span style="font-size: 10px; background: ${item.badgeBg}; color: ${item.badgeColor}; padding: 3px 8px; border-radius: 6px; font-weight: 600;">${item.type}</span>
                                     </a>
                                 `;
                             });
                             searchDropdown.innerHTML = html;
                             searchDropdown.style.display = "block";
                         } else {
-                            searchDropdown.innerHTML = `<p class="live-search-no-result">No results found for "${queryVal}"</p>`;
+                            searchDropdown.innerHTML = `<p class="live-search-no-result">No matching records found for "${queryVal}"</p>`;
                             searchDropdown.style.display = "block";
                         }
                     } catch (error) {
@@ -1346,287 +1425,358 @@
             }
         }
         
-        // NOTIFICATION SYSTEM CONNECTED WITH notification.php LOGIC & BANTAY.png
-        if (currentOwnerId) {
-            const notifBadge = document.getElementById("notifBadge");
-            const notifCountBadge = document.getElementById("notifCountBadge");
-            const notifListContainer = document.getElementById("notifListContainer");
-            let activeNotifications = [];
-            
-            function renderAllNotifications() {
-                activeNotifications.sort((a, b) => {
-                    const timeA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0);
-                    const timeB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0);
-                    return timeB - timeA;
-                });
-                let unreadCount = activeNotifications.filter(n => !n.read).length;
-                if (notifBadge) {
-                    if (unreadCount > 0) {
-                        notifBadge.textContent = unreadCount;
-                        notifBadge.style.display = "block";
-                    } else {
-                        notifBadge.style.display = "none";
-                    }
-                }
-                if (notifCountBadge) {
-                    notifCountBadge.textContent = unreadCount;
-                }
-                if (notifListContainer) {
-                    if (activeNotifications.length === 0) {
-                        notifListContainer.innerHTML = `
-                            <div class="notif-empty-state">
-                                <i class="fa-regular fa-bell-slash"></i>
-                                <p>No notifications yet</p>
-                            </div>
-                        `;
-                        return;
-                    }
-                    let html = "";
-                    activeNotifications.slice(0, 5).forEach(item => {
-                        const isUnread = !item.read ? "unread" : "";
-                        const category = (item.category || "").toLowerCase();
-                        const titleStr = (item.title || "").toLowerCase();
-                        const msgStr = (item.message || "").toLowerCase();
-                        
-                        let iconContent = `<i class="fa-solid fa-bell"></i>`;
-                        let iconClass = "notif-icon-circle";
-                        let itemClass = "";
-                        
-                        // Gumamit ng BANTAY.png na may blue background para sa BANTAY at Vaccination reminders
-                        if (titleStr.includes("bantay") || titleStr.includes("vaccination") || msgStr.includes("bantay") || category === "health" || category === "vaccination") {
-                            iconContent = `<img src="../assets/images/BANTAY.png" alt="BANTAY" onerror="this.outerHTML='<i class=\'fa-solid fa-shield-dog\'></i>'">`;
-                            iconClass = "notif-icon-circle bantay-bg";
-                            itemClass = "approved";
-                        } else if (category === "appointment" || titleStr.includes("appointment")) {
-                            iconContent = `<i class="fa-solid fa-calendar-check"></i>`;
-                            itemClass = "approved";
-                        } else if (titleStr.includes("rejected") || titleStr.includes("declined") || titleStr.includes("cancelled")) {
-                            iconContent = `<i class="fa-solid fa-triangle-exclamation"></i>`;
-                            itemClass = "rejected";
-                        } else if (category === "clinic") {
-                            iconContent = `<i class="fa-solid fa-bullhorn"></i>`;
-                        }
+        // NOTIFICATION SYSTEM WITH PERSISTENT READ STATE MANAGEMENT
+            if (currentOwnerId) {
+                const notifBadge = document.getElementById("notifBadge");
+                const notifCountBadge = document.getElementById("notifCountBadge");
+                const notifListContainer = document.getElementById("notifListContainer");
+                let activeNotifications = [];
+                
+                // LocalStorage key for tracking read notifications across reloads
+                const READ_NOTIFS_KEY = `read_notifs_${currentOwnerId}`;
+                // LocalStorage key para sa mga tinanggal/tinatagong notifications gamit ang X button
+                const DELETED_NOTIFS_KEY = `deleted_notifs_${currentOwnerId}`;
 
-                        let timeAgo = "Just now";
-                        if (item.createdAt) {
-                            const date = item.createdAt.toDate ? item.createdAt.toDate() : new Date(item.createdAt);
-                            if (!isNaN(date.getTime())) {
-                                timeAgo = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                            }
+                function getReadNotifIds() {
+                    try {
+                        return JSON.parse(localStorage.getItem(READ_NOTIFS_KEY)) || [];
+                    } catch (e) {
+                        return [];
+                    }
+                }
+                function markNotifAsReadLocal(id) {
+                    const readIds = getReadNotifIds();
+                    if (!readIds.includes(id)) {
+                        readIds.push(id);
+                        localStorage.setItem(READ_NOTIFS_KEY, JSON.stringify(readIds));
+                    }
+                }
+
+                function getDeletedNotifIds() {
+                    try {
+                        return JSON.parse(localStorage.getItem(DELETED_NOTIFS_KEY)) || [];
+                    } catch (e) {
+                        return [];
+                    }
+                }
+
+                function markNotifAsDeletedLocal(id) {
+                    const deletedIds = getDeletedNotifIds();
+                    if (!deletedIds.includes(id)) {
+                        deletedIds.push(id);
+                        localStorage.setItem(DELETED_NOTIFS_KEY, JSON.stringify(deletedIds));
+                    }
+                }
+
+                function renderAllNotifications() {
+                    const readIds = getReadNotifIds();
+                    const deletedIds = getDeletedNotifIds();
+                    
+                    // Update internal read status based on LocalStorage & Firestore
+                    activeNotifications.forEach(n => {
+                        if (readIds.includes(n.id)) {
+                            n.read = true;
                         }
-                        html += `
-                            <a href="${item.link || 'notifications.php'}" class="notif-item ${isUnread} ${itemClass}" data-id="${item.id}" data-type="${item.sourceType || 'notification'}">
-                                <div class="${iconClass}">
-                                    ${iconContent}
-                                </div>
-                                <div class="notif-content">
-                                    <p class="notif-title">${item.title || "Clinic Notification"}</p>
-                                    <p class="notif-body">${item.message || item.description || ""}</p>
-                                    <span class="notif-time">${timeAgo}</span>
-                                </div>
-                            </a>
-                        `;
                     });
-                    notifListContainer.innerHTML = html;
-                    document.querySelectorAll(".notif-item").forEach(itemEl => {
-                        itemEl.addEventListener("click", async () => {
-                            const notifId = itemEl.getAttribute("data-id");
-                            const sourceType = itemEl.getAttribute("data-type");
-                            if (notifId && sourceType === "notification") {
-                                try {
-                                    await updateDoc(doc(db, "notifications", notifId), { read: true });
-                                } catch (err) {
-                                    console.error("Error updating notification status:", err);
+
+                    // Filter out notifications that were deleted via X button
+                    const visibleNotifications = activeNotifications.filter(n => !deletedIds.includes(n.id));
+
+                    visibleNotifications.sort((a, b) => {
+                        const timeA = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt || 0);
+                        const timeB = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt || 0);
+                        return timeB - timeA;
+                    });
+                    let unreadCount = visibleNotifications.filter(n => !n.read).length;
+                    
+                    if (notifBadge) {
+                        if (unreadCount > 0) {
+                            notifBadge.textContent = unreadCount;
+                            notifBadge.style.display = "block";
+                        } else {
+                            notifBadge.style.display = "none";
+                        }
+                    }
+                    if (notifCountBadge) {
+                        notifCountBadge.textContent = unreadCount;
+                    }
+                    if (notifListContainer) {
+                        if (visibleNotifications.length === 0) {
+                            notifListContainer.innerHTML = `
+                                <div class="notif-empty-state">
+                                    <i class="fa-regular fa-bell-slash"></i>
+                                    <p>No notifications yet</p>
+                                </div>
+                            `;
+                            return;
+                        }
+                        let html = "";
+                        visibleNotifications.slice(0, 5).forEach(item => {
+                            const isUnread = !item.read ? "unread" : "";
+                            const category = (item.category || "").toLowerCase();
+                            const titleStr = (item.title || "").toLowerCase();
+                            const msgStr = (item.message || "").toLowerCase();
+                            
+                            let iconContent = `<i class="fa-solid fa-bell"></i>`;
+                            let iconClass = "notif-icon-circle";
+                            let itemClass = "";
+                            
+                            // Gumamit ng BANTAY.png na may blue background para sa BANTAY at Vaccination reminders
+                            if (titleStr.includes("bantay") || titleStr.includes("vaccination") || msgStr.includes("bantay") || category === "health" || category === "vaccination") {
+                                iconContent = `<img src="../assets/images/BANTAY.png" alt="BANTAY" onerror="this.outerHTML='<i class=\'fa-solid fa-shield-dog\'></i>'">`;
+                                iconClass = "notif-icon-circle bantay-bg";
+                                itemClass = "approved";
+                            } else if (category === "appointment" || titleStr.includes("appointment")) {
+                                iconContent = `<i class="fa-solid fa-calendar-check"></i>`;
+                                itemClass = "approved";
+                            } else if (titleStr.includes("rejected") || titleStr.includes("declined") || titleStr.includes("cancelled")) {
+                                iconContent = `<i class="fa-solid fa-triangle-exclamation"></i>`;
+                                itemClass = "rejected";
+                            } else if (category === "clinic") {
+                                iconContent = `<i class="fa-solid fa-bullhorn"></i>`;
+                            }
+                            let timeAgo = "Just now";
+                            if (item.createdAt) {
+                                const date = item.createdAt.toDate ? item.createdAt.toDate() : new Date(item.createdAt);
+                                if (!isNaN(date.getTime())) {
+                                    timeAgo = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                                 }
                             }
-                        });
-                    });
-                }
-            }
-
-            // 1. Fetch General Notifications Collection
-            const notifQuery = query(collection(db, "notifications"), where("ownerId", "==", currentOwnerId));
-            onSnapshot(notifQuery, (snapshot) => {
-                activeNotifications = activeNotifications.filter(n => n.sourceType !== "notification");
-                snapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
-                    const titleStr = (data.title || "").toLowerCase();
-                    let cat = data.category || "clinic";
-                    if (titleStr.includes("bantay") || titleStr.includes("vaccination")) cat = "health";
-
-                    activeNotifications.push({ 
-                        id: docSnap.id, 
-                        sourceType: "notification",
-                        category: cat,
-                        ...data 
-                    });
-                });
-                renderAllNotifications();
-            });
-
-            // 2. Fetch Appointments (`appointments_v2`)
-            const apptQuery = query(collection(db, "appointments_v2"), where("ownerId", "==", currentOwnerId));
-            onSnapshot(apptQuery, (snapshot) => {
-                activeNotifications = activeNotifications.filter(n => n.sourceType !== "appointment");
-                let upcoming = [];
-                snapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
-                    const status = (data.status || "").toLowerCase();
-                    
-                    if (["confirmed", "approved", "in progress", "completed"].includes(status)) {
-                        activeNotifications.push({
-                            id: "appt_" + docSnap.id,
-                            sourceType: "appointment",
-                            category: "appointment",
-                            title: `Appointment ${status.charAt(0).toUpperCase() + status.slice(1)}!`,
-                            message: `Your appointment for ${data.service || 'checkup'} (Pet: ${data.petName || 'N/A'}) is scheduled on ${data.date || ''}.`,
-                            read: false,
-                            createdAt: data.createdAt || new Date(),
-                            link: 'appointment.php'
-                        });
-                    } else if (["rejected", "declined", "cancelled"].includes(status)) {
-                        activeNotifications.push({
-                            id: "appt_rej_" + docSnap.id,
-                            sourceType: "appointment",
-                            category: "appointment",
-                            title: `Appointment Request ${status.charAt(0).toUpperCase() + status.slice(1)}`,
-                            message: `Sorry, your request for ${data.service || 'checkup'} on ${data.date || ''} could not be accommodated.`,
-                            read: false,
-                            createdAt: data.createdAt || new Date(),
-                            link: 'appointment.php'
-                        });
-                    }
-                    if (status !== "cancelled" && status !== "rejected" && status !== "declined" && !data.isArchived) {
-                        upcoming.push({ id: docSnap.id, ...data });
-                    }
-                });
-                renderAllNotifications();
-                if (topbarAppointmentsList) {
-                    if (upcoming.length === 0) {
-                        topbarAppointmentsList.innerHTML = `<p class="empty-state-text">No upcoming appointments.</p>`;
-                    } else {
-                        let html = "";
-                        upcoming.slice(0, 3).forEach(item => {
                             html += `
-                                <div style="padding: 8px 10px; background: #f8fafc; border-radius: 8px; border: 1.5px solid #e2e8f0; font-size: 11px; margin-bottom: 4px;">
-                                    <strong style="color: #1e1b4b; display: block;">${item.service || "Appointment"}</strong>
-                                    <span style="color: #64748b;"><i class="fa-solid fa-paw"></i> ${item.petName || "Pet"} | ${item.date || ""} (${item.timeSlot || ""})</span>
+                                <div style="position: relative; display: flex; align-items: center; border-bottom: 1px solid #f1f5f9;">
+                                    <a href="${item.link || 'notifications.php'}" class="notif-item ${isUnread} ${itemClass}" data-id="${item.id}" data-type="${item.sourceType || 'notification'}" style="flex: 1; padding-right: 32px;">
+                                        <div class="${iconClass}">
+                                            ${iconContent}
+                                        </div>
+                                        <div class="notif-content">
+                                            <p class="notif-title">${item.title || "Clinic Notification"}</p>
+                                            <p class="notif-body">${item.message || item.description || ""}</p>
+                                            <span class="notif-time">${timeAgo}</span>
+                                        </div>
+                                    </a>
+                                    <button type="button" class="topbar-delete-notif-btn" data-id="${item.id}" title="Remove" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: transparent; border: none; color: #94a3b8; font-size: 13px; cursor: pointer; padding: 4px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 10;">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
                                 </div>
                             `;
                         });
-                        topbarAppointmentsList.innerHTML = html;
+                        notifListContainer.innerHTML = html;
+                        
+                        // Event Listener para sa X Close / Delete Button sa Topbar
+                        document.querySelectorAll(".topbar-delete-notif-btn").forEach(btn => {
+                            btn.addEventListener("click", (e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                const notifId = btn.getAttribute("data-id");
+                                if (notifId) {
+                                    markNotifAsDeletedLocal(notifId);
+                                    renderAllNotifications();
+                                }
+                            });
+                        });
+
+                        // Add Click Event Listener for marking single notification as read
+                        document.querySelectorAll(".notif-item").forEach(itemEl => {
+                            itemEl.addEventListener("click", async () => {
+                                const notifId = itemEl.getAttribute("data-id");
+                                const sourceType = itemEl.getAttribute("data-type");
+                                
+                                if (notifId) {
+                                    markNotifAsReadLocal(notifId);
+                                    const found = activeNotifications.find(n => n.id === notifId);
+                                    if (found) found.read = true;
+                                    
+                                    if (sourceType === "notification") {
+                                        try {
+                                            await updateDoc(doc(db, "notifications", notifId), { read: true });
+                                        } catch (err) {
+                                            console.error("Error updating notification status in db:", err);
+                                        }
+                                    }
+                                    renderAllNotifications();
+                                }
+                            });
+                        });
                     }
                 }
-            });
-
-            // 3. Fetch Health Monitoring (`health_monitoring`) - BANTAY
-            const healthQuery = query(collection(db, "health_monitoring"), where("ownerId", "==", currentOwnerId));
-            onSnapshot(healthQuery, (snap) => {
-                activeNotifications = activeNotifications.filter(n => n.sourceType !== "health_monitoring");
-                snap.forEach(docSnap => {
-                    const data = docSnap.data();
-                    const petName = data.petName || "Your Pet";
-                    const status = data.status || "Updated";
-                    activeNotifications.push({
-                        id: "health_" + docSnap.id,
-                        sourceType: "health_monitoring",
-                        category: "health",
-                        title: `BANTAY • Health Status Updated`,
-                        message: `BANTAY: ${petName} is now marked as ${status} by the veterinary team. Open Health Monitoring to review.`,
-                        read: false,
-                        createdAt: data.admittedAt || data.createdAt || new Date(),
-                        link: 'health.php'
-                    });
-                });
-                renderAllNotifications();
-            });
-
-            // 4. Fetch Vaccination Records (`vaccination_records`) - Makatotohanang Due Date base sa itinurok na vaccine
-            const fetchTopbarVaccinationRecords = async () => {
-                try {
-                    const vacSnapByName = await getDocs(query(collection(db, "vaccination_records"), where("ownerName", "==", currentOwnerName)));
-                    const vacSnapById = await getDocs(query(collection(db, "vaccination_records"), where("ownerId", "==", currentOwnerId)));
-
-                    activeNotifications = activeNotifications.filter(n => n.sourceType !== "vaccination_records");
-
-                    const processVacDoc = (docSnap) => {
+                // 1. Fetch General Notifications Collection
+                const notifQuery = query(collection(db, "notifications"), where("ownerId", "==", currentOwnerId));
+                onSnapshot(notifQuery, (snapshot) => {
+                    activeNotifications = activeNotifications.filter(n => n.sourceType !== "notification");
+                    snapshot.forEach((docSnap) => {
                         const data = docSnap.data();
-                        const petName = data.petName || "Your Pet";
-                        const petId = data.petId || "N/A";
-                        const vaccineName = data.vaccineName || data.vaccine || "5-in-1 Vaccine";
+                        const titleStr = (data.title || "").toLowerCase();
+                        let cat = data.category || "clinic";
+                        if (titleStr.includes("bantay") || titleStr.includes("vaccination")) cat = "health";
+                        activeNotifications.push({ 
+                            id: docSnap.id, 
+                            sourceType: "notification",
+                            category: cat,
+                            read: data.read || false,
+                            ...data 
+                        });
+                    });
+                    renderAllNotifications();
+                });
+                // 2. Fetch Appointments (`appointments_v2`)
+                const apptQuery = query(collection(db, "appointments_v2"), where("ownerId", "==", currentOwnerId));
+                onSnapshot(apptQuery, (snapshot) => {
+                    activeNotifications = activeNotifications.filter(n => n.sourceType !== "appointment");
+                    let upcoming = [];
+                    snapshot.forEach((docSnap) => {
+                        const data = docSnap.data();
+                        const status = (data.status || "").toLowerCase();
                         
-                        let administeredDateObj = new Date();
-                        if (data.dateAdministered) {
-                            administeredDateObj = new Date(data.dateAdministered);
-                        } else if (data.createdAt) {
-                            administeredDateObj = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
-                        }
-
-                        let dueDateObj = new Date(administeredDateObj);
-                        dueDateObj.setFullYear(dueDateObj.getFullYear() + 1);
-                        const dueDateStr = dueDateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-
-                        const exists = activeNotifications.some(n => n.id === "vac_" + docSnap.id);
-                        if (!exists) {
+                        if (["confirmed", "approved", "in progress", "completed"].includes(status)) {
                             activeNotifications.push({
-                                id: "vac_" + docSnap.id,
-                                sourceType: "vaccination_records",
-                                category: "vaccination",
-                                title: `BANTAY • Vaccination Reminder`,
-                                message: `BANTAY: Vaccine (${vaccineName}) for pet ${petName} (ID: ${petId}) is due on ${dueDateStr}.`,
+                                id: "appt_" + docSnap.id,
+                                sourceType: "appointment",
+                                category: "appointment",
+                                title: `Appointment ${status.charAt(0).toUpperCase() + status.slice(1)}!`,
+                                message: `Your appointment for ${data.service || 'checkup'} (Pet: ${data.petName || 'N/A'}) is scheduled on ${data.date || ''}.`,
                                 read: false,
-                                createdAt: data.createdAt || data.dateAdministered || new Date(),
-                                link: 'records.php'
+                                createdAt: data.createdAt || new Date(),
+                                link: 'appointment.php'
+                            });
+                        } else if (["rejected", "declined", "cancelled"].includes(status)) {
+                            activeNotifications.push({
+                                id: "appt_rej_" + docSnap.id,
+                                sourceType: "appointment",
+                                category: "appointment",
+                                title: `Appointment Request ${status.charAt(0).toUpperCase() + status.slice(1)}`,
+                                message: `Sorry, your request for ${data.service || 'checkup'} on ${data.date || ''} could not be accommodated.`,
+                                read: false,
+                                createdAt: data.createdAt || new Date(),
+                                link: 'appointment.php'
                             });
                         }
-                    };
-
-                    vacSnapByName.forEach(processVacDoc);
-                    vacSnapById.forEach(processVacDoc);
-                    renderAllNotifications();
-                } catch (err) {
-                    console.error("TopBar Vaccination Fetch Error:", err);
-                }
-            };
-            fetchTopbarVaccinationRecords();
-
-            // 5. Fetch Announcements / Clinic
-            const announceQuery = query(collection(db, "announcements"));
-            onSnapshot(announceQuery, (snapshot) => {
-                activeNotifications = activeNotifications.filter(n => n.sourceType !== "announcement");
-                snapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
-                    activeNotifications.push({
-                        id: "ann_" + docSnap.id,
-                        sourceType: "announcement",
-                        category: "clinic",
-                        title: data.title || "Clinic Announcement",
-                        message: data.content || data.message || "",
-                        read: false,
-                        createdAt: data.createdAt || new Date(),
-                        link: 'dashboard.php'
+                        if (status !== "cancelled" && status !== "rejected" && status !== "declined" && !data.isArchived) {
+                            upcoming.push({ id: docSnap.id, ...data });
+                        }
                     });
-                });
-                renderAllNotifications();
-            });
-
-            // Mark All as Read
-            const markAllBtn = document.getElementById("markAllAsReadBtn");
-            if (markAllBtn) {
-                markAllBtn.addEventListener("click", async () => {
-                    try {
-                        const unreadQuery = query(collection(db, "notifications"), where("ownerId", "==", currentOwnerId), where("read", "==", false));
-                        const unreadSnap = await getDocs(unreadQuery);
-                        unreadSnap.forEach(async (docSnap) => {
-                            await updateDoc(doc(db, "notifications", docSnap.id), { read: true });
-                        });
-                        activeNotifications.forEach(n => n.read = true);
-                        renderAllNotifications();
-                    } catch (err) {
-                        console.error("Error marking all as read:", err);
+                    renderAllNotifications();
+                    if (topbarAppointmentsList) {
+                        if (upcoming.length === 0) {
+                            topbarAppointmentsList.innerHTML = `<p class="empty-state-text">No upcoming appointments.</p>`;
+                        } else {
+                            let html = "";
+                            upcoming.slice(0, 3).forEach(item => {
+                                html += `
+                                    <div style="padding: 8px 10px; background: #f8fafc; border-radius: 8px; border: 1.5px solid #e2e8f0; font-size: 11px; margin-bottom: 4px;">
+                                        <strong style="color: #1e1b4b; display: block;">${item.service || "Appointment"}</strong>
+                                        <span style="color: #64748b;"><i class="fa-solid fa-paw"></i> ${item.petName || "Pet"} | ${item.date || ""} (${item.timeSlot || ""})</span>
+                                    </div>
+                                `;
+                            });
+                            topbarAppointmentsList.innerHTML = html;
+                        }
                     }
                 });
+                // 3. Fetch Health Monitoring (`health_monitoring`) - BANTAY
+                const healthQuery = query(collection(db, "health_monitoring"), where("ownerId", "==", currentOwnerId));
+                onSnapshot(healthQuery, (snap) => {
+                    activeNotifications = activeNotifications.filter(n => n.sourceType !== "health_monitoring");
+                    snap.forEach(docSnap => {
+                        const data = docSnap.data();
+                        const petName = data.petName || "Your Pet";
+                        const status = data.status || "Updated";
+                        activeNotifications.push({
+                            id: "health_" + docSnap.id,
+                            sourceType: "health_monitoring",
+                            category: "health",
+                            title: `BANTAY • Health Status Updated`,
+                            message: `BANTAY: ${petName} is now marked as ${status} by the veterinary team. Open Health Monitoring to review.`,
+                            read: false,
+                            createdAt: data.admittedAt || data.createdAt || new Date(),
+                            link: 'health.php'
+                        });
+                    });
+                    renderAllNotifications();
+                });
+                // 4. Fetch Vaccination Records (`vaccination_records`)
+                const fetchTopbarVaccinationRecords = async () => {
+                    try {
+                        const vacSnapByName = await getDocs(query(collection(db, "vaccination_records"), where("ownerName", "==", currentOwnerName)));
+                        const vacSnapById = await getDocs(query(collection(db, "vaccination_records"), where("ownerId", "==", currentOwnerId)));
+                        activeNotifications = activeNotifications.filter(n => n.sourceType !== "vaccination_records");
+                        const processVacDoc = (docSnap) => {
+                            const data = docSnap.data();
+                            const petName = data.petName || "Your Pet";
+                            const petId = data.petId || "N/A";
+                            const vaccineName = data.vaccineName || data.vaccine || "5-in-1 Vaccine";
+                            
+                            let administeredDateObj = new Date();
+                            if (data.dateAdministered) {
+                                administeredDateObj = new Date(data.dateAdministered);
+                            } else if (data.createdAt) {
+                                administeredDateObj = data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt);
+                            }
+                            let dueDateObj = new Date(administeredDateObj);
+                            dueDateObj.setFullYear(dueDateObj.getFullYear() + 1);
+                            const dueDateStr = dueDateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+                            const exists = activeNotifications.some(n => n.id === "vac_" + docSnap.id);
+                            if (!exists) {
+                                activeNotifications.push({
+                                    id: "vac_" + docSnap.id,
+                                    sourceType: "vaccination_records",
+                                    category: "vaccination",
+                                    title: `BANTAY • Vaccination Reminder`,
+                                    message: `BANTAY: Vaccine (${vaccineName}) for pet ${petName} (ID: ${petId}) is due on ${dueDateStr}.`,
+                                    read: false,
+                                    createdAt: data.createdAt || data.dateAdministered || new Date(),
+                                    link: 'records.php'
+                                });
+                            }
+                        };
+                        vacSnapByName.forEach(processVacDoc);
+                        vacSnapById.forEach(processVacDoc);
+                        renderAllNotifications();
+                    } catch (err) {
+                        console.error("TopBar Vaccination Fetch Error:", err);
+                    }
+                };
+                fetchTopbarVaccinationRecords();
+                // 5. Fetch Announcements / Clinic
+                const announceQuery = query(collection(db, "announcements"));
+                onSnapshot(announceQuery, (snapshot) => {
+                    activeNotifications = activeNotifications.filter(n => n.sourceType !== "announcement");
+                    snapshot.forEach((docSnap) => {
+                        const data = docSnap.data();
+                        activeNotifications.push({
+                            id: "ann_" + docSnap.id,
+                            sourceType: "announcement",
+                            category: "clinic",
+                            title: data.title || "Clinic Announcement",
+                            message: data.content || data.message || "",
+                            read: false,
+                            createdAt: data.createdAt || new Date(),
+                            link: 'dashboard.php'
+                        });
+                    });
+                    renderAllNotifications();
+                });
+                // Persistent Mark All as Read Functionality
+                const markAllBtn = document.getElementById("markAllAsReadBtn");
+                if (markAllBtn) {
+                    markAllBtn.addEventListener("click", async () => {
+                        try {
+                            activeNotifications.forEach(n => {
+                                n.read = true;
+                                markNotifAsReadLocal(n.id);
+                            });
+                            
+                            const unreadQuery = query(collection(db, "notifications"), where("ownerId", "==", currentOwnerId), where("read", "==", false));
+                            const unreadSnap = await getDocs(unreadQuery);
+                            unreadSnap.forEach(async (docSnap) => {
+                                await updateDoc(doc(db, "notifications", docSnap.id), { read: true });
+                            });
+                            
+                            renderAllNotifications();
+                        } catch (err) {
+                            console.error("Error marking all as read:", err);
+                        }
+                    });
+                }
             }
-        }
-    });
+});
 </script>

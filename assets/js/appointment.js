@@ -5,6 +5,7 @@ import {
     where,
     getDocs,
     doc,
+    getDoc,
     setDoc,
     updateDoc,
     Timestamp
@@ -14,12 +15,11 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-    const petSelect = document.getElementById("petSelect");
+    const petsCheckboxContainer = document.getElementById("petsCheckboxContainer");
     const appointmentDateInput = document.getElementById("appointmentDate");
     const appointmentTimeInput = document.getElementById("appointmentTime");
     const timeSlotsContainer = document.getElementById("pickerSlotsContainer");
     
-    const serviceSelect = document.getElementById("service");
     const notesInput = document.getElementById("notes");
     const bookBtn = document.getElementById("bookAppointmentBtn");
     const alertBox = document.getElementById("alertBox");
@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const closeModalBtn = document.getElementById("closeModalBtn");
     const confirmRescheduleBtn = document.getElementById("confirmRescheduleBtn");
 
-    // Dynamic Custom Cancel Modal Creation
+    // Dynamic Custom Cancel Modal
     let cancelModal = document.getElementById("cancelModal");
     if (!cancelModal) {
         cancelModal = document.createElement("div");
@@ -52,27 +52,38 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
         document.body.appendChild(cancelModal);
     }
-
     const cancelApptIdTarget = document.getElementById("cancelApptIdTarget");
     const closeCancelModalBtn = document.getElementById("closeCancelModalBtn");
     const confirmCancelBtn = document.getElementById("confirmCancelBtn");
 
     let currentOwnerId = null;
 
-    // 1. Authentication and loading user pets/appointments
+    // 1. Authenticate & load pets base sa 'ownerId'
     onAuthStateChanged(auth, async (user) => {
         if (!user) {
             showAlert("Please log in to book an appointment.", "error");
             return;
         }
         try {
-            const userQuery = query(
-                collection(db, "users"),
-                where("email", "==", user.email)
-            );
-            const userSnap = await getDocs(userQuery);
-            if (!userSnap.empty) {
-                currentOwnerId = userSnap.docs[0].data().ownerId;
+            currentOwnerId = localStorage.getItem("ownerId") || localStorage.getItem("userUID");
+            if (!currentOwnerId) {
+                const userQuery = query(collection(db, "users"), where("email", "==", user.email));
+                const userSnap = await getDocs(userQuery);
+                if (!userSnap.empty) {
+                    const userData = userSnap.docs[0].data();
+                    currentOwnerId = userData.ownerId || userSnap.docs[0].id;
+                } else {
+                    const userDocRef = doc(db, "users", user.uid);
+                    const userDocSnap = await getDoc(userDocRef);
+                    if (userDocSnap.exists()) {
+                        currentOwnerId = userDocSnap.data().ownerId || user.uid;
+                    } else {
+                        currentOwnerId = user.uid;
+                    }
+                }
+            }
+            if (currentOwnerId) {
+                localStorage.setItem("ownerId", currentOwnerId);
                 loadUserPets(currentOwnerId);
                 loadUserAppointments(currentOwnerId);
             } else {
@@ -84,34 +95,39 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // 2. Fetch registered pets for dropdown
+    // 2. Fetch pets mula sa 'pets' collection gamit ang ownerId
     async function loadUserPets(ownerId) {
+        if (!petsCheckboxContainer) return;
         try {
             const petsQuery = query(
                 collection(db, "pets"),
                 where("ownerId", "==", ownerId)
             );
             const petsSnap = await getDocs(petsQuery);
-            petSelect.innerHTML = '<option value="">Select your pet</option>';
+            petsCheckboxContainer.innerHTML = "";
+            
             if (petsSnap.empty) {
-                petSelect.innerHTML = '<option value="">No registered pets found</option>';
+                petsCheckboxContainer.innerHTML = '<span style="font-size: 13px; color: #888;">No registered pets found under your account.</span>';
                 return;
             }
             petsSnap.forEach((docSnap) => {
                 const petData = docSnap.data();
-                const option = document.createElement("option");
-                option.value = petData.petName || docSnap.id;
-                option.setAttribute("data-petid", docSnap.id);
-                option.textContent = petData.petName || 'Unnamed Pet';
-                petSelect.appendChild(option);
+                const petName = petData.petName || petData.name || 'Unnamed Pet';
+                const petId = docSnap.id;
+                const label = document.createElement("label");
+                label.className = "multi-checkbox-item";
+                label.innerHTML = `
+                    <input type="checkbox" name="selectedPets" value="${petName}" data-petid="${petId}">
+                    <span>${petName} (${petData.species || 'Pet'}) - ${petData.breed || 'N/A'}</span>
+                `;
+                petsCheckboxContainer.appendChild(label);
             });
         } catch (error) {
             console.error("Error loading pets:", error);
-            showAlert("Failed to load your pets.", "error");
+            petsCheckboxContainer.innerHTML = '<span style="font-size: 13px; color: #dc2626;">Error loading pets from database.</span>';
         }
     }
 
-    // Date formatting helper
     function parseDateString(dateStr) {
         if (!dateStr) return new Date(0);
         if (dateStr.includes('/')) {
@@ -123,7 +139,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return new Date(dateStr);
     }
 
-    // 4. Fetch and Display User's Booked Appointments from appointments_v2
+    // 4. Display Appointments mula sa 'appointments_v2' Firebase Collection
     async function loadUserAppointments(ownerId) {
         const container = document.getElementById("userAppointmentsContainer");
         if (!container) return;
@@ -142,31 +158,28 @@ document.addEventListener("DOMContentLoaded", () => {
                 `;
                 return;
             }
-
             let appointmentsList = [];
             snapshot.forEach((docSnap) => {
                 const apptData = docSnap.data();
                 const status = (apptData.status || "").toLowerCase().trim();
-                if (apptData.isArchived !== true && status !== "trash") {
+                // Isinasama ang Pending, Confirmed, Approved, Completed, Cancelled basta hindi pa naka-archive o nasa trash
+                if (apptData.isArchived !== true && status !== "trash" && status !== "archived") {
                     appointmentsList.push({ id: docSnap.id, ...apptData });
                 }
             });
-
             if (appointmentsList.length === 0) {
                 container.innerHTML = `
                     <div style="grid-column: 1 / -1; text-align: center; padding: 20px; color: #64748b;">
-                        <p>You have no active or completed appointments.</p>
+                        <p>You have no active appointments.</p>
                     </div>
                 `;
                 return;
             }
-
             appointmentsList.sort((a, b) => {
                 const dateA = parseDateString(a.date);
                 const dateB = parseDateString(b.date);
                 return dateB - dateA; 
             });
-
             let groupedAppointments = {};
             appointmentsList.forEach(appt => {
                 const d = parseDateString(appt.date);
@@ -176,20 +189,18 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
                 groupedAppointments[monthYear].push(appt);
             });
-
             for (const [monthYear, appts] of Object.entries(groupedAppointments)) {
                 container.insertAdjacentHTML("beforeend", `
                     <div style="grid-column: 1 / -1; margin-top: 15px; margin-bottom: 5px; border-bottom: 2px solid #e2e8f0; padding-bottom: 5px;">
                         <h3 style="color: #4f46e5; font-size: 16px; font-weight: 700;"><i class="fa-regular fa-calendar-days"></i> For the Month of ${monthYear}</h3>
                     </div>
                 `);
-
                 appts.forEach((appt) => {
                     let statusBg = "#fef3c7";
                     let statusColor = "#d97706";
-                    const currentStatus = (appt.status || "Pending").trim();
-                    const statusLower = currentStatus.toLowerCase();
-
+                    
+                    const rawStatus = appt.status || "Pending";
+                    const statusLower = rawStatus.toLowerCase().trim();
                     if (statusLower === "completed") {
                         statusBg = "#E1FDF4";
                         statusColor = "#065F46";
@@ -200,17 +211,21 @@ document.addEventListener("DOMContentLoaded", () => {
                         statusBg = "#fee2e2";
                         statusColor = "#991b1b";
                     }
-
                     const canModify = statusLower === "pending" || statusLower === "confirmed" || statusLower === "approved";
+                    const canArchive = statusLower === "completed" || statusLower === "cancelled";
                     
+                    let servicesDisplay = appt.service || "";
+                    if (appt.selectedProcedures && Array.isArray(appt.selectedProcedures) && appt.selectedProcedures.length > 0) {
+                        servicesDisplay = appt.selectedProcedures.join(", ");
+                    }
                     container.insertAdjacentHTML("beforeend", `
                         <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); display: flex; flex-direction: column; justify-content: space-between;">
                             <div>
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                                    <span style="background: ${statusBg}; color: ${statusColor}; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600;">${currentStatus}</span>
+                                    <span style="background: ${statusBg}; color: ${statusColor}; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600;">${rawStatus}</span>
                                     <small style="color: #64748b; font-size: 12px;"><i class="fa-solid fa-paw"></i> ${appt.petName || "Unnamed Pet"}</small>
                                 </div>
-                                <h4 style="color: #1e1b4b; font-size: 16px; margin-bottom: 8px;">${appt.service}</h4>
+                                <h4 style="color: #1e1b4b; font-size: 15px; margin-bottom: 8px; font-weight: 600;">${servicesDisplay}</h4>
                                 <p style="color: #475569; font-size: 13px; margin: 4px 0;"><i class="fa-solid fa-calendar-days" style="width: 18px; color: #5142f5;"></i> ${appt.date} (${appt.timeSlot || appt.time || "Time not set"})</p>
                                 ${appt.notes ? `<p style="color: #64748b; font-size: 12px; margin-top: 8px; font-style: italic;">Note: "${appt.notes}"</p>` : ""}
                             </div>
@@ -224,22 +239,28 @@ document.addEventListener("DOMContentLoaded", () => {
                                     </button>
                                 </div>
                             ` : ''}
+                            ${canArchive ? `
+                                <div style="margin-top: 15px; border-top: 1px solid #e2e8f0; padding-top: 10px; display: flex; justify-content: flex-end; gap: 8px;">
+                                    <button class="archive-appt-btn" data-id="${appt.id}" style="background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0; padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s ease;">
+                                        <i class="fa-solid fa-box-archive"></i> Archive
+                                    </button>
+                                </div>
+                            ` : ''}
                         </div>
                     `);
                 });
             }
-
             document.querySelectorAll(".reschedule-trigger-btn").forEach(btn => {
-                btn.addEventListener("click", () => {
-                    openRescheduleModal(btn.getAttribute("data-id"));
-                });
+                btn.addEventListener("click", () => openRescheduleModal(btn.getAttribute("data-id")));
             });
-
             document.querySelectorAll(".cancel-appt-btn").forEach(btn => {
                 btn.addEventListener("click", () => {
                     cancelApptIdTarget.value = btn.getAttribute("data-id");
                     cancelModal.style.display = "flex";
                 });
+            });
+            document.querySelectorAll(".archive-appt-btn").forEach(btn => {
+                btn.addEventListener("click", () => archiveAppointment(btn.getAttribute("data-id")));
             });
         } catch (error) {
             console.error("Error loading appointments:", error);
@@ -247,12 +268,27 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    if (closeCancelModalBtn) {
-        closeCancelModalBtn.addEventListener("click", () => {
-            cancelModal.style.display = "none";
-        });
+    // Function para sa pag-archive papunta sa Records & History
+    async function archiveAppointment(apptId) {
+        if (!apptId) return;
+        try {
+            const apptRef = doc(db, "appointments_v2", apptId);
+            await updateDoc(apptRef, {
+                isArchived: true,
+                status: "Archived",
+                archivedAt: Timestamp.now()
+            });
+            showAlert("Appointment successfully archived to Records & History.", "success");
+            loadUserAppointments(currentOwnerId);
+        } catch (error) {
+            console.error("Error archiving appointment:", error);
+            showAlert("Failed to archive appointment.", "error");
+        }
     }
 
+    if (closeCancelModalBtn) {
+        closeCancelModalBtn.addEventListener("click", () => cancelModal.style.display = "none");
+    }
     if (confirmCancelBtn) {
         confirmCancelBtn.addEventListener("click", async () => {
             const apptId = cancelApptIdTarget.value;
@@ -281,9 +317,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (closeModalBtn) {
-        closeModalBtn.addEventListener("click", () => {
-            rescheduleModal.style.display = "none";
-        });
+        closeModalBtn.addEventListener("click", () => rescheduleModal.style.display = "none");
     }
 
     if (confirmRescheduleBtn) {
@@ -292,16 +326,9 @@ document.addEventListener("DOMContentLoaded", () => {
             const newDate = rescheduleDateInput.value;
             const selectedTimeBtn = rescheduleTimeSlotsContainer.querySelector(".selected-reschedule-time");
             
-            if (!newDate) {
-                alert("Please select a new date.");
-                return;
-            }
-            if (!selectedTimeBtn) {
-                alert("Please select a new time slot.");
-                return;
-            }
+            if (!newDate) { alert("Please select a new date."); return; }
+            if (!selectedTimeBtn) { alert("Please select a new time slot."); return; }
             const newTime = selectedTimeBtn.getAttribute("data-time");
-
             try {
                 const apptRef = doc(db, "appointments_v2", apptId);
                 await updateDoc(apptRef, {
@@ -324,7 +351,6 @@ document.addEventListener("DOMContentLoaded", () => {
         try {
             const querySnapshot = await getDocs(collection(db, "appointments_v2"));
             let maxNum = 0;
-
             querySnapshot.forEach((docSnap) => {
                 const data = docSnap.data();
                 const idVal = data.appointmentId || docSnap.id;
@@ -338,7 +364,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                 }
             });
-
             const nextNum = maxNum + 1;
             return `APT-${String(nextNum).padStart(5, '0')}`;
         } catch (e) {
@@ -347,39 +372,93 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // 6. Booking Process connected to appointments_v2 WITH STRICT SEQUENTIAL ID
+    // 6. Booking Process
     if (bookBtn) {
         bookBtn.addEventListener("click", async () => {
             if (!currentOwnerId) {
                 showAlert("Authentication session not ready.", "error");
                 return;
             }
-            const selectedOption = petSelect.options[petSelect.selectedIndex];
-            const petName = petSelect.value;
-            const petId = selectedOption ? selectedOption.getAttribute("data-petid") || "" : "";
-            const service = serviceSelect.value;
+            const checkedPets = document.querySelectorAll('input[name="selectedPets"]:checked');
+            let selectedPetNames = [];
+            let selectedPetIds = [];
+            checkedPets.forEach(cb => {
+                selectedPetNames.push(cb.value.trim());
+                selectedPetIds.push(cb.getAttribute("data-petid"));
+            });
+            const checkedServices = document.querySelectorAll('input[name="selectedServices"]:checked');
+            let selectedServicesList = [];
+            checkedServices.forEach(cb => {
+                selectedServicesList.push(cb.value.trim());
+            });
             const dateVal = appointmentDateInput.value;
             const timeVal = appointmentTimeInput.value;
             const notes = notesInput.value.trim();
 
-            if (!petName) { showAlert("Please select a pet.", "error"); return; }
-            if (!service || service === "Select a Service") { showAlert("Please select a service.", "error"); return; }
-            if (!dateVal) { showAlert("Please select an appointment date.", "error"); return; }
-            if (!timeVal) { showAlert("Please select an available time slot.", "error"); return; }
+            if (selectedPetNames.length === 0) { 
+                showAlert("Please select at least one pet.", "error"); 
+                return; 
+            }
+            if (selectedServicesList.length === 0) { 
+                showAlert("Please select at least one service.", "error"); 
+                return; 
+            }
+            if (!dateVal) { 
+                showAlert("Please select an appointment date.", "error"); 
+                return; 
+            }
+            if (!timeVal) { 
+                showAlert("Please select an available time slot.", "error"); 
+                return; 
+            }
+
+            try {
+                const existingApptQuery = query(
+                    collection(db, "appointments_v2"),
+                    where("ownerId", "==", currentOwnerId),
+                    where("date", "==", dateVal)
+                );
+                const existingSnap = await getDocs(existingApptQuery);
+                
+                let doubleBookedPet = null;
+                existingSnap.forEach(docSnap => {
+                    const dData = docSnap.data();
+                    const dStatus = (dData.status || "").toLowerCase().trim();
+                    
+                    if (dStatus !== "cancelled" && dStatus !== "trash") {
+                        const existingPetNameLower = (dData.petName || "").toLowerCase().trim();
+                        
+                        selectedPetNames.forEach(pName => {
+                            if (existingPetNameLower.includes(pName.toLowerCase()) || pName.toLowerCase().includes(existingPetNameLower)) {
+                                doubleBookedPet = pName;
+                            }
+                        });
+                    }
+                });
+                if (doubleBookedPet) {
+                     showAlert(`Double booking is not allowed for "${doubleBookedPet}" on this date. Note: An appointment for this pet is already existing for this date; clinic staff will manage additional services on-site.`, "error");
+                    return;
+                }
+            } catch (err) {
+                console.error("Error checking double booking:", err);
+            }
 
             bookBtn.disabled = true;
             bookBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Submitting...`;
-
             try {
+                const petNameStr = selectedPetNames.join(", ");
+                const petIdStr = selectedPetIds.join(", ");
+                const primaryService = selectedServicesList.join(", ");
                 const generatedApptId = await generateNextAppointmentId();
-
                 await setDoc(doc(db, "appointments_v2", generatedApptId), {
                     appointmentId: generatedApptId,
                     ownerId: currentOwnerId,
-                    petName: petName,
-                    petId: petId,
-                    service: service,
-                    doctorId: "DOC-00001",
+                    petName: petNameStr,
+                    petId: petIdStr,
+                    service: primaryService,
+                    selectedProcedures: selectedServicesList,
+                    assignedDoctor: "Dr. Jan Karlo Fausto",
+                    doctorName: "Dr. Jan Karlo Fausto",
                     date: dateVal,
                     timeSlot: timeVal,
                     notes: notes,
@@ -389,10 +468,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     isUrgent: false,
                     createdAt: Timestamp.now()
                 });
-
                 showAlert("Appointment successfully booked!", "success");
-                petSelect.selectedIndex = 0;
-                serviceSelect.selectedIndex = 0;
+                
+                // Reset inputs
+                document.querySelectorAll('input[name="selectedPets"]').forEach(cb => cb.checked = false);
+                document.querySelectorAll('input[name="selectedServices"]').forEach(cb => cb.checked = false);
                 appointmentDateInput.value = "";
                 if (appointmentTimeInput) appointmentTimeInput.value = "";
                 if (timeSlotsContainer) timeSlotsContainer.innerHTML = `<p style="color: #888; font-size: 13px;">Select a date first.</p>`;
@@ -402,7 +482,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const timeTextEl = document.getElementById("selectedTimeText");
                 if (dateTextEl) dateTextEl.textContent = "Select Date";
                 if (timeTextEl) timeTextEl.textContent = "--:-- --";
-
+                
                 loadUserAppointments(currentOwnerId);
             } catch (error) {
                 console.error("Error booking appointment:", error);
@@ -417,10 +497,12 @@ document.addEventListener("DOMContentLoaded", () => {
     function showAlert(message, type) {
         if (!alertBox) return;
         alertBox.textContent = message;
-        alertBox.className = type === 'success' ? 'alert-success' : 'alert-error';
+        alertBox.style.background = type === 'success' ? '#dcfce7' : '#fee2e2';
+        alertBox.style.color = type === 'success' ? '#16a34a' : '#991b1b';
+        alertBox.style.border = type === 'success' ? '1px solid #bbf7d0' : '1px solid #fca5a5';
         alertBox.style.display = 'block';
         setTimeout(() => {
             alertBox.style.display = 'none';
-        }, 4000);
+        }, 5000);
     }
 });
