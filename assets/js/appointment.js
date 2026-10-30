@@ -163,8 +163,8 @@ document.addEventListener("DOMContentLoaded", () => {
             snapshot.forEach((docSnap) => {
                 const apptData = docSnap.data();
                 const status = (apptData.status || "").toLowerCase().trim();
-                // Tinanggal na ang kondisyon ng trash, tanging isArchived at status na archived lang ang sinala
-                if (apptData.isArchived !== true && status !== "archived") {
+                // Hinaharang na ngayon ang status na 'trash' o 'isTrash' pati na rin ang archived
+                if (apptData.isArchived !== true && status !== "archived" && status !== "trash" && apptData.isTrash !== true) {
                     appointmentsList.push({ id: docSnap.id, ...apptData });
                 }
             });
@@ -427,8 +427,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     const dData = docSnap.data();
                     const dStatus = (dData.status || "").toLowerCase().trim();
                     
-                    // Tinanggal ang pagsusuri sa trash, tanging cancelled lang ang hindi double book filter
-                    if (dStatus !== "cancelled") {
+                    if (dStatus !== "cancelled" && dStatus !== "trash" && dData.isTrash !== true) {
                         const existingPetNameLower = (dData.petName || "").toLowerCase().trim();
                         
                         selectedPetNames.forEach(pName => {
