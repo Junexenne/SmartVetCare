@@ -52,6 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
         document.body.appendChild(cancelModal);
     }
+
     const cancelApptIdTarget = document.getElementById("cancelApptIdTarget");
     const closeCancelModalBtn = document.getElementById("closeCancelModalBtn");
     const confirmCancelBtn = document.getElementById("confirmCancelBtn");
@@ -162,8 +163,8 @@ document.addEventListener("DOMContentLoaded", () => {
             snapshot.forEach((docSnap) => {
                 const apptData = docSnap.data();
                 const status = (apptData.status || "").toLowerCase().trim();
-                // Isinasama ang Pending, Confirmed, Approved, Completed, Cancelled basta hindi pa naka-archive o nasa trash
-                if (apptData.isArchived !== true && status !== "trash" && status !== "archived") {
+                // Tinanggal na ang kondisyon ng trash, tanging isArchived at status na archived lang ang sinala
+                if (apptData.isArchived !== true && status !== "archived") {
                     appointmentsList.push({ id: docSnap.id, ...apptData });
                 }
             });
@@ -289,6 +290,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (closeCancelModalBtn) {
         closeCancelModalBtn.addEventListener("click", () => cancelModal.style.display = "none");
     }
+
     if (confirmCancelBtn) {
         confirmCancelBtn.addEventListener("click", async () => {
             const apptId = cancelApptIdTarget.value;
@@ -425,7 +427,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     const dData = docSnap.data();
                     const dStatus = (dData.status || "").toLowerCase().trim();
                     
-                    if (dStatus !== "cancelled" && dStatus !== "trash") {
+                    // Tinanggal ang pagsusuri sa trash, tanging cancelled lang ang hindi double book filter
+                    if (dStatus !== "cancelled") {
                         const existingPetNameLower = (dData.petName || "").toLowerCase().trim();
                         
                         selectedPetNames.forEach(pName => {
@@ -450,6 +453,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const petIdStr = selectedPetIds.join(", ");
                 const primaryService = selectedServicesList.join(", ");
                 const generatedApptId = await generateNextAppointmentId();
+
                 await setDoc(doc(db, "appointments_v2", generatedApptId), {
                     appointmentId: generatedApptId,
                     ownerId: currentOwnerId,

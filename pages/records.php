@@ -275,9 +275,6 @@ if (session_status() === PHP_SESSION_NONE) {
                     <button class="tab-btn" onclick="switchTab('history', event)">
                         <i class="fa-solid fa-clock-rotate-left"></i> Completed History
                     </button>
-                    <button class="tab-btn" onclick="switchTab('trash', event)">
-                        <i class="fa-solid fa-trash-can"></i> Trash
-                    </button>
                 </div>
                 <!-- Tab 0: Clinical Records -->
                 <div id="clinicalTab" class="tab-content active">
@@ -341,18 +338,6 @@ if (session_status() === PHP_SESSION_NONE) {
                 <div id="historyTab" class="tab-content">
                     <div id="petSubTabsHistory" class="pet-tabs-container"></div>
                     <div id="historyGrid" class="cards-grid"></div>
-                </div>
-                <!-- Tab 5: Trash -->
-                <div id="trashTab" class="tab-content">
-                    <!-- Informational Banner for Trash -->
-                    <div style="background: #fef2f2; border: 1px solid #fecaca; border-left: 4px solid #dc2626; padding: 12px 16px; border-radius: 10px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; color: #991b1b; font-size: 13px;">
-                        <i class="fa-solid fa-circle-info" style="font-size: 18px; color: #dc2626;"></i>
-                        <div>
-                            <strong>Trash Policy Notice:</strong> Items will be permanently deleted after 100 days in the trash.
-                        </div>
-                    </div>
-                    <div id="petSubTabsTrash" class="pet-tabs-container"></div>
-                    <div id="trashGrid" class="cards-grid"></div>
                 </div>
             </div>
         </div>
@@ -428,7 +413,6 @@ if (session_status() === PHP_SESSION_NONE) {
     
     // GROQ API Key para sa Clinical Record Explainer
     const GROQ_API_KEY = "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";
-
     const toast = document.getElementById("toastNotification");
     const toastMessage = document.getElementById("toastMessage");
     const toastIcon = document.getElementById("toastIcon");
@@ -459,7 +443,6 @@ if (session_status() === PHP_SESSION_NONE) {
         else if (tabName === 'pets') { document.getElementById('petsTab').classList.add('active'); renderArchivedPets(); }
         else if (tabName === 'cancelled') { document.getElementById('cancelledTab').classList.add('active'); renderCancelledAppointments(); }
         else if (tabName === 'history') { document.getElementById('historyTab').classList.add('active'); renderCompletedHistory(); }
-        else if (tabName === 'trash') { document.getElementById('trashTab').classList.add('active'); renderTrashItems(); }
         event.currentTarget.classList.add('active');
     };
     window.switchClinicalSubTab = function(subTab) {
@@ -520,7 +503,7 @@ if (session_status() === PHP_SESSION_NONE) {
             petsSnap.forEach(docSnap => {
                 const pData = { id: docSnap.id, ...docSnap.data() };
                 allPets.push(pData);
-                if (!pData.isArchived && pData.status !== "archived" && pData.status !== "trash") {
+                if (!pData.isArchived && pData.status !== "archived") {
                     ownerPetsList.push(pData);
                 }
             });
@@ -553,7 +536,6 @@ if (session_status() === PHP_SESSION_NONE) {
             renderArchivedPets();
             renderCancelledAppointments();
             renderCompletedHistory();
-            renderTrashItems();
         } catch (e) { console.error("Error loading owner data:", e); }
     }
     async function fetchClinicalRecordsForPet(petId, petName) {
@@ -673,8 +655,7 @@ if (session_status() === PHP_SESSION_NONE) {
                         ${appt.notes ? `<p style="color: #64748b; font-size: 12px; margin-top: 8px; font-style: italic;">Note: "${appt.notes}"</p>` : ""}
                     </div>
                     <div style="margin-top: 20px; display: flex; gap: 10px;">
-                        <button onclick="restoreAppointment('${appt.id}')" style="flex: 1; background: #eef2ff; color: #4f46e5; border: 1px solid #c7d2fe; padding: 8px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;"><i class="fa-solid fa-rotate-left"></i> Restore</button>
-                        <button onclick="moveToTrashAppointment('${appt.id}')" style="flex: 1; background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; padding: 8px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;"><i class="fa-solid fa-trash"></i> Delete to Trash</button>
+                        <button onclick="restoreAppointment('${appt.id}')" style="width: 100%; background: #eef2ff; color: #4f46e5; border: 1px solid #c7d2fe; padding: 8px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;"><i class="fa-solid fa-rotate-left"></i> Restore</button>
                     </div>
                 </div>
             `;
@@ -705,8 +686,7 @@ if (session_status() === PHP_SESSION_NONE) {
                         <p style="color: #475569; font-size: 13px; margin: 4px 0;"><strong>Gender:</strong> ${pet.gender || 'N/A'} | <strong>Weight:</strong> ${pet.weight || 'N/A'} kg</p>
                     </div>
                     <div style="margin-top: 20px; display: flex; gap: 10px;">
-                        <button onclick="restorePet('${pet.id}')" style="flex: 1; background: #eef2ff; color: #4f46e5; border: 1px solid #c7d2fe; padding: 8px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;"><i class="fa-solid fa-rotate-left"></i> Restore</button>
-                        <button onclick="moveToTrashPet('${pet.id}')" style="flex: 1; background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; padding: 8px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;"><i class="fa-solid fa-trash"></i> Delete to Trash</button>
+                        <button onclick="restorePet('${pet.id}')" style="width: 100%; background: #eef2ff; color: #4f46e5; border: 1px solid #c7d2fe; padding: 8px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;"><i class="fa-solid fa-rotate-left"></i> Restore</button>
                     </div>
                 </div>
             `;
@@ -735,9 +715,6 @@ if (session_status() === PHP_SESSION_NONE) {
                         <p style="color: #475569; font-size: 13px; margin: 4px 0;"><i class="fa-solid fa-calendar-days" style="width: 18px; color: #5142f5;"></i> ${appt.date || 'N/A'}</p>
                         ${appt.cancellationReason ? `<p style="color: #991b1b; font-size: 12px; margin-top: 8px; font-style: italic;">Reason: "${appt.cancellationReason}"</p>` : ""}
                     </div>
-                    <div style="margin-top: 20px; display: flex; gap: 10px;">
-                        <button onclick="moveToTrashAppointment('${appt.id}')" style="width: 100%; background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; padding: 8px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;"><i class="fa-solid fa-trash"></i> Delete to Trash (100 days)</button>
-                    </div>
                 </div>
             `;
         });
@@ -765,72 +742,6 @@ if (session_status() === PHP_SESSION_NONE) {
                         <p style="color: #475569; font-size: 13px; margin: 4px 0;"><i class="fa-solid fa-user-doctor" style="width: 18px; color: #5142f5;"></i> ${appt.doctorName || appt.assignedDoctor || "Dr. Assigned"}</p>
                         <p style="color: #475569; font-size: 13px; margin: 4px 0;"><i class="fa-solid fa-calendar-days" style="width: 18px; color: #5142f5;"></i> ${appt.date || 'N/A'}</p>
                     </div>
-                    <div style="margin-top: 20px; display: flex; gap: 10px;">
-                        <button onclick="moveToTrashAppointment('${appt.id}')" style="width: 100%; background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; padding: 8px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;"><i class="fa-solid fa-trash"></i> Delete to Trash (100 days)</button>
-                    </div>
-                </div>
-            `;
-        });
-        grid.innerHTML = html;
-    };
-    // RENDER: Trash (with 100 Days calculation and explicit notes)
-    window.renderTrashItems = function() {
-        const grid = document.getElementById('trashGrid');
-        if (!grid) return;
-        const trashAppointments = allAppointments.filter(a => (a.status || "").toLowerCase() === 'trash' || a.isTrash === true);
-        const trashPets = allPets.filter(p => (p.status || "").toLowerCase() === 'trash' || p.isTrash === true);
-        if (trashAppointments.length === 0 && trashPets.length === 0) {
-            grid.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; padding: 30px; color: #64748b;"><p>Trash is empty.</p></div>`;
-            return;
-        }
-        let html = '';
-        
-        function getRemainingDays(deletedAtTimestamp) {
-            if (!deletedAtTimestamp) return 100;
-            const deletedDate = deletedAtTimestamp.toDate ? deletedAtTimestamp.toDate() : new Date(deletedAtTimestamp);
-            const now = new Date();
-            const diffTime = Math.abs(now - deletedDate);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            const remaining = 100 - diffDays;
-            return remaining > 0 ? remaining : 0;
-        }
-        trashAppointments.forEach(appt => {
-            const daysLeft = getRemainingDays(appt.deletedAt);
-            html += `
-                <div style="background: #ffffff; border: 1px solid #fecaca; border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); display: flex; flex-direction: column; justify-content: space-between;">
-                    <div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                            <span style="background: #fef2f2; color: #dc2626; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600;">Trash (${daysLeft} days left)</span>
-                            <small style="color: #64748b; font-size: 12px;">Appointment</small>
-                        </div>
-                        <h4 style="color: #1e1b4b; font-size: 16px; margin-bottom: 8px; font-weight: 700;">${appt.service || "Appointment"}</h4>
-                        <p style="color: #475569; font-size: 13px; margin: 4px 0;"><i class="fa-solid fa-paw"></i> ${appt.petName || "Pet"}</p>
-                        <p style="color: #dc2626; font-size: 12px; margin-top: 8px; font-weight: 500;"><i class="fa-solid fa-clock"></i> Items will be permanently deleted after 100 days in the trash.</p>
-                    </div>
-                    <div style="margin-top: 20px; display: flex; gap: 10px;">
-                        <button onclick="restoreAppointment('${appt.id}')" style="flex: 1; background: #eef2ff; color: #4f46e5; border: 1px solid #c7d2fe; padding: 8px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;"><i class="fa-solid fa-rotate-left"></i> Restore</button>
-                        <button onclick="permanentDeleteAppointment('${appt.id}')" style="flex: 1; background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; padding: 8px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;"><i class="fa-solid fa-trash-can"></i> Delete Permanently</button>
-                    </div>
-                </div>
-            `;
-        });
-        trashPets.forEach(pet => {
-            const daysLeft = getRemainingDays(pet.deletedAt);
-            html += `
-                <div style="background: #ffffff; border: 1px solid #fecaca; border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); display: flex; flex-direction: column; justify-content: space-between;">
-                    <div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                            <span style="background: #fef2f2; color: #dc2626; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600;">Trash (${daysLeft} days left)</span>
-                            <small style="color: #64748b; font-size: 12px;">Pet Profile</small>
-                        </div>
-                        <h4 style="color: #1e1b4b; font-size: 18px; margin-bottom: 8px; font-weight: 700;">${pet.petName || pet.name || "Pet"}</h4>
-                        <p style="color: #475569; font-size: 13px; margin: 4px 0;"><strong>Breed:</strong> ${pet.breed || 'N/A'}</p>
-                        <p style="color: #dc2626; font-size: 12px; margin-top: 8px; font-weight: 500;"><i class="fa-solid fa-clock"></i> Items will be permanently deleted after 100 days in the trash.</p>
-                    </div>
-                    <div style="margin-top: 20px; display: flex; gap: 10px;">
-                        <button onclick="restorePet('${pet.id}')" style="flex: 1; background: #eef2ff; color: #4f46e5; border: 1px solid #c7d2fe; padding: 8px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;"><i class="fa-solid fa-rotate-left"></i> Restore</button>
-                        <button onclick="permanentDeletePet('${pet.id}')" style="flex: 1; background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; padding: 8px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;"><i class="fa-solid fa-trash-can"></i> Delete Permanently</button>
-                    </div>
                 </div>
             `;
         });
@@ -844,21 +755,6 @@ if (session_status() === PHP_SESSION_NONE) {
             loadOwnerData(currentOwnerId);
         } catch(e) { showToast("Failed to restore appointment.", "error"); }
     };
-    window.moveToTrashAppointment = async function(id) {
-        try {
-            await updateDoc(doc(db, "appointments_v2", id), { status: "trash", isTrash: true, isArchived: false, deletedAt: serverTimestamp() });
-            showToast("Moved to Trash (Items will be permanently deleted after 100 days).");
-            loadOwnerData(currentOwnerId);
-        } catch(e) { showToast("Failed to move to trash.", "error"); }
-    };
-    window.permanentDeleteAppointment = async function(id) {
-        if (!confirm("Are you sure you want to permanently delete this appointment?")) return;
-        try {
-            await deleteDoc(doc(db, "appointments_v2", id));
-            showToast("Permanently deleted.");
-            loadOwnerData(currentOwnerId);
-        } catch(e) { showToast("Failed to delete permanently.", "error"); }
-    };
     // ACTION FUNCTIONS: Pets
     window.restorePet = async function(id) {
         try {
@@ -866,21 +762,6 @@ if (session_status() === PHP_SESSION_NONE) {
             showToast("Pet restored successfully!");
             loadOwnerData(currentOwnerId);
         } catch(e) { showToast("Failed to restore pet.", "error"); }
-    };
-    window.moveToTrashPet = async function(id) {
-        try {
-            await updateDoc(doc(db, "pets", id), { status: "trash", isTrash: true, isArchived: false, deletedAt: serverTimestamp() });
-            showToast("Pet moved to Trash (Items will be permanently deleted after 100 days).");
-            loadOwnerData(currentOwnerId);
-        } catch(e) { showToast("Failed to move pet to trash.", "error"); }
-    };
-    window.permanentDeletePet = async function(id) {
-        if (!confirm("Are you sure you want to permanently delete this pet profile?")) return;
-        try {
-            await deleteDoc(doc(db, "pets", id));
-            showToast("Pet permanently deleted.");
-            loadOwnerData(currentOwnerId);
-        } catch(e) { showToast("Failed to delete pet permanently.", "error"); }
     };
     
     // AI Explainer functions (Updated to Groq API)
@@ -920,9 +801,7 @@ Provide structured response without using markdown symbols like asterisks or has
 1. What was done in this visit?
 2. What do these findings mean?
 3. Why is this important for your pet?`;
-
             const systemInstructionContent = "You are KuaGO, the official AI pet support companion in Smart Vet Care for Furry Friends Animal Clinic. Reply helpfully and concisely to pet owners in, English, or Taglish regarding pet health and clinical records.";
-
             const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
                 method: "POST",
                 headers: {
@@ -938,7 +817,6 @@ Provide structured response without using markdown symbols like asterisks or has
                     temperature: 0.3
                 })
             });
-
             const data = await response.json();
             let reply = "Could not generate explanation at the moment.";
             if (data && data.choices && data.choices[0]?.message?.content) {
@@ -946,12 +824,10 @@ Provide structured response without using markdown symbols like asterisks or has
             } else if (data.error) {
                 console.error("Groq API Error:", data.error.message);
             }
-
             reply = reply.replace(/[#*]/g, '');
             
             // Idinaragdag ang safety disclaimer sa dulo ng explanation
             const finalReply = reply + "\n\n<small style='color: #6b7280;'><i>AI-generated guidance only. Consult a licensed vet for medical diagnosis.</i></small>";
-
             try {
                 await setDoc(explanationRef, {
                     petId: record.petId || "",
