@@ -2,13 +2,15 @@ import { auth, db } from "./firebase-config.js";
 import {
   signInWithEmailAndPassword, setPersistence, browserLocalPersistence,
   browserSessionPersistence, signOut, multiFactor, TotpMultiFactorGenerator,
-  getMultiFactorResolver, sendEmailVerification
+  getMultiFactorResolver, sendEmailVerification, GoogleAuthProvider, signInWithPopup
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
-import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import { collection, query, where, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
 const $ = id => document.getElementById(id);
 let resolver = null;
 let enrollmentSecret = null;
 let busy = false;
+
 const modal = document.createElement('div');
 modal.id = 'totpModal';
 modal.setAttribute('role', 'dialog');
@@ -35,7 +37,6 @@ modal.innerHTML = `
  </section>`;
 document.body.appendChild(modal);
 
-// Strict Numeric restriction for OTP input field
 const totpCodeInput = $('totpCode');
 if (totpCodeInput) {
   totpCodeInput.addEventListener('input', (e) => {
@@ -58,6 +59,7 @@ function toast(title, message, type='error') {
   if (typeof window.showToast === 'function') window.showToast(title, message, type);
   else alert(`${title}: ${message}`);
 }
+
 function display(mode, message) {
   $('totpHeading').textContent = mode === 'enroll' ? 'Set up two-factor authentication' : 'Two-factor authentication';
   $('totpMessage').textContent = message;
@@ -68,14 +70,33 @@ function display(mode, message) {
   modal.style.display = 'flex';
   $('totpCode').focus();
 }
+
 async function accountFromFirestore(user) {
-  const q = query(collection(db, 'users'), where('email', '==', user.email));
-  const snapshot = await getDocs(q);
-  if (snapshot.empty) throw new Error('User record not found.');
+  let q = query(collection(db, 'users'), where('email', '==', user.email));
+  let snapshot = await getDocs(q);
+  
+  if (snapshot.empty) {
+    // Kapag first-time user na nag-login gamit ang Google o nag-register sa public, gawan ng record sa Firestore 'users' collection
+    const newOwnerId = "OWNER-" + Math.floor(100000 + Math.random() * 900000);
+    const userDocRef = doc(collection(db, 'users'));
+    const userData = {
+      uid: user.uid,
+      fullName: user.displayName || user.email.split('@')[0],
+      email: user.email,
+      ownerId: newOwnerId,
+      role: 'pet_owner',
+      status: 'active',
+      createdAt: new Date()
+    };
+    await setDoc(userDocRef, userData);
+    return { ...userData, userDocId: userDocRef.id };
+  }
+
   const data = snapshot.docs[0].data();
   if (data.status !== 'active') throw new Error('Account is not active. Please contact the clinic.');
   return { ...data, userDocId: snapshot.docs[0].id };
 }
+
 async function finishLogin(user) {
   const data = await accountFromFirestore(user);
   const activeUserId = data.ownerId || data.userDocId;
@@ -85,11 +106,9 @@ async function finishLogin(user) {
     body: JSON.stringify({ idToken, user_id: activeUserId, email: user.email, role: data.role })
   });
   if (!response.ok) {
-  const result = await response.json().catch(() => ({}));
-  throw new Error(
-    result.error || `Session failed (HTTP ${response.status})`
-  );
-}
+    const result = await response.json().catch(() => ({}));
+    throw new Error(result.error || `Session failed (HTTP ${response.status})`);
+  }
   localStorage.setItem('isLoggedIn', 'true');
   localStorage.setItem('userUID', user.uid);
   localStorage.setItem('userEmail', user.email || '');
@@ -101,6 +120,7 @@ async function finishLogin(user) {
   modal.style.display = 'none';
   window.location.href = '../pages/dashboard.php';
 }
+
 async function beginEnrollment(user) {
   if (!user.emailVerified) {
     await sendEmailVerification(user);
@@ -118,6 +138,7 @@ async function beginEnrollment(user) {
     $('totpQR').textContent = 'Use the manual setup key below (QR library unavailable).';
   }
 }
+
 async function login(event) {
   event.preventDefault();
   if (busy) return;
@@ -157,6 +178,52 @@ async function login(event) {
     modal.style.display = 'none';
   } finally { busy = false; }
 }
+
+// --- GOOGLE LOGIN HANDLER (WITH MFA / 2FA SUPPORT) ---
+const googleLoginBtn = $('googleLoginBtn');
+if (googleLoginBtn) {
+  googleLoginBtn.addEventListener('click', async () => {
+    if (busy) return;
+    busy = true;
+    resolver = null;
+    enrollmentSecret = null;
+    
+    try {
+      const provider = new GoogleAuthProvider();
+      let credential;
+      
+      try {
+        credential = await signInWithPopup(auth, provider);
+      } catch (err) {
+        // Kapag naka-MFA/2FA ang Google Account ng user:
+        if (err.code === 'auth/multi-factor-auth-required') {
+          resolver = getMultiFactorResolver(auth, err);
+          if (!resolver.hints.some(hint => hint.factorId === TotpMultiFactorGenerator.FACTOR_ID)) {
+            throw new Error('This account uses another second-factor method, which this page cannot verify.');
+          }
+          display('challenge', 'Enter the current 6-digit code from your authenticator app.');
+          return;
+        }
+        throw err;
+      }
+
+      if (multiFactor(credential.user).enrolledFactors.some(f => f.factorId === TotpMultiFactorGenerator.FACTOR_ID)) {
+        await finishLogin(credential.user);
+      } else {
+        await accountFromFirestore(credential.user);
+        await finishLogin(credential.user);
+      }
+    } catch (err) {
+      console.error('Google login error', err);
+      toast('Google Login Failed', err.code === 'auth/invalid-credential' ? 'Invalid credentials.' : err.message);
+      if (auth.currentUser) await signOut(auth);
+      modal.style.display = 'none';
+    } finally {
+      busy = false;
+    }
+  });
+}
+
 $('totpForm').addEventListener('submit', async event => {
   event.preventDefault();
   if (busy) return;
@@ -187,12 +254,14 @@ $('totpForm').addEventListener('submit', async event => {
     $('totpError').textContent = err.message || 'Verification failed. Try the newest code.';
   } finally { busy = false; $('totpVerify').disabled = false; }
 });
+
 $('totpCancel').addEventListener('click', async () => {
   if (busy) return;
   resolver = null; enrollmentSecret = null;
   modal.style.display = 'none';
   await signOut(auth);
 });
+
 const savedEmail = localStorage.getItem('savedUserEmail');
 if (savedEmail && $('email') && $('rememberMe')) { $('email').value = savedEmail; $('rememberMe').checked = true; }
 $('loginForm')?.addEventListener('submit', login);

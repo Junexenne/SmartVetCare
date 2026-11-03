@@ -190,6 +190,7 @@
         .calendar-day {
             aspect-ratio: 1;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             font-size: 12px;
@@ -198,6 +199,7 @@
             border-radius: 8px;
             cursor: pointer;
             transition: background 0.15s, color 0.15s;
+            position: relative;
         }
         .calendar-day:hover:not(.disabled) {
             background: #f1f5f9;
@@ -209,6 +211,20 @@
             background: #5142f5 !important;
             color: #ffffff !important;
             font-weight: 600;
+        }
+        .calendar-day.fully-booked {
+            background-color: #fee2e2 !important;
+            color: #991b1b !important;
+            cursor: not-allowed !important;
+            opacity: 0.8;
+        }
+        .calendar-day.fully-booked::after {
+            content: 'Full';
+            font-size: 8px;
+            font-weight: 700;
+            display: block;
+            color: #dc2626;
+            line-height: 1;
         }
         .picker-slots-container {
             display: flex;
@@ -275,7 +291,7 @@
             margin-bottom: 6px;
             color: #475569;
         }
-        .form-group textarea {
+        .form-group select, .form-group textarea {
             width: 100% !important;
             max-width: 100% !important;
             box-sizing: border-box !important;
@@ -289,7 +305,7 @@
             outline: none;
             transition: border-color 0.2s, box-shadow 0.2s;
         }
-        .form-group textarea:focus {
+        .form-group select:focus, .form-group textarea:focus {
             border-color: #5142f5;
             box-shadow: 0 0 0 3px rgba(81, 66, 245, 0.1);
         }
@@ -386,8 +402,9 @@
                     <i class="fa-solid fa-calendar-check" style="background: #eef4ff; padding: 10px; border-radius: 12px;color: #5142f5;"></i>
                     Appointment
                 </h1>
-                <p>Select your pet, preferred schedule, and service.</p>
+                <p>Select your pet, preferred doctor, schedule, and service.</p>
             </div>
+            
             <div class="emergency-banner">
                 <i class="fa-solid fa-triangle-exclamation" style="font-size: 16px; color: #e53e3e; margin-top: 2px;"></i>
                 <div>
@@ -396,15 +413,27 @@
             </div>
             
             <div id="alertBox" style="display: none; padding: 12px 16px; border-radius: 10px; font-size: 13px; font-weight: 500;"></div>
+            
             <div class="profile-style-card">
                 <div class="appointment-card-grid">
                     <div class="appointment-left">
+                        <!-- Choose a Doctor Section -->
+                        <div class="form-group">
+                            <label><i class="fa-solid fa-user-doctor" style="color: #5142f5;"></i> Choose Doctor & Schedule</label>
+                            <select id="assignedDoctor" required>
+                                <option value="" disabled selected>Select a veterinarian</option>
+                                <option value="Dr. Alfie Tamesis">Dr. Alfie Tamesis (Mon, Sun)</option>
+                                <option value="Dr. JK">Dr. JK (Mon–Thu, Sat–Sun)</option>
+                                <option value="Dr. Edmond">Dr. Edmond (Tue, Thu, Sat)</option>
+                                <option value="Dr. Vitz">Dr. Vitz (Friday)</option>
+                            </select>
+                        </div>
                         <h3 style="color: #1e1b4b; font-size: 16px; margin-bottom: 4px;">
                             <i class="fa-solid fa-calendar-days" style="color: #163B7A;"></i>
                             Appointment Date & Time
                         </h3>
                         <p class="calendar-note" style="color: #64748b; font-size: 13px; margin-bottom: 16px;">
-                            Choose your preferred appointment date and schedule (Clinic hours: 10:00 AM – 7:00 PM).
+                            Choose your preferred appointment date and schedule (Clinic hours: 10:00 AM – 7:00 PM). Note: Calendar dates disabled if the doctor is not scheduled or fully booked (max 10 appointments/day).
                         </p>
                         
                         <div id="holidayNoticeBanner" style="display: none; border-left: 4px solid #e53e3e; background: #fff5f5; padding: 10px 14px; border-radius: 0 8px 8px 0; margin-bottom: 12px;">
@@ -449,51 +478,104 @@
                                     <div>
                                         <label style="display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 8px;">Available Time Slots</label>
                                         <div class="picker-slots-container" id="pickerSlotsContainer">
-                                            <p style="color: #888; font-size: 12px; text-align: center; padding: 10px 0;">Select a date first.</p>
+                                            <p style="color: #888; font-size: 12px; text-align: center;">Select a doctor and date first.</p>
                                         </div>
                                     </div>
                                     <button type="button" class="btn-done" id="donePickerBtn">Confirm Schedule</button>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="appointment-right">
-                        <div class="form-group">
-                            <label><i class="fa-solid fa-paw" style="color: #5142f5;"></i> Registered Pet(s) <small style="color: #64748b;">(Select one or more)</small></label>
-                            <div id="petsCheckboxContainer" class="multi-checkbox-box">
-                                <span style="font-size: 12px; color: #888;">Loading your pets...</span>
+                        <!-- Payment & GCash / PayMaya Section -->
+                        <div style="margin-top: 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px;">
+                            <h4 style="margin: 0 0 8px 0; color: #1e1b4b; font-size: 14px; display: flex; align-items: center; gap: 6px;">
+                                <i class="fa-solid fa-wallet" style="color: #5142f5;"></i> Reservation Payment Details
+                            </h4>
+                            <p style="font-size: 12.5px; color: #64748b; margin: 0 0 10px 0;" id="paymentInstructionText">
+                                Please send your reservation fee via GCash or PayMaya using the clinic account numbers below. Note: Status will remain <strong>Pending / Waiting for Approval</strong> upon submission.
+                            </p>
+                            <div style="display: flex; gap: 12px; margin-bottom: 12px; font-size: 13px;">
+                                <div style="background: #eef2ff; padding: 8px 12px; border-radius: 8px; flex: 1; border: 1px solid #c7d2fe;">
+                                    <strong>GCash:</strong> 0991-572-3015 (Smart Vet Care)
+                                </div>
+                                <div style="background: #f0fdf4; padding: 8px 12px; border-radius: 8px; flex: 1; border: 1px solid #bbf7d0;">
+                                    <strong>PayMaya:</strong> 0991-572-3015 (Smart Vet Care)
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label style="font-size: 12.5px;">GCash / PayMaya Reference Number</label>
+                                <input type="text" id="referenceNumberInput" inputmode="numeric" pattern="[0-9]*" placeholder="Enter transaction reference number" style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; outline: none; font-family: 'Poppins', sans-serif;">
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label><i class="fa-solid fa-stethoscope" style="color: #5142f5;"></i> Service(s) <small style="color: #64748b;">(Select one or more)</small></label>
-                            <div id="servicesCheckboxContainer" class="multi-checkbox-box" style="max-height: 180px;">
-                                <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" value="Wellness - Deworming"> Deworming</label>
-                                <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" value="Wellness - Anti Rabies"> Anti Rabies</label>
-                                <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" value="Wellness - Vaccination (2in1)"> 2in1 Vaccine</label>
-                                <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" value="Wellness - Vaccination (4in1 Cat)"> 4in1 Vaccine (Cat)</label>
-                                <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" value="Wellness - Vaccination (4in1 Dog)"> 4in1 Vaccine (Dog)</label>
-                                <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" value="Wellness - Vaccination (5in1)"> 5in1 Vaccine</label>
-                                <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" value="Wellness - Vaccination (6in1)"> 6in1 Vaccine</label>
-                                <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" value="Wellness - Vaccination (7in1)"> 7in1 Vaccine</label>
-                                <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" value="Wellness - Vaccination (8in1)"> 8in1 Vaccine</label>
-                                <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" value="Laboratories - CBC"> Laboratories - CBC</label>
-                                <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" value="Laboratories - Chemistry"> Laboratories - Chemistry</label>
-                                <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" value="Laboratories - Microscopy"> Laboratories - Microscopy</label>
-                                <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" value="Laboratories - Ultrasound"> Laboratories - Ultrasound</label>
-                                <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" value="Laboratories - Laser Therapy"> Laboratories - Laser Therapy</label>
-                                <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" value="Check up"> Check up</label>
-                                <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" value="Minor Surgeries"> Minor Surgeries</label>
+                    </div>
+                                        <div class="appointment-right">
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-paw" style="color: #5142f5;"></i> Registered Pet(s) <small style="color: #64748b;">(Select one or more)</small></label>
+                        <div id="petsCheckboxContainer" class="multi-checkbox-box">
+                            <span style="font-size: 12px; color: #888;">Loading your pets...</span>
+                        </div>
+                        <!-- DAGDAG PARA SA MGA FIRST-TIME USERS / WALA PANG NAKAREHISTRONG PET -->
+                        <div style="margin-top: 10px; border-top: 1px dashed #cbd5e1; padding-top: 10px;">
+                            <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #4f46e5; cursor: pointer;">
+                                <input type="checkbox" id="toggleNewPetInput" style="cursor: pointer; width: 16px; height: 16px;">
+                                <span>First time here? Register a new pet for this booking</span>
+                            </label>
+                            <!-- Hidden input fields na lilitaw lang kapag kinlik ang checkbox -->
+                            <div id="newPetFieldsContainer" style="display: none; margin-top: 10px; background: #f1f5f9; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; flex-direction: column; gap: 10px;">
+                                <div>
+                                    <label style="display: block; font-size: 12px; font-weight: 500; color: #334155; margin-bottom: 3px;">Pet Name</label>
+                                    <input type="text" id="newPetNameInput" placeholder="e.g., Brownie" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-family: inherit; box-sizing: border-box; outline: none;">
+                                </div>
+                                <div style="display: flex; gap: 10px;">
+                                    <div style="flex: 1;">
+                                        <label style="display: block; font-size: 12px; font-weight: 500; color: #334155; margin-bottom: 3px;">Pet Type / Species</label>
+                                        <select id="newPetSpeciesInput" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-family: inherit; background: #fff; outline: none;">
+                                            <option value="Dog">Dog</option>
+                                            <option value="Cat">Cat</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <label style="display: block; font-size: 12px; font-weight: 500; color: #334155; margin-bottom: 3px;">Breed (Optional)</label>
+                                        <input type="text" id="newPetBreedInput" placeholder="e.g., Shih Tzu / Pusakal" style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 13px; font-family: inherit; box-sizing: border-box; outline: none;">
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label>Reason / Notes</label>
-                            <textarea id="notes" placeholder="Describe your pet's condition or consultation details..." style="resize: vertical; min-height: 90px;"></textarea>
-                        </div>
-                        <button id="bookAppointmentBtn" class="book-btn" style="width: 100%; background: #5142f5; color: #fff; border: none; padding: 12px; border-radius: 10px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s, box-shadow 0.2s;">
-                            <i class="fa-solid fa-calendar-plus"></i>
-                            Book Appointment
-                        </button>
                     </div>
+                    <div class="form-group">
+                        <label><i class="fa-solid fa-stethoscope" style="color: #5142f5;"></i> Service(s) <small style="color: #64748b;">(Select services)</small></label>
+                        <div id="servicesCheckboxContainer" class="multi-checkbox-box" style="max-height: 200px;">
+                            <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" value="Wellness - Deworming"> Deworming (Expected Duration: ~5 mins)</label>
+                            <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" value="Wellness - Anti Rabies"> Anti Rabies (Expected Duration: ~5 mins)</label>
+                            <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" data-in1="true" value="Wellness - Vaccination (2in1)"> 2in1 Vaccine (Expected Duration: ~5 mins)</label>
+                            <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" data-in1="true" value="Wellness - Vaccination (4in1 Cat)"> 4in1 Vaccine Cat (Expected Duration: ~5 mins)</label>
+                            <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" data-in1="true" value="Wellness - Vaccination (4in1 Dog)"> 4in1 Vaccine Dog (Expected Duration: ~5 mins)</label>
+                            <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" data-in1="true" value="Wellness - Vaccination (5in1)"> 5in1 Vaccine (Expected Duration: ~5 mins)</label>
+                            <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" data-in1="true" value="Wellness - Vaccination (6in1)"> 6in1 Vaccine (Expected Duration: ~5 mins)</label>
+                            <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" data-in1="true" value="Wellness - Vaccination (7in1)"> 7in1 Vaccine (Expected Duration: ~5 mins)</label>
+                            <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" data-in1="true" value="Wellness - Vaccination (8in1)"> 8in1 Vaccine (Expected Duration: ~5 mins)</label>
+                            <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" value="Laboratories - CBC"> Laboratories - CBC (Expected Duration: ~15 mins)</label>
+                            <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" value="Laboratories - Chemistry"> Laboratories - Chemistry (Expected Duration: ~15 mins)</label>
+                            <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" value="Laboratories - Microscopy"> Laboratories - Microscopy (Expected Duration: ~15 mins)</label>
+                            <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" value="Laboratories - Ultrasound"> Laboratories - Ultrasound (Expected Duration: ~20 mins)</label>
+                            <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" value="Laboratories - Laser Therapy"> Laboratories - Laser Therapy (Expected Duration: ~20 mins)</label>
+                            <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" value="Check up"> Check up (Expected Duration: ~15 mins)</label>
+                            <label class="multi-checkbox-item"><input type="checkbox" name="selectedServices" value="Minor Surgeries"> Minor Surgeries (Expected Duration: ~45 mins)</label>
+                        </div>
+                    </div>
+                    <div class="form-group" style="background: #fdf4ff; padding: 10px 14px; border-radius: 8px; border: 1px solid #f5d0fe;">
+                        <label style="margin: 0; font-weight: 600; color: #86198f; font-size: 13px;">Standard Reservation Fee: <span id="totalFeeDisplay" style="color: #701a75; font-size: 15px;">₱150</span></label>
+                        <small style="color: #a21caf; font-size: 11.5px; display: block; margin-top: 2px;">Note: A fixed ₱150 reservation fee is required per booking and will be deducted from your total bill upon arrival at the clinic.</small>
+                    </div>
+                    <div class="form-group">
+                        <label>Reason / Notes</label>
+                        <textarea id="notes" placeholder="Describe your pet's condition or consultation details..." style="resize: vertical; min-height: 90px;"></textarea>
+                    </div>
+                    <button id="bookAppointmentBtn" class="book-btn" style="width: 100%; background: #5142f5; color: #fff; border: none; padding: 12px; border-radius: 10px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s, box-shadow 0.2s;">
+                        <i class="fa-solid fa-calendar-plus"></i>
+                        Book Appointment 
+                    </button>
+                </div>
                 </div>
             </div>
             
@@ -509,31 +591,122 @@
         </div>
     </div>
 </div>
-<div id="rescheduleModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; padding: 15px;">
-    <div style="background: #fff; padding: 25px; border-radius: 16px; width: 100%; max-width: 450px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
-        <h3 style="margin-bottom: 15px; color: #1e1b4b; display: flex; align-items: center; gap: 8px; font-size: 16px;">
+<!-- IMPORTANT NOTICE POPUP MODAL (WARNING ALERT STYLING) -->
+<div id="importantNoticeModal" style="display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); z-index: 99999; justify-content: center; align-items: center; padding: 15px;">
+    <div style="background: #ffffff; border-radius: 18px; width: 100%; max-width: 460px; box-shadow: 0 25px 50px -12px rgba(217, 119, 6, 0.25); border: 1px solid #fef3c7; overflow: hidden; font-family: 'Poppins', sans-serif;">
+        
+        <!-- Header Banner na may Gradient Warning Alert -->
+        <div style="background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%); padding: 20px 24px; border-bottom: 2px solid #fde68a; display: flex; align-items: center; gap: 14px;">
+            <div style="background: #fef3c7; border: 2px solid #f59e0b; width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.2);">
+                <i class="fa-solid fa-triangle-exclamation" style="font-size: 22px; color: #d97706;"></i>
+            </div>
+            <div>
+                <h3 style="margin: 0; font-size: 17px; color: #78350f; font-weight: 700; line-height: 1.2;">Important Advisory & Policies</h3>
+                <span style="font-size: 11.5px; color: #b45309; font-weight: 500;">Please read carefully before proceeding</span>
+            </div>
+        </div>
+        <!-- Content Body -->
+        <div style="padding: 22px 24px 18px 24px; font-size: 13px; color: #334155; line-height: 1.6;">
+            
+            <div style="display: flex; gap: 12px; margin-bottom: 12px; background: #fffbeb; padding: 12px; border-radius: 10px; border-left: 4px solid #f59e0b;">
+                <span style="font-weight: 700; color: #d97706; font-size: 14px;">1.</span>
+                <p style="margin: 0; font-size: 12.5px; color: #451a03;">
+                    <strong>Schedule Changes & Delays:</strong> Appointment times may adjust if a prior procedure takes longer than expected or due to emergency cases. You will be notified for a reschedule or refund if necessary.
+                </p>
+            </div>
+            <div style="display: flex; gap: 12px; margin-bottom: 12px; background: #fffbeb; padding: 12px; border-radius: 10px; border-left: 4px solid #f59e0b;">
+                <span style="font-weight: 700; color: #d97706; font-size: 14px;">2.</span>
+                <p style="margin: 0; font-size: 12.5px; color: #451a03;">
+                    <strong>Late Policy:</strong> Being late by <strong style="color: #dc2626;">20 minutes</strong> from your appointment time results in automatic cancellation.
+                </p>
+            </div>
+            <div style="display: flex; gap: 12px; margin-bottom: 16px; background: #fffbeb; padding: 12px; border-radius: 10px; border-left: 4px solid #f59e0b;">
+                <span style="font-weight: 700; color: #d97706; font-size: 14px;">3.</span>
+                <p style="margin: 0; font-size: 12.5px; color: #451a03;">
+                    <strong>Reservation Fee:</strong> The reservation fee paid via GCash/PayMaya is required for booking and will be deducted upon your arrival at the clinic.
+                </p>
+            </div>
+        </div>
+        <!-- Footer / Action Button -->
+        <div style="padding: 0 24px 22px 24px;">
+            <button type="button" id="agreeNoticeBtn" style="width: 100%; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #ffffff; border: none; padding: 12px; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 14px; box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3); transition: all 0.2s ease;">
+                <i class="fa-solid fa-circle-check" style="margin-right: 6px;"></i> Yes, I Agree & Understand
+            </button>
+        </div>
+    </div>
+</div>
+<!-- RESCHEDULE MODAL -->
+<div id="rescheduleModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: flex-start; padding-top: 30px; overflow-y: auto;">
+    <div style="background: #fff; padding: 25px; border-radius: 16px; width: 100%; max-width: 540px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); font-family: 'Poppins', sans-serif; margin-bottom: 40px;">
+        <h3 style="margin-bottom: 12px; color: #1e1b4b; display: flex; align-items: center; gap: 8px; font-size: 16px;">
             <i class="fa-solid fa-calendar-pen" style="color: #5142f5;"></i> Reschedule Appointment
         </h3>
         <input type="hidden" id="rescheduleApptId">
-        <div style="margin-bottom: 15px;">
-            <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 5px; color: #475569;">New Date</label>
-            <input type="date" id="rescheduleDate" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: 'Poppins', sans-serif; outline: none;">
+        <input type="hidden" id="rescheduleDate">
+        <input type="hidden" id="rescheduleTime">
+        
+        <div style="margin-bottom: 12px;">
+            <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 5px; color: #475569;">Select Doctor</label>
+            <select id="rescheduleDoctor" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: 'Poppins', sans-serif; outline: none; font-size: 13px;">
+                <option value="Dr. Alfie Tamesis">Dr. Alfie Tamesis (Mon, Sun)</option>
+                <option value="Dr. Jan Karlo Fanito">Dr. Jan Karlo Fanito (Mon–Thu, Sat–Sun)</option>
+                <option value="Dr. Edmond">Dr. Edmond Batan (Tue, Thu, Sat)</option>
+                <option value="Dr. Vitz">Dr. Vitz (Friday)</option>
+            </select>
         </div>
-        <div style="margin-bottom: 20px;">
-            <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 5px; color: #475569;">Available Time Slots</label>
-            <div id="rescheduleTimeSlots" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px;">
-                <p style="color: #888; font-size: 13px;">Please select a new date first.</p>
+        <!-- Inline Kalendaryo at Time Slots sa loob ng Modal para hindi natatakpan -->
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; margin-bottom: 12px;">
+            <label style="display: block; font-size: 13px; font-weight: 600; color: #1e1b4b; margin-bottom: 8px;">Select New Date & Time Slot</label>
+            
+            <div style="display: flex; gap: 15px;">
+                <!-- Calendar Side -->
+                <div style="flex: 1.3;">
+                    <div class="calendar-nav" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                        <button type="button" id="reschedPrevMonthBtn" style="background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; width: 28px; height: 28px; cursor: pointer;"><i class="fa-solid fa-chevron-left"></i></button>
+                        <div style="display: flex; gap: 4px;">
+                            <select id="reschedMonthSelect" style="padding: 4px 6px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 12px; background: #fff;"></select>
+                            <select id="reschedYearSelect" style="padding: 4px 6px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 12px; background: #fff;"></select>
+                        </div>
+                        <button type="button" id="reschedNextMonthBtn" style="background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; width: 28px; height: 28px; cursor: pointer;"><i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; margin-bottom: 6px;">
+                        <div style="font-size: 10px; font-weight: 600; color: #94a3b8;">Su</div>
+                        <div style="font-size: 10px; font-weight: 600; color: #94a3b8;">Mo</div>
+                        <div style="font-size: 10px; font-weight: 600; color: #94a3b8;">Tu</div>
+                        <div style="font-size: 10px; font-weight: 600; color: #94a3b8;">We</div>
+                        <div style="font-size: 10px; font-weight: 600; color: #94a3b8;">Th</div>
+                        <div style="font-size: 10px; font-weight: 600; color: #94a3b8;">Fr</div>
+                        <div style="font-size: 10px; font-weight: 600; color: #94a3b8;">Sa</div>
+                    </div>
+                    <div id="reschedCalendarDaysGrid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; text-align: center;"></div>
+                </div>
+                <!-- Time Slots Side -->
+                <div style="flex: 1; border-left: 1px solid #e2e8f0; padding-left: 12px; display: flex; flex-direction: column;">
+                    <label style="display: block; font-size: 11.5px; font-weight: 600; color: #475569; margin-bottom: 6px;">Available Time Slots</label>
+                    <div id="reschedPickerSlotsContainer" style="display: flex; flex-direction: column; gap: 5px; max-height: 190px; overflow-y: auto;">
+                        <p style="color: #888; font-size: 11px; text-align: center; margin-top: 20px;">Select a date first.</p>
+                    </div>
+                </div>
             </div>
+            <div id="reschedHolidayNotice" style="display: none; background: #fff5f5; border-left: 3px solid #e53e3e; padding: 6px 10px; border-radius: 0 6px 6px 0; margin-top: 10px; font-size: 11.5px; color: #9b2c2c;"></div>
         </div>
-        <div style="display: flex; justify-content: flex-end; gap: 10px;">
-            <button type="button" id="closeModalBtn" style="padding: 8px 16px; background: #e2e8f0; color: #334155; border: none; border-radius: 8px; cursor: pointer; font-weight: 500;">Cancel</button>
-            <button type="button" id="confirmRescheduleBtn" style="padding: 8px 16px; background: #5142f5; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: 500;">Save New Schedule</button>
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 15px;">
+            <button type="button" id="closeModalBtn" style="padding: 8px 16px; background: #e2e8f0; color: #334155; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 13px;">Cancel</button>
+            <button type="button" id="confirmRescheduleBtn" style="padding: 8px 16px; background: #5142f5; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 13px;">Save New Schedule</button>
         </div>
     </div>
 </div>
 <?php include("../includes/bottom-nav.php"); ?>
 <script>
     document.addEventListener("DOMContentLoaded", () => {
+        // Script para sa Important Notice Popup Modal
+        const importantNoticeModal = document.getElementById('importantNoticeModal');
+        const agreeNoticeBtn = document.getElementById('agreeNoticeBtn');
+        if (agreeNoticeBtn && importantNoticeModal) {
+            agreeNoticeBtn.addEventListener('click', () => {
+                importantNoticeModal.style.display = 'none';
+            });
+        }
         const toggleBtn = document.getElementById('datetimeToggleBtn');
         const popup = document.getElementById('datetimePopup');
         const selectedDateText = document.getElementById('selectedDateText');
@@ -543,6 +716,7 @@
         const pickerSlotsContainer = document.getElementById('pickerSlotsContainer');
         const holidayNoticeBanner = document.getElementById('holidayNoticeBanner');
         const holidayNoticeText = document.getElementById('holidayNoticeText');
+        const assignedDoctorSelect = document.getElementById('assignedDoctor');
         
         let currentDate = new Date();
         let selectedYear = currentDate.getFullYear();
@@ -599,6 +773,50 @@
             if (month === 1 && day === 25) return "EDSA People Power Revolution Anniversary";
             return null;
         }
+        function isDoctorAvailableOnDay(dateObj, doctorName) {
+            const dayOfWeek = dateObj.getDay(); 
+            if (!doctorName) return false;
+            
+            if (doctorName === "Dr. Alfie Tamesis") {
+                return (dayOfWeek === 1 || dayOfWeek === 0); 
+            } else if (doctorName === "Dr. JK") {
+                return (dayOfWeek >= 1 && dayOfWeek <= 4) || (dayOfWeek === 6 || dayOfWeek === 0); 
+            } else if (doctorName === "Dr. Edmond") {
+                return (dayOfWeek === 2 || dayOfWeek === 4 || dayOfWeek === 6); 
+            } else if (doctorName === "Dr. Vitz") {
+                return (dayOfWeek === 5); 
+            }
+            return true;
+        }
+
+        // Variable para itago ang bilang ng bookings kada petsa mula sa database
+        window.dateBookingCounts = {};
+
+        async function fetchDateBookingCounts() {
+            try {
+                // Dynamic import ng firebase functions mula sa appointment.js o inline query
+                const q = (await import("https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js")).query;
+                const collection = (await import("https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js")).collection;
+                const getDocs = (await import("https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js")).getDocs;
+                const dbInstance = (await import("./firebase-config.js")).db;
+
+                const snapshot = await getDocs(collection(dbInstance, "appointments_v2"));
+                const counts = {};
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    const status = (data.status || "").toLowerCase().trim();
+                    // Bilangin lamang ang mga active o pending/approved appointments na hindi cancelled/archived
+                    if (data.isArchived !== true && status !== "archived" && status !== "cancelled" && status !== "trash" && data.date) {
+                        counts[data.date] = (counts[data.date] || 0) + 1;
+                    }
+                });
+                window.dateBookingCounts = counts;
+                renderCalendarDays();
+            } catch (err) {
+                console.error("Error fetching booking counts:", err);
+            }
+        }
+
         function renderCalendarDays() {
             const grid = document.getElementById('calendarDaysGrid');
             if (!grid) return;
@@ -609,6 +827,7 @@
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             
+            const activeDoctor = assignedDoctorSelect ? assignedDoctorSelect.value : "";
             for (let i = firstDayIndex; i > 0; i--) {
                 const dayEl = document.createElement('div');
                 dayEl.className = 'calendar-day muted';
@@ -622,25 +841,37 @@
                 const currentCellDate = new Date(selectedYear, selectedMonth, d);
                 currentCellDate.setHours(0, 0, 0, 0);
                 
+                const formattedMonth = String(selectedMonth + 1).padStart(2, '0');
+                const formattedDay = String(d).padStart(2, '0');
+                const dateStr = `${selectedYear}-${formattedMonth}-${formattedDay}`;
+                const bookingCount = window.dateBookingCounts ? (window.dateBookingCounts[dateStr] || 0) : 0;
+                const isFullyBooked = bookingCount >= 10;
+
                 let isDisabled = false;
                 let holidayName = getHolidayName(currentCellDate);
                 let isHoliday = holidayName !== null;
-                if (currentCellDate < today || isHoliday) {
+                let docAvailable = activeDoctor ? isDoctorAvailableOnDay(currentCellDate, activeDoctor) : true;
+                if (currentCellDate < today || isHoliday || !docAvailable || isFullyBooked) {
                     isDisabled = true;
                 }
                 
                 if (isDisabled) {
                     dayEl.classList.add('disabled', 'muted');
-                    dayEl.style.backgroundColor = isHoliday ? '#fee2e2' : '#f1f5f9';
-                    dayEl.style.color = isHoliday ? '#991b1b' : '#cbd5e1';
-                    dayEl.style.cursor = 'not-allowed';
-                    dayEl.style.opacity = '0.7';
+                    if (isFullyBooked) {
+                        dayEl.classList.add('fully-booked');
+                    } else {
+                        dayEl.style.backgroundColor = isHoliday ? '#fee2e2' : '#f1f5f9';
+                        dayEl.style.color = isHoliday ? '#991b1b' : '#cbd5e1';
+                        dayEl.style.cursor = 'not-allowed';
+                        dayEl.style.opacity = '0.7';
+                    }
                 } else {
                     if (d === selectedDay) {
                         dayEl.classList.add('selected');
                     }
                 }
                 dayEl.addEventListener('click', () => {
+                    if (isDisabled) return;
                     selectedDay = d;
                     renderCalendarDays();
                     loadPickerTimeSlots();
@@ -660,6 +891,12 @@
                 });
                 grid.appendChild(dayEl);
             }
+        }
+        if (assignedDoctorSelect) {
+            assignedDoctorSelect.addEventListener('change', () => {
+                renderCalendarDays();
+                loadPickerTimeSlots();
+            });
         }
         function isTimePassed(slotTimeStr, selectedDateObj) {
             const now = new Date();
@@ -683,6 +920,11 @@
         }
         function loadPickerTimeSlots() {
             if (!pickerSlotsContainer) return;
+            const activeDoctor = assignedDoctorSelect ? assignedDoctorSelect.value : "";
+            if (!activeDoctor) {
+                pickerSlotsContainer.innerHTML = '<p style="color: #888; font-size: 12px; text-align: center;">Please select a doctor first.</p>';
+                return;
+            }
             pickerSlotsContainer.innerHTML = '<p style="color: #888; font-size: 12px; text-align: center;">Loading slots...</p>';
             let standardSlots = [
                 { time: "10:00 AM", isBreak: false },
@@ -737,7 +979,12 @@
         if (toggleBtn && popup) {
             toggleBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
+                if (!assignedDoctorSelect.value) {
+                    alert("Please select a doctor first.");
+                    return;
+                }
                 popup.classList.toggle('active');
+                fetchDateBookingCounts(); // Refresh booking limits when opened
             });
             document.addEventListener('click', (e) => {
                 if (!popup.contains(e.target) && !toggleBtn.contains(e.target)) {
@@ -809,15 +1056,42 @@
         function updatePickerUI() {
             if (monthSelect) monthSelect.value = selectedMonth;
             if (yearSelect) yearSelect.value = selectedYear;
-            renderCalendarDays();
+            fetchDateBookingCounts();
             loadPickerTimeSlots();
         }
         updatePickerUI();
+        fetchDateBookingCounts();
+
+        // --- SCRIPT PARA SA IN-1 VACCINE MUTUAL EXCLUSION ---
+        const in1Checkboxes = document.querySelectorAll('input[name="selectedServices"][data-in1="true"]');
+        in1Checkboxes.forEach(cb => {
+            cb.addEventListener('change', () => {
+                if (cb.checked) {
+                    // I-disable ang iba pang in-1 checkboxes kapag may napili na isa
+                    in1Checkboxes.forEach(otherCb => {
+                        if (otherCb !== cb) {
+                            otherCb.checked = false;
+                            otherCb.disabled = true;
+                            otherCb.closest('label').style.opacity = '0.5';
+                        }
+                    });
+                } else {
+                    // I-enable ulit lahat kapag na-uncheck
+                    in1Checkboxes.forEach(otherCb => {
+                        otherCb.disabled = false;
+                        otherCb.closest('label').style.opacity = '1';
+                    });
+                }
+            });
+        });
+        
+        const totalFeeDisplay = document.getElementById('totalFeeDisplay');
+        if (totalFeeDisplay) {
+            totalFeeDisplay.textContent = '₱150';
+        }
     });
 </script>
 <script type="module" src="../assets/js/appointment.js"></script>
-
-<!-- ROBUST EVENT DELEGATION SCRIPT PARA SA SIDEBAR -->
 <script>
     document.addEventListener("click", function(e) {
         const menuBtn = e.target.closest("#mobileMenuBtn, #menuBtn, .mobile-menu-btn, .burger-btn, .fa-bars");
