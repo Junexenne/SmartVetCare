@@ -412,7 +412,7 @@ if (session_status() === PHP_SESSION_NONE) {
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
     
     // GROQ API Key para sa Clinical Record Explainer
-    const GROQ_API_KEY = "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";
+    const GROQ_API_KEY = "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";
     const toast = document.getElementById("toastNotification");
     const toastMessage = document.getElementById("toastMessage");
     const toastIcon = document.getElementById("toastIcon");

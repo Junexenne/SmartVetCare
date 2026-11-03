@@ -11,7 +11,7 @@ import {
 const currentOwnerId = localStorage.getItem("ownerId") || "OWN-00004";
 
 // GROQ API KEY
-const GROQ_API_KEY = "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";
+const GROQ_API_KEY = "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";
 
 const presetTopics = [
     {
