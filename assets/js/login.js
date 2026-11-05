@@ -2,7 +2,7 @@ import { auth, db } from "./firebase-config.js";
 import {
   signInWithEmailAndPassword, setPersistence, browserLocalPersistence,
   browserSessionPersistence, signOut, multiFactor, TotpMultiFactorGenerator,
-  getMultiFactorResolver, sendEmailVerification, GoogleAuthProvider, signInWithPopup, deleteUser
+  getMultiFactorResolver, sendEmailVerification, GoogleAuthProvider, signInWithPopup
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 import { collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
@@ -173,7 +173,6 @@ async function login(event) {
   } finally { busy = false; }
 }
 
-// --- GOOGLE LOGIN WITH MANDATORY AUTHENTICATOR ENROLLMENT / VERIFICATION ---
 const googleLoginBtn = $('googleLoginBtn');
 if (googleLoginBtn) {
   googleLoginBtn.addEventListener('click', async () => {
@@ -182,37 +181,36 @@ if (googleLoginBtn) {
     resolver = null;
     enrollmentSecret = null;
     
-    let credential = null;
     try {
       const provider = new GoogleAuthProvider();
-      credential = await signInWithPopup(auth, provider);
+      let credential;
+      
+      try {
+        credential = await signInWithPopup(auth, provider);
+      } catch (err) {
+        if (err.code === 'auth/multi-factor-auth-required') {
+          resolver = getMultiFactorResolver(auth, err);
+          if (!resolver.hints.some(hint => hint.factorId === TotpMultiFactorGenerator.FACTOR_ID)) {
+            throw new Error('This account uses another second-factor method, which this page cannot verify.');
+          }
+          display('challenge', 'Enter the current 6-digit code from your authenticator app.');
+          return;
+        }
+        throw err;
+      }
 
-      // 1. Titingnan kung may umiiral na user record sa Firestore
       await accountFromFirestore(credential.user, true);
 
-      // 2. Titingnan kung naka-enroll na sa Authenticator (TOTP)
       if (multiFactor(credential.user).enrolledFactors.some(f => f.factorId === TotpMultiFactorGenerator.FACTOR_ID)) {
-        // Naka-enroll na: I-verify ang 2FA code o pumunta sa finishLogin
         await finishLogin(credential.user, true);
       } else {
-        // HINDI PA NAKA-ENROLL SA AUTHENTICATOR: Pipilitin siyang mag-setup ng Authenticator muna!
+        await accountFromFirestore(credential.user, true);
         await beginEnrollment(credential.user);
       }
     } catch (err) {
       console.error('Google login error', err);
       toast('Google Login Restricted', err.message);
-      
-      if (credential && credential.user) {
-        try {
-          // Kung hindi rehistrado sa Firestore, ipawawalan ang session
-          await signOut(auth);
-        } catch (delErr) {
-          await signOut(auth);
-        }
-      } else if (auth.currentUser) {
-        await signOut(auth);
-      }
-      
+      if (auth.currentUser && !resolver) await signOut(auth);
       modal.style.display = 'none';
     } finally {
       busy = false;
@@ -234,13 +232,11 @@ $('totpForm').addEventListener('submit', async event => {
       const hint = resolver.hints.find(h => h.factorId === TotpMultiFactorGenerator.FACTOR_ID);
       const assertion = TotpMultiFactorGenerator.assertionForSignIn(hint.uid, otp);
       const result = await resolver.resolveSignIn(assertion);
-      await finishLogin(result.user, false);
+      await finishLogin(result.user, true);
     } else {
       if (!auth.currentUser || !enrollmentSecret) throw new Error('Setup expired. Sign in again.');
       const assertion = TotpMultiFactorGenerator.assertionForEnrollment(enrollmentSecret, otp);
       await multiFactor(auth.currentUser).enroll(assertion, 'Authenticator app');
-      
-      // Pagkatapos mag-enroll ng Authenticator, i-finish ang login at pumunta sa dashboard
       await finishLogin(auth.currentUser, true);
     }
   } catch (err) {
