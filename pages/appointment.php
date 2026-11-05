@@ -511,7 +511,7 @@
                     <div class="form-group">
                         <label><i class="fa-solid fa-paw" style="color: #5142f5;"></i> Registered Pet(s) <small style="color: #64748b;">(Select one or more)</small></label>
                         <div id="petsCheckboxContainer" class="multi-checkbox-box">
-                            <span style="font-size: 12px; color: #888;">Loading your pets...</span>
+                            <!-- HINDI NA IPAPAKITA ANG "No registered pets found..." LALABAS LANG AY YUNG CHECKBOX SA LABAS -->
                         </div>
                         <!-- DAGDAG PARA SA MGA FIRST-TIME USERS / WALA PANG NAKAREHISTRONG PET -->
                         <div style="margin-top: 10px; border-top: 1px dashed #cbd5e1; padding-top: 10px;">
@@ -788,10 +788,8 @@
             }
             return true;
         }
-
         // Variable para itago ang bilang ng bookings kada petsa mula sa database
         window.dateBookingCounts = {};
-
         async function fetchDateBookingCounts() {
             try {
                 // Dynamic import ng firebase functions mula sa appointment.js o inline query
@@ -799,7 +797,6 @@
                 const collection = (await import("https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js")).collection;
                 const getDocs = (await import("https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js")).getDocs;
                 const dbInstance = (await import("./firebase-config.js")).db;
-
                 const snapshot = await getDocs(collection(dbInstance, "appointments_v2"));
                 const counts = {};
                 snapshot.forEach(docSnap => {
@@ -816,7 +813,6 @@
                 console.error("Error fetching booking counts:", err);
             }
         }
-
         function renderCalendarDays() {
             const grid = document.getElementById('calendarDaysGrid');
             if (!grid) return;
@@ -846,7 +842,6 @@
                 const dateStr = `${selectedYear}-${formattedMonth}-${formattedDay}`;
                 const bookingCount = window.dateBookingCounts ? (window.dateBookingCounts[dateStr] || 0) : 0;
                 const isFullyBooked = bookingCount >= 10;
-
                 let isDisabled = false;
                 let holidayName = getHolidayName(currentCellDate);
                 let isHoliday = holidayName !== null;
@@ -1061,7 +1056,6 @@
         }
         updatePickerUI();
         fetchDateBookingCounts();
-
         // --- SCRIPT PARA SA IN-1 VACCINE MUTUAL EXCLUSION ---
         const in1Checkboxes = document.querySelectorAll('input[name="selectedServices"][data-in1="true"]');
         in1Checkboxes.forEach(cb => {

@@ -13,6 +13,7 @@ import {
 import {
     onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+
 document.addEventListener("DOMContentLoaded", () => {
     const petsCheckboxContainer = document.getElementById("petsCheckboxContainer");
     const appointmentDateInput = document.getElementById("appointmentDate");
@@ -26,12 +27,14 @@ document.addEventListener("DOMContentLoaded", () => {
             e.target.value = e.target.value.replace(/[^0-9]/g, "");
         });
     }
+
     // New Pet Toggle Elements para sa First-time Users
     const toggleNewPetInput = document.getElementById("toggleNewPetInput");
     const newPetFieldsContainer = document.getElementById("newPetFieldsContainer");
     const newPetNameInput = document.getElementById("newPetNameInput");
     const newPetSpeciesInput = document.getElementById("newPetSpeciesInput");
     const newPetBreedInput = document.getElementById("newPetBreedInput");
+
     if (toggleNewPetInput && newPetFieldsContainer) {
         toggleNewPetInput.addEventListener("change", (e) => {
             if (e.target.checked) {
@@ -47,12 +50,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const notesInput = document.getElementById("notes");
     const bookBtn = document.getElementById("bookAppointmentBtn");
     const alertBox = document.getElementById("alertBox");
+
     // Reschedule Elements
     const rescheduleModal = document.getElementById("rescheduleModal");
     const rescheduleApptIdInput = document.getElementById("rescheduleApptId");
     const rescheduleDoctorSelect = document.getElementById("rescheduleDoctor");
     const closeModalBtn = document.getElementById("closeModalBtn");
     const confirmRescheduleBtn = document.getElementById("confirmRescheduleBtn");
+
     // Reschedule Inline Calendar Elements
     const reschedHiddenDateInput = document.getElementById("rescheduleDate");
     const reschedHiddenTimeInput = document.getElementById("rescheduleTime");
@@ -63,11 +68,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const reschedPrevMonthBtn = document.getElementById("reschedPrevMonthBtn");
     const reschedNextMonthBtn = document.getElementById("reschedNextMonthBtn");
     const reschedCalendarDaysGrid = document.getElementById("reschedCalendarDaysGrid");
+
     let reschedYear = new Date().getFullYear();
     let reschedMonth = new Date().getMonth();
     let reschedDay = null;
     let reschedSelectedTimeValue = "";
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
     if (reschedMonthSelect && reschedYearSelect) {
         monthNames.forEach((m, idx) => {
             const opt = document.createElement('option');
@@ -82,18 +89,21 @@ document.addEventListener("DOMContentLoaded", () => {
             reschedYearSelect.appendChild(opt);
         }
     }
+
     if (reschedMonthSelect) {
         reschedMonthSelect.addEventListener('change', (e) => {
             reschedMonth = parseInt(e.target.value);
             updateReschedCalendarUI();
         });
     }
+
     if (reschedYearSelect) {
         reschedYearSelect.addEventListener('change', (e) => {
             reschedYear = parseInt(e.target.value);
             updateReschedCalendarUI();
         });
     }
+
     if (reschedPrevMonthBtn) {
         reschedPrevMonthBtn.addEventListener('click', () => {
             reschedMonth--;
@@ -101,6 +111,7 @@ document.addEventListener("DOMContentLoaded", () => {
             updateReschedCalendarUI();
         });
     }
+
     if (reschedNextMonthBtn) {
         reschedNextMonthBtn.addEventListener('click', () => {
             reschedMonth++;
@@ -108,12 +119,14 @@ document.addEventListener("DOMContentLoaded", () => {
             updateReschedCalendarUI();
         });
     }
+
     function updateReschedCalendarUI() {
         if (reschedMonthSelect) reschedMonthSelect.value = reschedMonth;
         if (reschedYearSelect) reschedYearSelect.value = reschedYear;
         renderReschedCalendarDays();
         loadReschedTimeSlots();
     }
+
     function renderReschedCalendarDays() {
         if (!reschedCalendarDaysGrid) return;
         reschedCalendarDaysGrid.innerHTML = '';
@@ -123,6 +136,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         const activeDoctor = rescheduleDoctorSelect ? rescheduleDoctorSelect.value : "";
+
         for (let i = firstDayIndex; i > 0; i--) {
             const dayEl = document.createElement('div');
             dayEl.className = 'calendar-day muted';
@@ -130,6 +144,7 @@ document.addEventListener("DOMContentLoaded", () => {
             dayEl.style.cssText = "aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #cbd5e1;";
             reschedCalendarDaysGrid.appendChild(dayEl);
         }
+
         for (let d = 1; d <= totalDays; d++) {
             const dayEl = document.createElement('div');
             dayEl.className = 'calendar-day';
@@ -142,9 +157,11 @@ document.addEventListener("DOMContentLoaded", () => {
             let isHoliday = holidayName !== null;
             let docAvailable = activeDoctor ? isDoctorAvailableOnDay(currentCellDate, activeDoctor) : true;
             let isDisabled = false;
+
             if (currentCellDate < today || isHoliday || !docAvailable) {
                 isDisabled = true;
             }
+
             if (isDisabled) {
                 dayEl.style.backgroundColor = isHoliday ? '#fee2e2' : '#f1f5f9';
                 dayEl.style.color = isHoliday ? '#991b1b' : '#cbd5e1';
@@ -168,9 +185,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                 });
             }
+
             const formattedMonth = String(reschedMonth + 1).padStart(2, '0');
             const formattedDay = String(d).padStart(2, '0');
             const cellDateStr = `${reschedYear}-${formattedMonth}-${formattedDay}`;
+
             if (!isDisabled && reschedHiddenDateInput.value === cellDateStr) {
                 dayEl.style.background = "#5142f5";
                 dayEl.style.color = "#ffffff";
@@ -179,6 +198,7 @@ document.addEventListener("DOMContentLoaded", () => {
             reschedCalendarDaysGrid.appendChild(dayEl);
         }
     }
+
     function loadReschedTimeSlots() {
         if (!reschedPickerSlotsContainer) return;
         reschedPickerSlotsContainer.innerHTML = '';
@@ -187,13 +207,16 @@ document.addEventListener("DOMContentLoaded", () => {
             reschedPickerSlotsContainer.innerHTML = '<p style="color: #888; font-size: 11px; text-align: center; margin-top: 20px;">Select a date first.</p>';
             return;
         }
+
         let standardSlots = ["10:00 AM", "11:30 AM", "01:00 PM", "02:30 PM", "04:00 PM", "05:30 PM"];
         const selectedDateObj = new Date(reschedHiddenDateInput.value + "T00:00:00");
         const holidayTitle = getHolidayName(selectedDateObj);
+
         if (holidayTitle) {
             reschedPickerSlotsContainer.innerHTML = `<div style="background: #fee2e2; color: #991b1b; padding: 8px; border-radius: 6px; font-size: 11px; text-align: center;">Clinic Closed (${holidayTitle}).</div>`;
             return;
         }
+
         standardSlots.forEach(timeStr => {
             const slotDiv = document.createElement('div');
             slotDiv.className = 'picker-time-slot';
@@ -205,6 +228,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 slotDiv.style.color = "#fff";
                 slotDiv.style.borderColor = "#5142f5";
             }
+
             slotDiv.addEventListener('click', () => {
                 document.querySelectorAll('#reschedPickerSlotsContainer .picker-time-slot').forEach(el => {
                     el.style.background = "#f8fafc";
@@ -220,11 +244,13 @@ document.addEventListener("DOMContentLoaded", () => {
             reschedPickerSlotsContainer.appendChild(slotDiv);
         });
     }
+
     if (rescheduleDoctorSelect) {
         rescheduleDoctorSelect.addEventListener('change', () => {
             updateReschedCalendarUI();
         });
     }
+
     // Dynamic Custom Cancel Modal na may Notes for Cancellation
     let cancelModal = document.getElementById("cancelModal");
     if (!cancelModal) {
@@ -249,11 +275,13 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
         document.body.appendChild(cancelModal);
     }
+
     const cancelApptIdTarget = document.getElementById("cancelApptIdTarget");
     const cancelReasonInput = document.getElementById("cancelReasonInput");
     const closeCancelModalBtn = document.getElementById("closeCancelModalBtn");
     const confirmCancelBtn = document.getElementById("confirmCancelBtn");
     let currentOwnerId = null;
+
     onAuthStateChanged(auth, async (user) => {
         if (!user) {
             showAlert("Please log in to book an appointment.", "error");
@@ -289,6 +317,7 @@ document.addEventListener("DOMContentLoaded", () => {
             showAlert("Failed to load user information.", "error");
         }
     });
+
     async function loadUserPets(ownerId) {
         if (!petsCheckboxContainer) return;
         try {
@@ -297,9 +326,19 @@ document.addEventListener("DOMContentLoaded", () => {
             petsCheckboxContainer.innerHTML = "";
             
             if (petsSnap.empty) {
-                petsCheckboxContainer.innerHTML = '<span style="font-size: 13px; color: #888;">No registered pets found under your account.</span>';
+                // HINDI NA IPAPAKITA ANG "No registered pets found..." LALABAS LANG AY YUNG CHECKBOX SA LABAS
+                petsCheckboxContainer.style.display = "none";
+                const parentGroup = petsCheckboxContainer.closest('.form-group');
+                if (parentGroup) {
+                    // Itago yung label o lagyan ng styling kung kinakailangan pero mas maganda kung tago lang ang container
+                    const labelElem = parentGroup.querySelector('label');
+                    if(labelElem) labelElem.style.display = "none";
+                }
                 return;
+            } else {
+                petsCheckboxContainer.style.display = "flex";
             }
+
             petsSnap.forEach((docSnap) => {
                 const petData = docSnap.data();
                 const petName = petData.petName || petData.name || 'Unnamed Pet';
@@ -317,6 +356,7 @@ document.addEventListener("DOMContentLoaded", () => {
             petsCheckboxContainer.innerHTML = '<span style="font-size: 13px; color: #dc2626;">Error loading pets from database.</span>';
         }
     }
+
     function parseDateString(dateStr) {
         if (!dateStr) return new Date(0);
         if (dateStr.includes('/')) {
@@ -327,6 +367,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         return new Date(dateStr);
     }
+
     async function loadUserAppointments(ownerId) {
         const container = document.getElementById("userAppointmentsContainer");
         if (!container) return;
@@ -426,6 +467,7 @@ document.addEventListener("DOMContentLoaded", () => {
             container.innerHTML = `<p style="color: #dc2626; font-size: 14px;">Failed to load your appointments.</p>`;
         }
     }
+
     async function archiveAppointment(apptId) {
         if (!apptId) return;
         try {
@@ -438,9 +480,11 @@ document.addEventListener("DOMContentLoaded", () => {
             showAlert("Failed to archive appointment.", "error");
         }
     }
+
     if (closeCancelModalBtn) {
         closeCancelModalBtn.addEventListener("click", () => cancelModal.style.display = "none");
     }
+
     if (confirmCancelBtn) {
         confirmCancelBtn.addEventListener("click", async () => {
             const apptId = cancelApptIdTarget.value;
@@ -458,6 +502,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
+
     function getHolidayName(dateObj) {
         const year = dateObj.getFullYear();
         const month = dateObj.getMonth();
@@ -478,6 +523,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (month === 1 && day === 25) return "EDSA People Power Revolution Anniversary";
         return null;
     }
+
     function isDoctorAvailableOnDay(dateObj, doctorName) {
         const dayOfWeek = dateObj.getDay(); 
         if (!doctorName) return false;
@@ -487,6 +533,7 @@ document.addEventListener("DOMContentLoaded", () => {
         else if (doctorName === "Dr. Vitz") return (dayOfWeek === 5);
         return true;
     }
+
     function openRescheduleModal(apptId) {
         rescheduleApptIdInput.value = apptId;
         reschedHiddenDateInput.value = "";
@@ -501,9 +548,11 @@ document.addEventListener("DOMContentLoaded", () => {
         updateReschedCalendarUI();
         rescheduleModal.style.display = "flex";
     }
+
     if (closeModalBtn) {
         closeModalBtn.addEventListener("click", () => rescheduleModal.style.display = "none");
     }
+
     if (confirmRescheduleBtn) {
         confirmRescheduleBtn.addEventListener("click", async () => {
             const apptId = rescheduleApptIdInput.value;
@@ -537,6 +586,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
+
     async function generateNextAppointmentId() {
         try {
             const querySnapshot = await getDocs(collection(db, "appointments_v2"));
@@ -556,6 +606,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return `APT-00009`;
         }
     }
+
     if (bookBtn) {
         bookBtn.addEventListener("click", async () => {
             if (!currentOwnerId) { showAlert("Authentication session not ready.", "error"); return; }
@@ -569,8 +620,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 selectedPetNames.push(cb.value.trim());
                 selectedPetIds.push(cb.getAttribute("data-petid"));
             });
+
             // Handle First-time user / Unregistered New Pet input
             const isNewPetChecked = toggleNewPetInput && toggleNewPetInput.checked;
+            let isFirstTimeUser = false;
+
             if (isNewPetChecked && newPetNameInput && newPetNameInput.value.trim() !== "") {
                 const newName = newPetNameInput.value.trim();
                 const newSpecies = newPetSpeciesInput ? newPetSpeciesInput.value : "Pet";
@@ -578,7 +632,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 
                 selectedPetNames.push(`${newName} (${newSpecies} - ${newBreed})`);
                 selectedPetIds.push("NEW_UNREGISTERED_PET");
+                isFirstTimeUser = true; // Na-detect na First Time User ito
             }
+
             const checkedServices = document.querySelectorAll('input[name="selectedServices"]:checked');
             let selectedServicesList = [];
             checkedServices.forEach(cb => selectedServicesList.push(cb.value.trim()));
@@ -586,18 +642,37 @@ document.addEventListener("DOMContentLoaded", () => {
             const timeVal = appointmentTimeInput.value;
             const referenceNum = referenceNumberInput ? referenceNumberInput.value.trim() : "";
             const notes = notesInput.value.trim();
+
             if (selectedPetNames.length === 0) { showAlert("Please select a registered pet or register a new one.", "error"); return; }
             if (selectedServicesList.length === 0) { showAlert("Please select at least one service.", "error"); return; }
             if (!dateVal) { showAlert("Please select an appointment date.", "error"); return; }
             if (!timeVal) { showAlert("Please select an available time slot.", "error"); return; }
             if (!referenceNum) { showAlert("Please enter your GCash or PayMaya reference number.", "error"); return; }
+
             bookBtn.disabled = true;
             bookBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Submitting...`;
+
             try {
+                // I-update ang user account sa database para maging "New Account" kung First-Time User ito
+                if (isFirstTimeUser && currentOwnerId) {
+                    try {
+                        const userDocRef = doc(db, "users", currentOwnerId);
+                        await updateDoc(userDocRef, {
+                            accountType: "New Account",
+                            clientType: "New Account",
+                            status: "New Account",
+                            updatedAt: Timestamp.now()
+                        });
+                    } catch (errUserUpdate) {
+                        console.error("Error updating user account type status:", errUserUpdate);
+                    }
+                }
+
                 const petNameStr = selectedPetNames.join(", ");
                 const petIdStr = selectedPetIds.join(", ");
                 const primaryService = selectedServicesList.join(", ");
                 const generatedApptId = await generateNextAppointmentId();
+
                 await setDoc(doc(db, "appointments_v2", generatedApptId), {
                     appointmentId: generatedApptId,
                     ownerId: currentOwnerId,
@@ -616,8 +691,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     bookingsSource: "Online Portal",
                     isArchived: false,
                     isUrgent: false,
+                    // Note sa appointment database kung First Time User
+                    userTypeNote: isFirstTimeUser ? "First time user" : "Regular user",
                     createdAt: Timestamp.now()
                 });
+
                 showAlert("Appointment successfully booked! Status is Pending (Waiting for approval).", "success");
                 
                 document.querySelectorAll('input[name="selectedPets"]').forEach(cb => cb.checked = false);
@@ -652,6 +730,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         });
     }
+
     function showAlert(message, type) {
         if (!alertBox) return;
         alertBox.textContent = message;
